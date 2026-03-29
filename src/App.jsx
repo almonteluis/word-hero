@@ -318,7 +318,15 @@ function useSpeechRecognition() {
 function wordMatch(spokenResult, target) {
   const alts = spokenResult.split("|");
   const t = target.toLowerCase().trim();
-  return alts.some(a => a === t || a.includes(t) || t.includes(a));
+  return alts.some(a => {
+    if (a === t) return true;
+    // Short words (3 chars or fewer) require exact match only
+    if (t.length <= 3) return false;
+    // Longer words: allow partial match only if spoken is at least 80% the target's length
+    if (a.includes(t)) return true;
+    if (t.includes(a) && a.length >= t.length * 0.8) return true;
+    return false;
+  });
 }
 
 // ─── COUNTDOWN TIMER COMPONENT ─────────────────────────────
@@ -374,6 +382,8 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const [timerExpired, setTimerExpired] = useState(false);
   const [micResult, setMicResult] = useState(null); // "correct" | "wrong" | null
   const [waitingForMic, setWaitingForMic] = useState(false);
+  const [showMicPrompt, setShowMicPrompt] = useState(false);
+  const [micReady, setMicReady] = useState(false);
 
   const { listening, result, startListening, stopListening, supported } = useSpeechRecognition();
 
@@ -389,6 +399,8 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setRoundScores({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });
     setShowRoundSummary(false);
     setShowFinalSummary(false);
+    setShowMicPrompt(false);
+    setMicReady(false);
   }, [group]);
 
   // Round 1: auto-speak on flip
@@ -397,6 +409,15 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
       speak(word);
     }
   }, [flipped]);
+
+  // Rounds 2 & 3: auto-start mic when card flips (after mic prompt dismissed)
+  useEffect(() => {
+    if (flipped && round >= 2 && micReady && !micResult && !timerExpired) {
+      setMicResult(null);
+      setWaitingForMic(true);
+      startListening();
+    }
+  }, [flipped, micReady]);
 
   // Process speech recognition result
   useEffect(() => {
@@ -496,6 +517,8 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setShowRoundSummary(false);
     setTimerExpired(false);
     setMicResult(null);
+    setShowMicPrompt(true);
+    setMicReady(false);
   };
 
   // Calculate final score
@@ -593,6 +616,31 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             </Btn>
           </>
         )}
+      </div>
+    );
+  }
+
+  // ─── MIC PROMPT MODAL (shown at start of rounds 2 & 3) ──
+  if (showMicPrompt) {
+    const isSpeedRound = round + 1 === 3;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, padding: "40px 24px", animation: "fadeUp 0.4s" }}>
+        <div style={{ fontSize: 64 }}>🎤</div>
+        <div style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: C.accent, letterSpacing: 3, textAlign: "center" }}>
+          {isSpeedRound ? "SPEED ROUND!" : "TIME TO SPEAK!"}
+        </div>
+        <div style={{
+          background: C.panel, borderRadius: 16, padding: "16px 20px", maxWidth: 300,
+          border: `2px solid ${C.blue}40`, textAlign: "center",
+        }}>
+          <div style={{ color: C.text, fontFamily: "'Russo One', sans-serif", fontSize: 13, letterSpacing: 1, lineHeight: 1.7 }}>
+            This round will listen to you! Say each word out loud when the card flips.
+            {isSpeedRound ? " You only have 5 seconds!" : " You have 10 seconds!"}
+          </div>
+        </div>
+        <Btn onClick={() => { setShowMicPrompt(false); setMicReady(true); }} color={C.green}>
+          🎤 I'M READY — LET'S GO!
+        </Btn>
       </div>
     );
   }
@@ -703,13 +751,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             </div>
           )}
 
-          {/* ROUNDS 2 & 3: Mic-based */}
-          {round >= 2 && !timerExpired && !micResult && !listening && (
-            <Btn onClick={handleSayIt} color={C.blue}>
-              🎤 SAY THE WORD
-            </Btn>
-          )}
-
           {listening && (
             <div style={{
               display: "flex", alignItems: "center", gap: 10,
@@ -740,7 +781,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
                 letterSpacing: 2,
               }}>NOT QUITE — TRY AGAIN!</div>
               <div style={{ display: "flex", gap: 10 }}>
-                <Btn onClick={handleMicWrong_TryAgain} color={C.blue} small>🎤 RETRY</Btn>
+                <Btn onClick={handleSayIt} color={C.blue} small>🎤 RETRY</Btn>
                 <Btn onClick={handleSkipWord} color={C.red} small>SKIP →</Btn>
               </div>
             </div>
@@ -809,10 +850,10 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
     setOptions([...others, t].sort(() => Math.random() - 0.5));
     setFeedback(null);
     setShakeWord(null);
+    speak(t);
   }, [group]);
 
   useEffect(() => { genRound(); }, [genRound, round]);
-  useEffect(() => { if (target) speak(target); }, [target]);
 
   const handlePick = (w) => {
     if (feedback) return;
