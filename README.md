@@ -1,62 +1,132 @@
-# ⚡ Word Hero — Sight Word Training Academy
+# Word Hero — Sight Word Training Academy
 
-A superhero-themed sight word learning PWA for kids. Built with React + Vite.
+A superhero-themed sight word learning app (PWA) built for kids. Features speech recognition, multi-child profiles, gamified progression, and offline support.
+
+Built with **React 18 + Vite 6**.
+
+---
 
 ## Features
 
-- **Kid Profiles** — Each child gets their own profile with separate progress tracking
-- **3-Round Flashcard Progression:**
-  - Round 1: Listen & Learn (word spoken aloud, manual marking)
-  - Round 2: Say It (10s timer, speech recognition via mic)
-  - Round 3: Speed Round (5s timer, speech recognition)
-  - 80%+ overall → auto-advances to Find It game
-- **Find It Game** — Hear a word, tap the correct one from 4 options
-- **Progress Tracker** — Mastered words, accuracy, sessions, hero rank
-- **Speech Recognition** — Kids must say the word correctly to pass (rounds 2 & 3)
-- **PWA** — Install on iPhone/Android home screen, works offline
+- **Kid Profiles** — Each child gets a personalized profile with emoji avatar and separate progress tracking
+- **3-Round Flashcard System:**
+  - **Round 1 — Listen & Learn:** Word is spoken aloud; child marks it correct/incorrect manually
+  - **Round 2 — Say It:** 10-second timer; child must say the word into the mic
+  - **Round 3 — Speed Round:** 5-second timer; faster-paced speech recognition challenge
+- **Find It Game** — Hear a word, tap the correct one from 4 on-screen choices
+- **Progress Tracker** — Tracks mastered words, accuracy %, sessions played, and hero rank
+- **Word Mastery Logic** — 3 consecutive correct answers marks a word as mastered; 80%+ overall accuracy unlocks the Find It game
+- **Speech Recognition** — Uses the Web Speech API; falls back to manual buttons if mic is unavailable
+- **PWA** — Installable on iPhone/Android home screen; works fully offline after first load
 
-## Quick Start
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 18 |
+| Build Tool | Vite 6 |
+| PWA | vite-plugin-pwa |
+| Speech | Web Speech API (synthesis + recognition) |
+| Persistence | localStorage |
+| Fonts | Google Fonts (Russo One, Nunito) |
+| Deployment | Vercel |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+
+### Install & Run
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173
+Open [http://localhost:5173](http://localhost:5173)
 
-## Deploy to Vercel
+### Build for Production
 
-### Option A: CLI
+```bash
+npm run build
+npm run preview   # preview the production build locally
+```
+
+---
+
+## Deployment
+
+### Option A: Vercel CLI
+
 ```bash
 npm install -g vercel
 vercel
 ```
 
-### Option B: GitHub
-1. Push this folder to a GitHub repo
-2. Go to vercel.com → New Project → Import your repo
-3. Framework: Vite → Deploy
+### Option B: GitHub + Vercel (recommended)
+
+1. Push this repo to GitHub
+2. Go to [vercel.com](https://vercel.com) → New Project → Import your repo
+3. Select **Vite** as the framework preset → Deploy
 
 Once deployed, open the Vercel URL on your iPhone in Safari:
-**Share → Add to Home Screen**
+**Share → Add to Home Screen** — you get a fullscreen app with the icon on your home screen.
 
-That's it — you have a fullscreen app with the ⚡ icon.
+---
 
-## Speech Recognition Notes
+## PWA & Speech Recognition Notes
 
-- Requires HTTPS (Vercel provides this automatically)
-- Safari will prompt for mic permission on first use — tap Allow
-- If mic isn't available, falls back to manual buttons
-- Uses Web Speech API (`webkitSpeechRecognition`)
+- Speech recognition requires **HTTPS** — Vercel handles this automatically
+- On **Safari (iOS)**, the browser will prompt for microphone permission on first use — tap Allow
+- On **Chrome (Android/Desktop)**, mic permission is requested via the browser permission bar
+- If the microphone is unavailable or denied, the app automatically falls back to manual pass/fail buttons
+- The app uses `webkitSpeechRecognition` (Chrome/Safari) with a fuzzy matching fallback for common mispronunciations
 
-## Customizing Words
+---
 
-Edit the `WORD_GROUPS` object in `src/App.jsx` to add/remove/change word groups.
+## Customizing Word Groups
 
-## Tech Stack
+Edit the `WORD_GROUPS` constant in `src/App.jsx` to add, remove, or reorganize word groups:
 
-- React 18
-- Vite 6
-- vite-plugin-pwa
-- Web Speech API (synthesis + recognition)
-- localStorage for persistence
+```js
+const WORD_GROUPS = {
+  "Group Name": ["word1", "word2", "word3", ...],
+  // add more groups here
+};
+```
+
+The app ships with 5 default word groups (75 sight words total) organized by difficulty.
+
+---
+
+## Project Structure
+
+```
+word-hero/
+├── public/
+│   ├── icon-192.png       # PWA icon (192x192)
+│   ├── icon-512.png       # PWA icon (512x512)
+│   └── icon.svg           # Vector logo
+├── src/
+│   ├── App.jsx            # Main application (all components + logic)
+│   └── main.jsx           # React entry point
+├── index.html             # HTML shell with PWA meta tags
+├── vite.config.js         # Vite + PWA plugin config
+└── package.json
+```
+
+---
+
+## Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server with hot reload |
+| `npm run build` | Build optimized production bundle |
+| `npm run preview` | Preview production build locally |
