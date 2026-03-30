@@ -1,0 +1,25 @@
+export const WORD_GROUPS = {
+  "Group 1 – Most Common": ["the","and","is","it","in","to","he","she","was","we","my","do","no","go","so"],
+  "Group 2 – Action Words": ["said","have","like","come","make","see","look","play","run","jump","help","want","give","take","put"],
+  "Group 3 – Connectors": ["what","where","when","who","why","how","that","this","with","from","they","them","her","his","but"],
+  "Group 4 – Describing Words": ["big","little","good","new","old","first","long","very","over","after","before","under","just","again","around"],
+  "Group 5 – Tricky Words": ["could","would","should","because","know","write","right","their","there","were","some","done","does","goes","every"],
+};
+
+export const ALL_WORDS = Object.values(WORD_GROUPS).flat();
+export const GROUP_NAMES = Object.keys(WORD_GROUPS);
+
+export const AVATARS = ["🦸","🦸‍♀️","🦹","🦹‍♀️","🧑‍🚀","👨‍🚀","🦊","🐉","🦁","🐺","🦅","🐲"];
+
+export const C = {
+  bg: "#0a0e27",
+  panel: "#111638",
+  panelHover: "#181e4a",
+  accent: "#f6c619",
+  red: "#e84545",
+  blue: "#4a90ff",
+  green: "#2ecc71",
+  purple: "#9b59b6",
+  text: "#f0f0f0",
+  muted: "#7a82a6",
+};
