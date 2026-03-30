@@ -87,12 +87,54 @@ function progressReducer(state, action) {
 
 // ─── SPEECH HELPER ─────────────────────────────────────────
 function speak(word) {
-  if ("speechSynthesis" in window) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(word);
-    u.rate = 0.75;
-    u.pitch = 1.1;
-    speechSynthesis.speak(u);
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+
+  const pickVoice = (voices) => {
+    // UK English female has the best natural intonation for this style
+    const preferred = [
+      "Google UK English Female",
+      "Samantha",
+      "Karen",
+      "Moira",
+      "Tessa",
+      "Microsoft Zira Desktop",
+      "Google US English",
+    ];
+    return (
+      voices.find(v => preferred.includes(v.name)) ||
+      voices.find(v => /female/i.test(v.name) && /en[-_]GB/i.test(v.lang)) ||
+      voices.find(v => /female/i.test(v.name) && /en/i.test(v.lang)) ||
+      voices.find(v => /en[-_]US/i.test(v.lang)) ||
+      voices.find(v => /en/i.test(v.lang))
+    );
+  };
+
+  const buildUtterances = (voice) => {
+    // Say it twice: first with energy, then slower so it sinks in
+    const first = new SpeechSynthesisUtterance(word);
+    first.rate = 1.0;
+    first.pitch = 1.4;
+    first.volume = 1.0;
+    if (voice) first.voice = voice;
+
+    const second = new SpeechSynthesisUtterance(word);
+    second.rate = 0.7;
+    second.pitch = 1.2;
+    second.volume = 1.0;
+    if (voice) second.voice = voice;
+
+    window.speechSynthesis.speak(first);
+    window.speechSynthesis.speak(second);
+  };
+
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length) {
+    buildUtterances(pickVoice(voices));
+  } else {
+    window.speechSynthesis.addEventListener("voiceschanged", () => {
+      buildUtterances(pickVoice(window.speechSynthesis.getVoices()));
+    }, { once: true });
   }
 }
 
