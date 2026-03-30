@@ -87,12 +87,38 @@ function progressReducer(state, action) {
 
 // ─── SPEECH HELPER ─────────────────────────────────────────
 function speak(word) {
-  if ("speechSynthesis" in window) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(word);
-    u.rate = 0.75;
-    u.pitch = 1.1;
-    speechSynthesis.speak(u);
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(word);
+  u.rate = 0.9;
+  u.pitch = 1.0;
+  u.volume = 1.0;
+
+  const setVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    // Prefer a clear female English voice (Duolingo-style)
+    const preferred = [
+      "Google US English",
+      "Samantha",
+      "Microsoft Zira Desktop",
+      "Karen",
+      "Moira",
+    ];
+    let voice =
+      voices.find(v => preferred.includes(v.name)) ||
+      voices.find(v => /female/i.test(v.name) && /en/i.test(v.lang)) ||
+      voices.find(v => /en[-_]US/i.test(v.lang) && /female/i.test(v.name)) ||
+      voices.find(v => /en[-_]US/i.test(v.lang)) ||
+      voices.find(v => /en/i.test(v.lang));
+    if (voice) u.voice = voice;
+    window.speechSynthesis.speak(u);
+  };
+
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length) {
+    setVoice();
+  } else {
+    window.speechSynthesis.addEventListener("voiceschanged", setVoice, { once: true });
   }
 }
 
