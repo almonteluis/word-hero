@@ -443,9 +443,11 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setMicReady(false);
   }, [group]);
 
-  // Round 1: auto-speak when new word appears
+  // Round 1: auto-speak when new word appears (debounced to handle StrictMode + group-effect re-renders)
   useEffect(() => {
-    if (round === 1) speak(word);
+    if (round !== 1) return;
+    const t = setTimeout(() => speak(word), 50);
+    return () => clearTimeout(t);
   }, [word]);
 
   // Rounds 2 & 3: auto-start mic when new word appears (after mic prompt dismissed)
