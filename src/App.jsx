@@ -111,21 +111,12 @@ function speak(word) {
   };
 
   const buildUtterances = (voice) => {
-    // Say it twice: first with energy, then slower so it sinks in
-    const first = new SpeechSynthesisUtterance(word);
-    first.rate = 1.0;
-    first.pitch = 1.4;
-    first.volume = 1.0;
-    if (voice) first.voice = voice;
-
-    const second = new SpeechSynthesisUtterance(word);
-    second.rate = 0.7;
-    second.pitch = 1.2;
-    second.volume = 1.0;
-    if (voice) second.voice = voice;
-
-    window.speechSynthesis.speak(first);
-    window.speechSynthesis.speak(second);
+    const utt = new SpeechSynthesisUtterance(word);
+    utt.rate = 0.85;
+    utt.pitch = 1.3;
+    utt.volume = 1.0;
+    if (voice) utt.voice = voice;
+    window.speechSynthesis.speak(utt);
   };
 
   const voices = window.speechSynthesis.getVoices();
