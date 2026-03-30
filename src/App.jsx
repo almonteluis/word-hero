@@ -414,7 +414,6 @@ function CountdownTimer({ seconds, onExpire, paused }) {
 function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const [group, setGroup] = useState(0);
   const [idx, setIdx] = useState(0);
-  const [flipped, setFlipped] = useState(false);
   const [exitAnim, setExitAnim] = useState(null);
   const [shuffled, setShuffled] = useState(() => shuffle(WORD_GROUPS[GROUP_NAMES[0]]));
   const [round, setRound] = useState(1); // 1, 2, or 3
@@ -436,7 +435,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   useEffect(() => {
     setShuffled(shuffle(WORD_GROUPS[GROUP_NAMES[group]]));
     setIdx(0);
-    setFlipped(false);
     setRound(1);
     setRoundScores({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });
     setShowRoundSummary(false);
@@ -445,21 +443,19 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setMicReady(false);
   }, [group]);
 
-  // Round 1: auto-speak on flip
+  // Round 1: auto-speak when new word appears
   useEffect(() => {
-    if (flipped && round === 1) {
-      speak(word);
-    }
-  }, [flipped]);
+    if (round === 1) speak(word);
+  }, [word]);
 
-  // Rounds 2 & 3: auto-start mic when card flips (after mic prompt dismissed)
+  // Rounds 2 & 3: auto-start mic when new word appears (after mic prompt dismissed)
   useEffect(() => {
-    if (flipped && round >= 2 && micReady && !micResult && !timerExpired) {
+    if (round >= 2 && micReady && !micResult && !timerExpired) {
       setMicResult(null);
       setWaitingForMic(true);
       startListening();
     }
-  }, [flipped, micReady]);
+  }, [word, micReady]);
 
   // Process speech recognition result
   useEffect(() => {
@@ -488,12 +484,11 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   };
 
   const advanceCard = () => {
-    setExitAnim("swooshRight");
+    setExitAnim("pushRight");
     setTimerExpired(false);
     setMicResult(null);
     setWaitingForMic(false);
     setTimeout(() => {
-      setFlipped(false);
       setExitAnim(null);
       if (idx + 1 >= shuffled.length) {
         // End of round
@@ -515,11 +510,10 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
       ...s,
       1: { correct: s[1].correct + (correct ? 1 : 0), total: s[1].total + 1 }
     }));
-    setExitAnim(correct ? "swooshRight" : "swooshLeft");
+    setExitAnim(correct ? "pushRight" : "pushLeft");
     setTimerExpired(false);
     setMicResult(null);
     setTimeout(() => {
-      setFlipped(false);
       setExitAnim(null);
       if (idx + 1 >= shuffled.length) {
         setShowRoundSummary(true);
@@ -555,7 +549,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setRound(r => r + 1);
     setShuffled(shuffle(WORD_GROUPS[GROUP_NAMES[group]]));
     setIdx(0);
-    setFlipped(false);
     setShowRoundSummary(false);
     setTimerExpired(false);
     setMicResult(null);
@@ -652,7 +645,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
               setRound(1);
               setRoundScores({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });
               setShuffled(shuffle(WORD_GROUPS[GROUP_NAMES[group]]));
-              setIdx(0); setFlipped(false); setShowFinalSummary(false);
+              setIdx(0); setShowFinalSummary(false);
             }}>
               ⚡ TRY AGAIN
             </Btn>
@@ -714,7 +707,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
       </div>
 
       {/* Timer for rounds 2 & 3 */}
-      {round >= 2 && flipped && !timerExpired && !micResult && (
+      {round >= 2 && !timerExpired && !micResult && (
         <CountdownTimer
           key={`${round}-${idx}`}
           seconds={timerSeconds}
@@ -724,66 +717,38 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
       )}
 
       {/* Card */}
-      <div
-        onClick={() => { if (!flipped) setFlipped(true); }}
-        style={{
-          width: 300, height: 210, perspective: 1000, cursor: flipped ? "default" : "pointer",
-          animation: exitAnim ? `${exitAnim} 0.4s ease-in forwards` : "cardEnter 0.3s ease-out",
-        }}>
+      <div style={{
+        width: 300, height: 210,
+        animation: exitAnim ? `${exitAnim} 0.5s cubic-bezier(0.4, 0, 1, 1) forwards` : "cardEnter 0.35s ease-out",
+      }}>
         <div style={{
-          width: "100%", height: "100%", position: "relative",
-          transformStyle: "preserve-3d", transition: "transform 0.5s ease",
-          transform: flipped ? "rotateY(180deg)" : "rotateY(0)",
+          width: "100%", height: "100%",
+          background: timerExpired ? `linear-gradient(135deg, ${C.red}, #8b0000)` :
+                      micResult === "correct" ? `linear-gradient(135deg, ${C.green}, #1a8a4a)` :
+                      micResult === "wrong" ? `linear-gradient(135deg, ${C.red}, #8b0000)` :
+                      `linear-gradient(135deg, ${C.accent}, ${C.red})`,
+          borderRadius: 20,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          boxShadow: `0 0 40px ${C.accent}40, 0 8px 32px rgba(0,0,0,0.4)`,
+          transition: "background 0.3s",
         }}>
-          {/* Front */}
           <div style={{
-            position: "absolute", width: "100%", height: "100%", backfaceVisibility: "hidden",
-            background: `linear-gradient(135deg, #1a1f4e, #2d1b69)`, borderRadius: 20,
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            border: `3px solid ${C.accent}40`,
-            boxShadow: `0 0 30px ${C.accent}15, 0 8px 32px rgba(0,0,0,0.4)`,
-          }}>
-            <div style={{ fontSize: 13, color: C.accent, fontFamily: "'Russo One', sans-serif", letterSpacing: 3, marginBottom: 8 }}>
-              ⚡ TAP TO REVEAL ⚡
-            </div>
-            <div style={{
-              fontSize: 60, fontFamily: "'Russo One', sans-serif", color: C.text,
-              textShadow: `0 0 20px ${C.blue}60`,
-            }}>?</div>
-          </div>
-
-          {/* Back */}
-          <div style={{
-            position: "absolute", width: "100%", height: "100%", backfaceVisibility: "hidden",
-            background: timerExpired ? `linear-gradient(135deg, ${C.red}, #8b0000)` :
-                        micResult === "correct" ? `linear-gradient(135deg, ${C.green}, #1a8a4a)` :
-                        micResult === "wrong" ? `linear-gradient(135deg, ${C.red}, #8b0000)` :
-                        `linear-gradient(135deg, ${C.accent}, ${C.red})`,
-            borderRadius: 20,
-            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            transform: "rotateY(180deg)",
-            boxShadow: `0 0 40px ${C.accent}40, 0 8px 32px rgba(0,0,0,0.4)`,
-            transition: "background 0.3s",
-          }}>
-            <div style={{
-              fontSize: 64, fontFamily: "'Russo One', sans-serif", color: C.bg,
-              textShadow: "2px 2px 0 rgba(255,255,255,0.2)", letterSpacing: 4,
-            }}>{word}</div>
-            {round === 1 && (
-              <button onClick={e => { e.stopPropagation(); speak(word); }}
-                style={{
-                  marginTop: 8, background: "rgba(0,0,0,0.2)", border: "2px solid rgba(0,0,0,0.3)",
-                  borderRadius: 20, padding: "4px 16px", color: C.bg,
-                  fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "'Russo One', sans-serif",
-                }}>🔊 HEAR IT</button>
-            )}
-          </div>
+            fontSize: 64, fontFamily: "'Russo One', sans-serif", color: C.bg,
+            textShadow: "2px 2px 0 rgba(255,255,255,0.2)", letterSpacing: 4,
+          }}>{word}</div>
+          {round === 1 && (
+            <button onClick={e => { e.stopPropagation(); speak(word); }}
+              style={{
+                marginTop: 8, background: "rgba(0,0,0,0.2)", border: "2px solid rgba(0,0,0,0.3)",
+                borderRadius: 20, padding: "4px 16px", color: C.bg,
+                fontWeight: 700, cursor: "pointer", fontSize: 13, fontFamily: "'Russo One', sans-serif",
+              }}>🔊 HEAR IT</button>
+          )}
         </div>
       </div>
 
       {/* Controls based on round */}
-      {flipped && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, animation: "fadeUp 0.3s" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
 
           {/* ROUND 1: Manual got-it / learning + voice plays */}
           {round === 1 && !micResult && (
@@ -860,7 +825,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             </div>
           )}
         </div>
-      )}
 
       {/* Round score so far */}
       {roundScores[round].total > 0 && (
@@ -1282,14 +1246,19 @@ export default function WordHeroApp() {
           50% { opacity: 0.8; transform: scale(1.5); }
         }
         @keyframes cardEnter {
-          from { opacity: 0; transform: scale(0.92) translateY(12px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+          0% { opacity: 0; transform: scale(0.88) translateY(28px); }
+          65% { opacity: 1; transform: scale(1.02) translateY(-4px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
         }
-        @keyframes swooshRight {
-          to { opacity: 0; transform: translateX(200px) rotate(10deg); }
+        @keyframes pushRight {
+          0% { transform: translateX(0) rotate(0deg) scale(1); opacity: 1; }
+          18% { transform: translateX(-8px) rotate(-1.5deg) scale(0.97); opacity: 1; }
+          100% { transform: translateX(320px) rotate(22deg) scale(0.82); opacity: 0; }
         }
-        @keyframes swooshLeft {
-          to { opacity: 0; transform: translateX(-200px) rotate(-10deg); }
+        @keyframes pushLeft {
+          0% { transform: translateX(0) rotate(0deg) scale(1); opacity: 1; }
+          18% { transform: translateX(8px) rotate(1.5deg) scale(0.97); opacity: 1; }
+          100% { transform: translateX(-320px) rotate(-22deg) scale(0.82); opacity: 0; }
         }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(10px); }
