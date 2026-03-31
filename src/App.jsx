@@ -181,6 +181,141 @@ function Btn({ children, color = C.accent, onClick, style = {}, small = false })
   );
 }
 
+// ─── KAWAII HOME BACKGROUND ────────────────────────────────
+const STAR_DATA = Array.from({ length: 40 }).map((_, i) => ({
+  left: (i * 13.7 + 7) % 100,
+  top: (i * 17.3 + 11) % 100,
+  size: 3 + (i % 4),
+  color: ["#f6c619","#4a90ff","#e84545","#9b59b6","#2ecc71","#ffffff","#ffb3c6"][i % 7],
+  opacity: 0.15 + (i % 6) * 0.05,
+  dur: 2 + (i % 3),
+  delay: (i * 0.4) % 3,
+}));
+
+function HomeBackground() {
+  return (
+    <div style={{ position: "fixed", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+      {/* Twinkling star dots */}
+      {STAR_DATA.map((s, i) => (
+        <div key={i} style={{
+          position: "absolute", left: `${s.left}%`, top: `${s.top}%`,
+          width: s.size, height: s.size, background: s.color,
+          borderRadius: "50%", opacity: s.opacity,
+          animation: `starPulse ${s.dur}s ease-in-out infinite`,
+          animationDelay: `${s.delay}s`,
+        }} />
+      ))}
+
+      {/* ── Top-left: large teal Saturn-style planet ── */}
+      <div style={{ position: "absolute", left: "-8%", top: "1%", width: "46vw", maxWidth: 190, animation: "floatPlanet 7s ease-in-out infinite" }}>
+        <svg viewBox="0 0 160 160" width="100%" height="100%">
+          <ellipse cx="80" cy="108" rx="76" ry="18" fill="#4aaac0" opacity="0.65" />
+          <text x="80" y="116" textAnchor="middle" fontSize="8.5" fill="#0a0e27" fontFamily="monospace" opacity="0.85" letterSpacing="2">F M G I S K Z E E A N</text>
+          <circle cx="80" cy="72" r="54" fill="#5bb8cc" />
+          <ellipse cx="80" cy="66" rx="54" ry="12" fill="#82d8ea" opacity="0.55" />
+          <ellipse cx="80" cy="82" rx="54" ry="8" fill="#3a98b0" opacity="0.4" />
+          <ellipse cx="80" cy="108" rx="76" ry="18" fill="none" stroke="#82d8ea" strokeWidth="7" opacity="0.25" />
+          <circle cx="65" cy="66" r="8.5" fill="white" />
+          <circle cx="95" cy="66" r="8.5" fill="white" />
+          <circle cx="67" cy="68" r="4" fill="#0a2a44" />
+          <circle cx="97" cy="68" r="4" fill="#0a2a44" />
+          <circle cx="65.5" cy="66" r="1.5" fill="white" />
+          <circle cx="95.5" cy="66" r="1.5" fill="white" />
+          <ellipse cx="54" cy="78" rx="9" ry="5" fill="#ffaac6" opacity="0.45" />
+          <ellipse cx="106" cy="78" rx="9" ry="5" fill="#ffaac6" opacity="0.45" />
+          <path d="M 63 81 Q 80 93 97 81" stroke="#0a2a44" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+        </svg>
+      </div>
+
+      {/* ── Shooting star top-center ── */}
+      <div style={{ position: "absolute", left: "52%", top: "7%", animation: "shootingStarAnim 4.5s ease-in-out infinite", animationDelay: "1.2s" }}>
+        <svg width="68" height="34" viewBox="0 0 68 34">
+          <line x1="68" y1="2" x2="8" y2="30" stroke="#f6c619" strokeWidth="2.5" strokeLinecap="round" opacity="0.75" />
+          <circle cx="68" cy="2" r="5" fill="#f6c619" />
+        </svg>
+      </div>
+
+      {/* ── Top-right: small swirling galaxy ── */}
+      <div style={{ position: "absolute", right: "3%", top: "7%", width: "22vw", maxWidth: 92, animation: "floatPlanet 8s ease-in-out infinite", animationDelay: "2.1s" }}>
+        <svg viewBox="0 0 100 100" width="100%" height="100%">
+          <ellipse cx="50" cy="50" rx="48" ry="22" fill="#6b4c9a" opacity="0.5" transform="rotate(-25,50,50)" />
+          <ellipse cx="50" cy="50" rx="40" ry="18" fill="#8b6cba" opacity="0.45" transform="rotate(60,50,50)" />
+          <circle cx="50" cy="50" r="23" fill="#c4a0e8" />
+          <circle cx="50" cy="50" r="16" fill="#e2d0f8" />
+          <circle cx="43" cy="47" r="4.5" fill="white" />
+          <circle cx="57" cy="47" r="4.5" fill="white" />
+          <circle cx="44.5" cy="48.5" r="2.2" fill="#444" />
+          <circle cx="58.5" cy="48.5" r="2.2" fill="#444" />
+          <ellipse cx="38" cy="54" rx="5" ry="3" fill="#ffb3c6" opacity="0.5" />
+          <ellipse cx="62" cy="54" rx="5" ry="3" fill="#ffb3c6" opacity="0.5" />
+          <path d="M 43 56 Q 50 62 57 56" stroke="#444" strokeWidth="2" fill="none" strokeLinecap="round" />
+        </svg>
+      </div>
+
+      {/* ── Right side: striped blue planet ── */}
+      <div style={{ position: "absolute", right: "-4%", top: "33%", width: "28vw", maxWidth: 112, animation: "floatPlanet 6s ease-in-out infinite", animationDelay: "0.8s" }}>
+        <svg viewBox="0 0 100 100" width="100%" height="100%">
+          <circle cx="50" cy="50" r="42" fill="#8ecae6" />
+          <ellipse cx="50" cy="35" rx="42" ry="7" fill="#aaddf0" opacity="0.65" />
+          <ellipse cx="50" cy="50" rx="42" ry="6" fill="#70b8d8" opacity="0.5" />
+          <ellipse cx="50" cy="64" rx="42" ry="7" fill="#aaddf0" opacity="0.6" />
+          <circle cx="40" cy="46" r="6.5" fill="white" />
+          <circle cx="60" cy="46" r="6.5" fill="white" />
+          <circle cx="41.5" cy="47.5" r="3" fill="#0a2a44" />
+          <circle cx="61.5" cy="47.5" r="3" fill="#0a2a44" />
+          <ellipse cx="33" cy="54" rx="7" ry="4" fill="#ffaac6" opacity="0.45" />
+          <ellipse cx="67" cy="54" rx="7" ry="4" fill="#ffaac6" opacity="0.45" />
+          <path d="M 40 56 Q 50 65 60 56" stroke="#0a2a44" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        </svg>
+      </div>
+
+      {/* ── Shooting star lower-left ── */}
+      <div style={{ position: "absolute", left: "18%", top: "72%", animation: "shootingStarAnim 5s ease-in-out infinite", animationDelay: "0.4s" }}>
+        <svg width="58" height="28" viewBox="0 0 58 28">
+          <line x1="58" y1="2" x2="6" y2="24" stroke="#f6c619" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+          <circle cx="58" cy="2" r="4" fill="#f6c619" />
+        </svg>
+      </div>
+
+      {/* ── Bottom-left: teal planet with letter ring ── */}
+      <div style={{ position: "absolute", left: "-7%", bottom: "4%", width: "42vw", maxWidth: 168, animation: "floatPlanet 7.5s ease-in-out infinite", animationDelay: "3.2s" }}>
+        <svg viewBox="0 0 160 160" width="100%" height="100%">
+          <ellipse cx="80" cy="108" rx="74" ry="17" fill="#4aaac0" opacity="0.65" />
+          <text x="80" y="116" textAnchor="middle" fontSize="8.5" fill="#0a0e27" fontFamily="monospace" opacity="0.85" letterSpacing="2">U Z A T E L Y K H G E V</text>
+          <circle cx="80" cy="72" r="50" fill="#5bb8cc" />
+          <ellipse cx="80" cy="65" rx="50" ry="11" fill="#82d8ea" opacity="0.5" />
+          <ellipse cx="80" cy="80" rx="50" ry="8" fill="#3a98b0" opacity="0.4" />
+          <ellipse cx="80" cy="108" rx="74" ry="17" fill="none" stroke="#82d8ea" strokeWidth="6" opacity="0.25" />
+          <circle cx="66" cy="67" r="8" fill="white" />
+          <circle cx="94" cy="67" r="8" fill="white" />
+          <circle cx="67.5" cy="69" r="3.8" fill="#0a2a44" />
+          <circle cx="95.5" cy="69" r="3.8" fill="#0a2a44" />
+          <ellipse cx="55" cy="78" rx="8.5" ry="5" fill="#ffaac6" opacity="0.45" />
+          <ellipse cx="105" cy="78" rx="8.5" ry="5" fill="#ffaac6" opacity="0.45" />
+          <path d="M 64 81 Q 80 92 96 81" stroke="#0a2a44" strokeWidth="3" fill="none" strokeLinecap="round" />
+        </svg>
+      </div>
+
+      {/* ── Bottom-right: warm spiral galaxy ── */}
+      <div style={{ position: "absolute", right: "4%", bottom: "7%", width: "30vw", maxWidth: 118, animation: "floatPlanet 9s ease-in-out infinite", animationDelay: "4.1s" }}>
+        <svg viewBox="0 0 120 120" width="100%" height="100%">
+          <ellipse cx="60" cy="60" rx="58" ry="26" fill="#3d5a80" opacity="0.5" transform="rotate(-15,60,60)" />
+          <ellipse cx="60" cy="60" rx="48" ry="22" fill="#5a7fa0" opacity="0.4" transform="rotate(55,60,60)" />
+          <circle cx="60" cy="60" r="28" fill="#e8d5a0" />
+          <circle cx="60" cy="60" r="20" fill="#f5e8c0" />
+          <circle cx="51" cy="56" r="5.5" fill="white" />
+          <circle cx="69" cy="56" r="5.5" fill="white" />
+          <circle cx="52.5" cy="57.5" r="2.5" fill="#555" />
+          <circle cx="70.5" cy="57.5" r="2.5" fill="#555" />
+          <ellipse cx="45" cy="64" rx="6" ry="3.5" fill="#ffb3c6" opacity="0.5" />
+          <ellipse cx="75" cy="64" rx="6" ry="3.5" fill="#ffb3c6" opacity="0.5" />
+          <path d="M 51 66 Q 60 73 69 66" stroke="#555" strokeWidth="2" fill="none" strokeLinecap="round" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 // ─── KID SELECTOR SCREEN ───────────────────────────────────
 const AVATARS = ["🦸","🦸‍♀️","🦹","🦹‍♀️","🧑‍🚀","👨‍🚀","🦊","🐉","🦁","🐺","🦅","🐲"];
 
@@ -197,65 +332,163 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
 
   return (
     <div style={{
-      minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center", padding: 24, position: "relative",
+      minHeight: "100vh",
+      background: "linear-gradient(180deg,#0c1130 0%,#0a0e27 55%,#0c1530 100%)",
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      padding: "32px 20px", position: "relative", overflowX: "hidden",
     }}>
-      <StarField />
+      <HomeBackground />
+
+      <style>{`
+        @keyframes floatPlanet {
+          0%,100% { transform: translateY(0px); }
+          50%      { transform: translateY(-14px); }
+        }
+        @keyframes shootingStarAnim {
+          0%,100% { opacity: 0; }
+          15%,85% { opacity: 0.85; }
+        }
+        @keyframes titleGlow {
+          0%,100% { filter: drop-shadow(0 0 12px #f6c61970); }
+          50%      { filter: drop-shadow(0 0 28px #f6c619aa); }
+        }
+        @keyframes cardSlideIn {
+          0%   { opacity: 0; transform: translateY(14px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes addBtnPop {
+          0%   { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .ks-hero-card:hover  { border-color: rgba(246,198,25,0.7) !important; box-shadow: 0 0 24px rgba(246,198,25,0.25) !important; }
+        .ks-delete-btn:hover { background: rgba(232,69,69,0.55) !important; border-color: rgba(232,69,69,0.8) !important; }
+        .ks-add-btn:hover    { transform: scale(1.03) !important; box-shadow: 0 8px 32px rgba(74,144,255,0.55) !important; }
+      `}</style>
+
       <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 400, textAlign: "center" }}>
-        <div style={{
-          fontSize: 42, fontFamily: "'Russo One', sans-serif", color: C.accent, letterSpacing: 6,
-          textShadow: `0 0 30px ${C.accent}50, 2px 2px 0 ${C.red}`,
-          marginBottom: 4,
-        }}>
-          ⚡ WORD HERO ⚡
+
+        {/* ── Title ── */}
+        <div style={{ animation: "titleGlow 3.5s ease-in-out infinite", marginBottom: 6 }}>
+          <div style={{
+            fontFamily: "'Russo One', sans-serif",
+            fontSize: "clamp(50px, 14vw, 74px)",
+            color: "#f6c619",
+            letterSpacing: "0.03em",
+            lineHeight: 1.0,
+            textShadow: "3px 3px 0 #c4900a, 6px 6px 0 #7a5800, 0 0 40px rgba(246,198,25,0.4)",
+          }}>⚡ WORD</div>
+          <div style={{
+            fontFamily: "'Russo One', sans-serif",
+            fontSize: "clamp(50px, 14vw, 74px)",
+            color: "#f6c619",
+            letterSpacing: "0.03em",
+            lineHeight: 1.0,
+            textShadow: "3px 3px 0 #c4900a, 6px 6px 0 #7a5800, 0 0 40px rgba(246,198,25,0.4)",
+            marginBottom: 8,
+          }}>HERO ⚡ ⚡</div>
         </div>
-        <div style={{ fontSize: 14, color: C.muted, fontFamily: "'Russo One', sans-serif", letterSpacing: 4, marginBottom: 36 }}>
+
+        <div style={{
+          fontSize: 13, color: "#7ab8d4", fontFamily: "'Russo One', sans-serif",
+          letterSpacing: 6, marginBottom: 44, textTransform: "uppercase",
+        }}>
           TRAINING ACADEMY
         </div>
 
-        <div style={{ fontSize: 15, color: C.text, fontFamily: "'Russo One', sans-serif", letterSpacing: 3, marginBottom: 16 }}>
+        {/* ── Who's training label ── */}
+        <div style={{
+          fontSize: 15, color: "#f0f0f0", fontFamily: "'Russo One', sans-serif",
+          letterSpacing: 3, marginBottom: 18, fontWeight: 800,
+        }}>
           WHO'S TRAINING TODAY?
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
-          {profiles.map(kid => (
-            <div key={kid.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <button onClick={() => onSelect(kid)} style={{
-                flex: 1, background: C.panel, border: `2px solid ${C.accent}30`, borderRadius: 16,
-                padding: "16px 20px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14,
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.boxShadow = `0 0 20px ${C.accent}30`; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = C.accent + "30"; e.currentTarget.style.boxShadow = "none"; }}
+        {/* ── Profile cards ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 22 }}>
+          {profiles.map((kid, idx) => (
+            <div key={kid.id} style={{
+              display: "flex", gap: 10, alignItems: "center",
+              animation: `cardSlideIn 0.4s ease-out ${idx * 0.08}s both`,
+            }}>
+              <button
+                className="ks-hero-card"
+                onClick={() => onSelect(kid)}
+                style={{
+                  flex: 1,
+                  background: "linear-gradient(135deg,rgba(91,184,212,0.16) 0%,rgba(58,152,176,0.10) 100%)",
+                  border: "2.5px solid rgba(246,198,25,0.32)",
+                  borderRadius: 20, padding: "15px 18px",
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 14,
+                  transition: "border-color 0.22s, box-shadow 0.22s",
+                  backdropFilter: "blur(6px)",
+                  textAlign: "left",
+                }}
               >
-                <span style={{ fontSize: 36 }}>{kid.avatar}</span>
-                <div style={{ textAlign: "left" }}>
-                  <div style={{ fontFamily: "'Russo One', sans-serif", fontSize: 22, color: C.text, letterSpacing: 2 }}>
+                <span style={{ fontSize: 42, lineHeight: 1, flexShrink: 0 }}>{kid.avatar}</span>
+                <div>
+                  <div style={{
+                    fontFamily: "'Russo One', sans-serif",
+                    fontSize: "clamp(20px, 5.5vw, 26px)",
+                    color: "#f0f0f0", letterSpacing: 1,
+                  }}>
                     {kid.name}
                   </div>
-                  <div style={{ fontFamily: "'Russo One', sans-serif", fontSize: 11, color: C.muted, letterSpacing: 2 }}>
+                  <div style={{
+                    fontFamily: "'Russo One', sans-serif",
+                    fontSize: 10, color: "#7ab8d4", letterSpacing: 2.5, marginTop: 3,
+                  }}>
                     TAP TO START TRAINING
                   </div>
                 </div>
               </button>
-              <button onClick={() => { if (confirm(`Remove ${kid.name}'s profile?`)) onDelete(kid.id); }}
+
+              <button
+                className="ks-delete-btn"
+                onClick={() => { if (confirm(`Remove ${kid.name}'s profile?`)) onDelete(kid.id); }}
                 style={{
-                  background: "transparent", border: `1px solid ${C.muted}30`, borderRadius: 10,
-                  padding: "8px 10px", cursor: "pointer", color: C.muted, fontSize: 14,
-                  fontFamily: "'Russo One', sans-serif",
-                }}>✕</button>
+                  background: "rgba(232,69,69,0.22)",
+                  border: "2px solid rgba(232,69,69,0.38)",
+                  borderRadius: 14, padding: "11px 13px",
+                  cursor: "pointer", color: "#e84545",
+                  fontSize: 18, fontWeight: 900, lineHeight: 1,
+                  transition: "background 0.18s, border-color 0.18s", flexShrink: 0,
+                }}
+              >✕</button>
             </div>
           ))}
         </div>
 
+        {/* ── Add hero / form ── */}
         {!adding ? (
-          <Btn onClick={() => setAdding(true)} color={C.blue} style={{ width: "100%" }}>
-            + ADD A HERO
-          </Btn>
+          <button
+            className="ks-add-btn"
+            onClick={() => setAdding(true)}
+            style={{
+              width: "100%",
+              background: "linear-gradient(135deg,#2e6fd4 0%,#4a90ff 60%,#5ca8ff 100%)",
+              border: "none", borderRadius: 50,
+              padding: "18px 28px",
+              cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+              boxShadow: "0 4px 22px rgba(74,144,255,0.38)",
+              transition: "transform 0.22s, box-shadow 0.22s",
+              animation: "addBtnPop 0.5s ease-out 0.25s both",
+            }}
+          >
+            <span style={{ fontSize: 22, color: "#f6c619", fontWeight: 900, lineHeight: 1 }}>+</span>
+            <span style={{
+              fontFamily: "'Russo One', sans-serif",
+              fontSize: 16, color: "white", letterSpacing: 3, fontWeight: 800,
+            }}>ADD A HERO</span>
+          </button>
         ) : (
           <div style={{
-            background: C.panel, borderRadius: 20, padding: 20,
-            border: `2px solid ${C.blue}40`,
+            background: "linear-gradient(135deg,rgba(24,38,76,0.97) 0%,rgba(17,22,56,0.97) 100%)",
+            borderRadius: 24, padding: 22,
+            border: "2px solid rgba(74,144,255,0.38)",
+            backdropFilter: "blur(12px)",
+            animation: "cardSlideIn 0.3s ease-out both",
           }}>
             <input
               value={name} onChange={e => setName(e.target.value)}
@@ -263,23 +496,27 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
               autoFocus
               onKeyDown={e => e.key === "Enter" && handleAdd()}
               style={{
-                width: "100%", background: C.bg, border: `2px solid ${C.blue}40`,
-                borderRadius: 12, padding: "12px 16px", color: C.text,
+                width: "100%", background: "rgba(10,14,39,0.85)",
+                border: "2px solid rgba(74,144,255,0.45)",
+                borderRadius: 14, padding: "13px 16px", color: "#f0f0f0",
                 fontSize: 18, fontFamily: "'Russo One', sans-serif", letterSpacing: 2,
-                outline: "none", boxSizing: "border-box", marginBottom: 12,
+                outline: "none", boxSizing: "border-box", marginBottom: 14,
               }}
             />
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: 14 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: 16 }}>
               {AVATARS.map((a, i) => (
                 <button key={i} onClick={() => setAvatar(i)} style={{
-                  fontSize: 28, background: i === avatar ? C.blue + "30" : "transparent",
-                  border: `2px solid ${i === avatar ? C.blue : "transparent"}`,
-                  borderRadius: 12, padding: 4, cursor: "pointer", lineHeight: 1,
+                  fontSize: 28,
+                  background: i === avatar ? "rgba(74,144,255,0.22)" : "transparent",
+                  border: `2px solid ${i === avatar ? "#4a90ff" : "transparent"}`,
+                  borderRadius: 12, padding: 5, cursor: "pointer", lineHeight: 1,
+                  transition: "all 0.15s",
                 }}>{a}</button>
               ))}
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-              <Btn onClick={() => setAdding(false)} color={C.panel} small style={{ border: `1px solid ${C.muted}40`, color: C.muted }}>
+              <Btn onClick={() => setAdding(false)} color={C.panel} small
+                style={{ border: "1px solid rgba(122,130,166,0.35)", color: C.muted }}>
                 CANCEL
               </Btn>
               <Btn onClick={handleAdd} color={C.green} small>
