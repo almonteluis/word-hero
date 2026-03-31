@@ -363,13 +363,13 @@ function wordMatch(spokenResult, target) {
 }
 
 // ─── COUNTDOWN TIMER COMPONENT ─────────────────────────────
-function CountdownTimer({ seconds, onExpire, paused }) {
+function CountdownTimer({ seconds, onExpire }) {
   const [remaining, setRemaining] = useState(seconds);
 
   useEffect(() => { setRemaining(seconds); }, [seconds]);
 
   useEffect(() => {
-    if (paused || remaining <= 0) return;
+    if (remaining <= 0) return;
     const id = setInterval(() => {
       setRemaining(r => {
         if (r <= 1) { onExpire(); return 0; }
@@ -377,7 +377,7 @@ function CountdownTimer({ seconds, onExpire, paused }) {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [paused, remaining <= 0]);
+  }, [remaining <= 0]);
 
   const pct = (remaining / seconds) * 100;
   const color = remaining <= 3 ? C.red : remaining <= 5 ? C.accent : C.blue;
@@ -705,7 +705,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
           key={`${round}-${idx}`}
           seconds={timerSeconds}
           onExpire={handleTimerExpire}
-          paused={listening}
         />
       )}
 
