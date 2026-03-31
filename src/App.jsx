@@ -2,14 +2,30 @@ import { useState, useEffect, useCallback, useReducer, useRef } from "react";
 
 // ─── CONSTANTS ─────────────────────────────────────────────
 const WORD_GROUPS = {
-  "Group 1 – Most Common": ["the","and","is","it","in","to","he","she","was","we","my","do","no","go","so"],
-  "Group 2 – Action Words": ["said","have","like","come","make","see","look","play","run","jump","help","want","give","take","put"],
-  "Group 3 – Connectors": ["what","where","when","who","why","how","that","this","with","from","they","them","her","his","but"],
-  "Group 4 – Describing Words": ["big","little","good","new","old","first","long","very","over","after","before","under","just","again","around"],
-  "Group 5 – Tricky Words": ["could","would","should","because","know","write","right","their","there","were","some","done","does","goes","every"],
+  "Group 1 – Most Common": [
+    "the","and","is","it","in","to","he","she","was","we","my","do","no","go","so",
+    "a","I","at","am","up","if","on","as","be","by","an","or","of","me","us"
+  ],
+  "Group 2 – Action Words": [
+    "said","have","like","come","make","see","look","play","run","jump","help","want","give","take","put",
+    "ask","tell","get","let","find","walk","talk","read","sing","draw","work","try","use","show","keep"
+  ],
+  "Group 3 – Connectors": [
+    "what","where","when","who","why","how","that","this","with","from","they","them","her","his","but",
+    "all","our","out","not","one","had","for","you","are","can","did","its","off","too","two"
+  ],
+  "Group 4 – Describing Words": [
+    "big","little","good","new","old","first","long","very","over","after","before","under","just","again","around",
+    "fast","slow","hot","cold","pretty","funny","happy","sad","nice","well","better","best","more","most","own"
+  ],
+  "Group 5 – Tricky Words": [
+    "could","would","should","because","know","write","right","their","there","were","some","done","does","goes","every",
+    "once","upon","always","never","often","even","also","only","other","another","many","much","through","though","while"
+  ],
 };
 const ALL_WORDS = Object.values(WORD_GROUPS).flat();
 const GROUP_NAMES = Object.keys(WORD_GROUPS);
+const WORDS_PER_ROUND = 10;
 
 const C = {
   bg: "#0a0e27",
@@ -540,6 +556,17 @@ function shuffle(arr) {
   return a;
 }
 
+// ─── WORD SELECTION (Anki-style priority) ──────────────────
+// Prioritizes: words still being learned > unseen words > mastered words
+function selectRoundWords(group, progress, count = WORDS_PER_ROUND) {
+  const allWords = WORD_GROUPS[GROUP_NAMES[group]];
+  const learning = shuffle(allWords.filter(w => progress.learning[w]));
+  const fresh    = shuffle(allWords.filter(w => !progress.learning[w] && !progress.mastered[w]));
+  const mastered = shuffle(allWords.filter(w => progress.mastered[w]));
+  // learning first, then unseen, then mastered as occasional review
+  return [...learning, ...fresh, ...mastered].slice(0, count);
+}
+
 // ─── SPEECH RECOGNITION HELPER ─────────────────────────────
 function useSpeechRecognition() {
   const recRef = useRef(null);
@@ -643,7 +670,9 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const [group, setGroup] = useState(0);
   const [idx, setIdx] = useState(0);
   const [exitAnim, setExitAnim] = useState(null);
-  const [shuffled, setShuffled] = useState(() => shuffle(WORD_GROUPS[GROUP_NAMES[0]]));
+  // sessionWordsRef holds the 10 priority-selected words for the current session
+  const sessionWordsRef = useRef(selectRoundWords(0, progress, WORDS_PER_ROUND));
+  const [shuffled, setShuffled] = useState(() => shuffle([...sessionWordsRef.current]));
   const [round, setRound] = useState(1); // 1, 2, or 3
   const [roundScores, setRoundScores] = useState({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });
   const [showRoundSummary, setShowRoundSummary] = useState(false);
@@ -653,15 +682,18 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const [waitingForMic, setWaitingForMic] = useState(false);
   const [showMicPrompt, setShowMicPrompt] = useState(false);
   const [micReady, setMicReady] = useState(false);
+  const [missedByRound, setMissedByRound] = useState({ 1: [], 2: [] });
 
   const { listening, result, startListening, stopListening, supported } = useSpeechRecognition();
 
   const word = shuffled[idx];
   const timerSeconds = round === 2 ? 10 : round === 3 ? 5 : 0;
 
-  // Reset when group changes
+  // Reset when group changes — re-select 10 priority words for the new group
   useEffect(() => {
-    setShuffled(shuffle(WORD_GROUPS[GROUP_NAMES[group]]));
+    const words = selectRoundWords(group, progress, WORDS_PER_ROUND);
+    sessionWordsRef.current = words;
+    setShuffled(shuffle([...words]));
     setIdx(0);
     setRound(1);
     setRoundScores({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });
@@ -669,6 +701,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setShowFinalSummary(false);
     setShowMicPrompt(false);
     setMicReady(false);
+    setMissedByRound({ 1: [], 2: [] });
   }, [group]);
 
   // Round 1: auto-speak when new word appears (debounced to handle StrictMode + group-effect re-renders)
@@ -699,6 +732,11 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         ...s,
         [round]: { correct: s[round].correct + 1, total: s[round].total + 1 }
       }));
+    } else {
+      setMissedByRound(prev => ({
+        ...prev,
+        [round]: prev[round].includes(word) ? prev[round] : [...prev[round], word]
+      }));
     }
     // If wrong, don't auto-advance — let them try again or skip
   }, [result]);
@@ -710,6 +748,10 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setRoundScores(s => ({
       ...s,
       [round]: { ...s[round], total: s[round].total + 1 }
+    }));
+    setMissedByRound(prev => ({
+      ...prev,
+      [round]: prev[round].includes(word) ? prev[round] : [...prev[round], word]
     }));
   };
 
@@ -740,6 +782,12 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
       ...s,
       1: { correct: s[1].correct + (correct ? 1 : 0), total: s[1].total + 1 }
     }));
+    if (!correct) {
+      setMissedByRound(prev => ({
+        ...prev,
+        1: prev[1].includes(word) ? prev[1] : [...prev[1], word]
+      }));
+    }
     setExitAnim(correct ? "pushRight" : "pushLeft");
     setTimerExpired(false);
     setMicResult(null);
@@ -766,6 +814,10 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
       ...s,
       [round]: { ...s[round], total: s[round].total + 1 }
     }));
+    setMissedByRound(prev => ({
+      ...prev,
+      [round]: prev[round].includes(word) ? prev[round] : [...prev[round], word]
+    }));
     advanceCard();
   };
 
@@ -774,10 +826,27 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setWaitingForMic(false);
   };
 
-  // Start next round
+  // Start next round with missed words frontloaded
   const startNextRound = () => {
-    setRound(r => r + 1);
-    setShuffled(shuffle(WORD_GROUPS[GROUP_NAMES[group]]));
+    const nextRound = round + 1;
+    const allWords = sessionWordsRef.current; // same 10 session words, reordered
+
+    // Collect missed words to frontload
+    let missed = [];
+    if (nextRound === 2) {
+      missed = missedByRound[1];
+    } else if (nextRound === 3) {
+      const missedSet = new Set([...missedByRound[1], ...missedByRound[2]]);
+      missed = [...missedSet];
+    }
+
+    // Build deck: shuffled missed words first, then shuffled remaining words
+    const missedSet = new Set(missed);
+    const remaining = allWords.filter(w => !missedSet.has(w));
+    const newShuffled = [...shuffle([...missed]), ...shuffle(remaining)];
+
+    setRound(nextRound);
+    setShuffled(newShuffled);
     setIdx(0);
     setShowRoundSummary(false);
     setTimerExpired(false);
@@ -806,7 +875,9 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
           {rs.correct}/{rs.total} ({pct}%)
         </div>
         <div style={{ color: C.muted, fontFamily: "'Russo One', sans-serif", fontSize: 13, letterSpacing: 2, textAlign: "center", maxWidth: 280 }}>
-          {round === 1 ? "NEXT: READ THE WORD ALOUD (10s TIMER)" : "NEXT: SPEED ROUND (5s TIMER)"}
+          {round === 1
+            ? `NEXT: SAY IT ALOUD (10s)${missedByRound[1].length > 0 ? ` — ${missedByRound[1].length} MISSED WORD${missedByRound[1].length > 1 ? "S" : ""} COME FIRST!` : ""}`
+            : `NEXT: SPEED ROUND (5s)${(missedByRound[1].length + missedByRound[2].length) > 0 ? ` — MISSED WORDS COME FIRST!` : ""}`}
         </div>
         <Btn onClick={startNextRound} color={C.green}>
           ⚡ START ROUND {round + 1}
@@ -872,9 +943,12 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
               NEED 80% TO UNLOCK FIND IT — KEEP TRAINING!
             </div>
             <Btn onClick={() => {
+              const words = selectRoundWords(group, progress, WORDS_PER_ROUND);
+              sessionWordsRef.current = words;
               setRound(1);
               setRoundScores({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });
-              setShuffled(shuffle(WORD_GROUPS[GROUP_NAMES[group]]));
+              setShuffled(shuffle([...words]));
+              setMissedByRound({ 1: [], 2: [] });
               setIdx(0); setShowFinalSummary(false);
             }}>
               ⚡ TRY AGAIN
