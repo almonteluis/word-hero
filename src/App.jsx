@@ -1240,7 +1240,11 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
     speak(t);
   }, [group]);
 
-  useEffect(() => { genRound(); }, [genRound, round]);
+  // Debounced so StrictMode's double-invoke cancels the first call (same pattern as Flash mode)
+  useEffect(() => {
+    const t = setTimeout(() => genRound(), 50);
+    return () => clearTimeout(t);
+  }, [genRound]);
 
   const handlePick = (w) => {
     if (feedback) return;
@@ -1249,8 +1253,9 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
       setCombo(c => c + 1);
       dispatch({ type: "MARK_CORRECT", word: target });
       setScore(s => s + 1);
+      const nextRound = round + 1;
       setTimeout(() => {
-        if (round + 1 < TOTAL) setRound(r => r + 1);
+        if (nextRound < TOTAL) { setRound(nextRound); genRound(); }
         else setFeedback("done");
       }, 1000);
     } else {
