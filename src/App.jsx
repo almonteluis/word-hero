@@ -1224,10 +1224,13 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
   const [combo, setCombo] = useState(0);
   const TOTAL = 10;
 
+  const progressRef = useRef(progress);
+  useEffect(() => { progressRef.current = progress; });
+
   const genRound = useCallback(() => {
     const words = WORD_GROUPS[GROUP_NAMES[group]];
     // Use weighted selection: struggling words appear more often as targets
-    const weighted = weightedShuffle(words, progress.wordStats || {}, progress.mastered || {});
+    const weighted = weightedShuffle(words, progressRef.current.wordStats || {}, progressRef.current.mastered || {});
     const t = weighted[0]; // Pick the highest-weighted word as target
     const others = words.filter(w => w !== t).sort(() => Math.random() - 0.5).slice(0, 3);
     setTarget(t);
@@ -1235,7 +1238,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
     setFeedback(null);
     setShakeWord(null);
     speak(t);
-  }, [group, progress.wordStats, progress.mastered]);
+  }, [group]);
 
   useEffect(() => { genRound(); }, [genRound, round]);
 
