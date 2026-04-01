@@ -45,8 +45,43 @@ function saveKidProgress(kidId, progress) {
 }
 
 // ─── PROGRESS REDUCER ──────────────────────────────────────
+// wordStats: { [word]: { correct, attempts, sessionsCorrect, lastSeen, sessionId } }
+// mastered: { [word]: timestamp }  — word mastered when sessionsCorrect >= 3 AND accuracy >= 95%
+// 7-day decay: words unseen for 7+ days get un-mastered on session start
+
+const MASTERY_SESSIONS = 3;
+const MASTERY_ACCURACY = 0.95;
+const REVIEW_DAYS = 7;
+
 function initProgress() {
-  return { mastered: {}, learning: {}, streaks: {}, totalCorrect: 0, totalAttempts: 0, sessions: 0 };
+  return { mastered: {}, learning: {}, streaks: {}, wordStats: {}, totalCorrect: 0, totalAttempts: 0, sessions: 0, currentSessionId: null };
+}
+
+function getWordStats(state, word) {
+  return state.wordStats[word] || { correct: 0, attempts: 0, sessionsCorrect: 0, lastSeen: null, sessionId: null };
+}
+
+function checkMastery(ws) {
+  if (ws.sessionsCorrect < MASTERY_SESSIONS) return false;
+  if (ws.attempts === 0) return false;
+  return (ws.correct / ws.attempts) >= MASTERY_ACCURACY;
+}
+
+// Weighted shuffle: words with lower per-word accuracy or more attempts come first more often
+function weightedShuffle(words, wordStats, mastered) {
+  const scored = words.map(w => {
+    const ws = wordStats[w] || { correct: 0, attempts: 0 };
+    // Never-seen words get a medium weight so they appear naturally
+    if (ws.attempts === 0) return { word: w, weight: 0.5 };
+    const accuracy = ws.correct / ws.attempts;
+    // Lower accuracy = higher weight (appears more). Mastered words get lowest weight.
+    const weight = mastered[w] ? 0.05 : (1 - accuracy) + 0.1;
+    return { word: w, weight };
+  });
+  // Weighted random sort: multiply weight by random factor, sort descending
+  scored.forEach(s => { s.sort = s.weight * (0.5 + Math.random()); });
+  scored.sort((a, b) => b.sort - a.sort);
+  return scored.map(s => s.word);
 }
 
 function progressReducer(state, action) {
@@ -57,27 +92,95 @@ function progressReducer(state, action) {
       const streaks = { ...state.streaks, [w]: streak };
       const totalCorrect = (state.totalCorrect || 0) + 1;
       const totalAttempts = (state.totalAttempts || 0) + 1;
-      if (streak >= 3) {
+      const ws = getWordStats(state, w);
+      const updatedWs = {
+        ...ws,
+        correct: ws.correct + 1,
+        attempts: ws.attempts + 1,
+        lastSeen: Date.now(),
+        // Track if this is a new session for this word
+        sessionsCorrect: ws.sessionId !== state.currentSessionId
+          ? ws.sessionsCorrect + 1
+          : ws.sessionsCorrect,
+        sessionId: state.currentSessionId,
+      };
+      const wordStats = { ...state.wordStats, [w]: updatedWs };
+
+      if (checkMastery(updatedWs)) {
         const mastered = { ...state.mastered, [w]: Date.now() };
         const learning = { ...state.learning };
         delete learning[w];
-        return { ...state, mastered, learning, streaks, totalCorrect, totalAttempts };
+        return { ...state, mastered, learning, streaks, wordStats, totalCorrect, totalAttempts };
       }
-      return { ...state, learning: { ...state.learning, [w]: true }, streaks, totalCorrect, totalAttempts };
+      return { ...state, learning: { ...state.learning, [w]: true }, streaks, wordStats, totalCorrect, totalAttempts };
     }
     case "MARK_WRONG": {
       const w = action.word;
+      const ws = getWordStats(state, w);
+      const updatedWs = {
+        ...ws,
+        attempts: ws.attempts + 1,
+        lastSeen: Date.now(),
+        sessionId: state.currentSessionId,
+      };
+      const wordStats = { ...state.wordStats, [w]: updatedWs };
       return {
         ...state,
         learning: { ...state.learning, [w]: true },
         streaks: { ...state.streaks, [w]: 0 },
+        wordStats,
         totalAttempts: (state.totalAttempts || 0) + 1,
       };
     }
-    case "NEW_SESSION":
-      return { ...state, sessions: (state.sessions || 0) + 1 };
-    case "LOAD":
-      return action.data || initProgress();
+    case "RECORD_RETRY": {
+      // Track a retry attempt (wrong before getting it right) — counts as an attempt but not correct
+      const w = action.word;
+      const ws = getWordStats(state, w);
+      const updatedWs = {
+        ...ws,
+        attempts: ws.attempts + 1,
+        lastSeen: Date.now(),
+        sessionId: state.currentSessionId,
+      };
+      return {
+        ...state,
+        wordStats: { ...state.wordStats, [w]: updatedWs },
+        totalAttempts: (state.totalAttempts || 0) + 1,
+      };
+    }
+    case "CHECK_REVIEW_DECAY": {
+      // Un-master words not seen in 7+ days
+      const now = Date.now();
+      const cutoff = now - REVIEW_DAYS * 24 * 60 * 60 * 1000;
+      const mastered = { ...state.mastered };
+      const learning = { ...state.learning };
+      const wordStats = { ...state.wordStats };
+      let changed = false;
+      for (const w of Object.keys(mastered)) {
+        const ws = wordStats[w];
+        const lastSeen = ws ? ws.lastSeen : mastered[w];
+        if (lastSeen && lastSeen < cutoff) {
+          delete mastered[w];
+          learning[w] = true;
+          // Reset sessionsCorrect so they need to re-earn mastery
+          if (ws) wordStats[w] = { ...ws, sessionsCorrect: 0 };
+          changed = true;
+        }
+      }
+      if (!changed) return state;
+      return { ...state, mastered, learning, wordStats };
+    }
+    case "NEW_SESSION": {
+      const sessionId = Date.now().toString();
+      return { ...state, sessions: (state.sessions || 0) + 1, currentSessionId: sessionId };
+    }
+    case "LOAD": {
+      const data = action.data || initProgress();
+      // Migrate old data: ensure wordStats exists
+      if (!data.wordStats) data.wordStats = {};
+      if (!data.currentSessionId) data.currentSessionId = null;
+      return data;
+    }
     case "RESET":
       return initProgress();
     default:
@@ -659,9 +762,20 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const word = shuffled[idx];
   const timerSeconds = round === 2 ? 10 : round === 3 ? 5 : 0;
 
+  // Build word lists: round 1 gets all words, rounds 2&3 exclude mastered
+  const getWordsForRound = useCallback((r) => {
+    const allGroupWords = WORD_GROUPS[GROUP_NAMES[group]];
+    const words = r >= 2
+      ? allGroupWords.filter(w => !progress.mastered[w])
+      : allGroupWords;
+    // If all words are mastered in rounds 2/3, fall back to all words
+    const pool = words.length > 0 ? words : allGroupWords;
+    return weightedShuffle(pool, progress.wordStats || {}, progress.mastered || {});
+  }, [group, progress.mastered, progress.wordStats]);
+
   // Reset when group changes
   useEffect(() => {
-    setShuffled(shuffle(WORD_GROUPS[GROUP_NAMES[group]]));
+    setShuffled(getWordsForRound(1));
     setIdx(0);
     setRound(1);
     setRoundScores({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });
@@ -770,14 +884,21 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   };
 
   const handleMicWrong_TryAgain = () => {
+    // Record the failed attempt for this word (tracks retries)
+    dispatch({ type: "RECORD_RETRY", word });
+    setRoundScores(s => ({
+      ...s,
+      [round]: { ...s[round], total: s[round].total + 1 }
+    }));
     setMicResult(null);
     setWaitingForMic(false);
   };
 
   // Start next round
   const startNextRound = () => {
-    setRound(r => r + 1);
-    setShuffled(shuffle(WORD_GROUPS[GROUP_NAMES[group]]));
+    const nextRound = round + 1;
+    setRound(nextRound);
+    setShuffled(getWordsForRound(nextRound));
     setIdx(0);
     setShowRoundSummary(false);
     setTimerExpired(false);
@@ -874,7 +995,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             <Btn onClick={() => {
               setRound(1);
               setRoundScores({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });
-              setShuffled(shuffle(WORD_GROUPS[GROUP_NAMES[group]]));
+              setShuffled(getWordsForRound(1));
               setIdx(0); setShowFinalSummary(false);
             }}>
               ⚡ TRY AGAIN
@@ -934,6 +1055,11 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
 
       <div style={{ color: C.muted, fontSize: 12, fontFamily: "'Russo One', sans-serif", letterSpacing: 2 }}>
         WORD {idx + 1} OF {shuffled.length}
+        {round >= 2 && Object.keys(progress.mastered).filter(w => WORD_GROUPS[GROUP_NAMES[group]].includes(w)).length > 0 && (
+          <span style={{ color: C.green, marginLeft: 8, fontSize: 10 }}>
+            ({Object.keys(progress.mastered).filter(w => WORD_GROUPS[GROUP_NAMES[group]].includes(w)).length} mastered)
+          </span>
+        )}
       </div>
 
       {/* Timer for rounds 2 & 3 */}
@@ -1017,7 +1143,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
                 letterSpacing: 2,
               }}>NOT QUITE — TRY AGAIN!</div>
               <div style={{ display: "flex", gap: 10 }}>
-                <Btn onClick={handleSayIt} color={C.blue} small>🎤 RETRY</Btn>
+                <Btn onClick={() => { handleMicWrong_TryAgain(); setTimeout(handleSayIt, 100); }} color={C.blue} small>🎤 RETRY</Btn>
                 <Btn onClick={handleSkipWord} color={C.red} small>SKIP →</Btn>
               </div>
             </div>
@@ -1079,14 +1205,16 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
 
   const genRound = useCallback(() => {
     const words = WORD_GROUPS[GROUP_NAMES[group]];
-    const t = words[Math.floor(Math.random() * words.length)];
+    // Use weighted selection: struggling words appear more often as targets
+    const weighted = weightedShuffle(words, progress.wordStats || {}, progress.mastered || {});
+    const t = weighted[0]; // Pick the highest-weighted word as target
     const others = words.filter(w => w !== t).sort(() => Math.random() - 0.5).slice(0, 3);
     setTarget(t);
     setOptions([...others, t].sort(() => Math.random() - 0.5));
     setFeedback(null);
     setShakeWord(null);
     speak(t);
-  }, [group]);
+  }, [group, progress.wordStats, progress.mastered]);
 
   useEffect(() => { genRound(); }, [genRound, round]);
 
@@ -1218,6 +1346,27 @@ function ProgressTracker({ progress, kidName }) {
   const pct = Math.round((masteredCount / ALL_WORDS.length) * 100);
   const accuracy = progress.totalAttempts > 0
     ? Math.round((progress.totalCorrect / progress.totalAttempts) * 100) : 0;
+  const ws = progress.wordStats || {};
+
+  // Find words needing review (mastered but approaching 7-day limit)
+  const now = Date.now();
+  const reviewWarningCutoff = now - 5 * 24 * 60 * 60 * 1000; // warn at 5 days
+  const needsReview = Object.keys(progress.mastered).filter(w => {
+    const stat = ws[w];
+    const lastSeen = stat ? stat.lastSeen : progress.mastered[w];
+    return lastSeen && lastSeen < reviewWarningCutoff;
+  });
+
+  // Find struggling words (attempted 3+ times with < 60% accuracy)
+  const strugglingWords = ALL_WORDS.filter(w => {
+    const stat = ws[w];
+    if (!stat || stat.attempts < 3) return false;
+    return (stat.correct / stat.attempts) < 0.6;
+  }).sort((a, b) => {
+    const aAcc = ws[a].correct / ws[a].attempts;
+    const bAcc = ws[b].correct / ws[b].attempts;
+    return aAcc - bAcc;
+  });
 
   // Rank system
   const rank = masteredCount >= 60 ? "LEGENDARY HERO" :
@@ -1240,6 +1389,68 @@ function ProgressTracker({ progress, kidName }) {
           {kidName.toUpperCase()}'S HERO PROFILE
         </div>
       </div>
+
+      {/* Needs Review Alert */}
+      {needsReview.length > 0 && (
+        <div style={{
+          background: `${C.red}15`, borderRadius: 14, padding: 14, marginBottom: 16,
+          border: `2px solid ${C.red}40`, animation: "fadeUp 0.4s",
+        }}>
+          <div style={{ fontFamily: "'Russo One', sans-serif", fontSize: 13, color: C.red, letterSpacing: 2, marginBottom: 8 }}>
+            THESE WORDS NEED REVIEW
+          </div>
+          <div style={{ fontFamily: "'Russo One', sans-serif", fontSize: 11, color: C.muted, letterSpacing: 1, marginBottom: 10 }}>
+            Practice these soon or they'll lose mastery!
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+            {needsReview.map(w => {
+              const stat = ws[w];
+              const daysAgo = stat ? Math.floor((now - stat.lastSeen) / (24 * 60 * 60 * 1000)) : "?";
+              return (
+                <span key={w} style={{
+                  padding: "3px 8px", borderRadius: 8, fontSize: 12,
+                  fontWeight: 700, fontFamily: "'Russo One', sans-serif", letterSpacing: 1,
+                  background: C.red + "20", color: C.red,
+                  border: `1px solid ${C.red}35`,
+                }}>
+                  {w} <span style={{ fontSize: 9, opacity: 0.7 }}>{daysAgo}d</span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Struggling Words Alert */}
+      {strugglingWords.length > 0 && (
+        <div style={{
+          background: `${C.accent}10`, borderRadius: 14, padding: 14, marginBottom: 16,
+          border: `2px solid ${C.accent}30`,
+        }}>
+          <div style={{ fontFamily: "'Russo One', sans-serif", fontSize: 13, color: C.accent, letterSpacing: 2, marginBottom: 8 }}>
+            TOUGH WORDS
+          </div>
+          <div style={{ fontFamily: "'Russo One', sans-serif", fontSize: 11, color: C.muted, letterSpacing: 1, marginBottom: 10 }}>
+            These words need extra practice
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+            {strugglingWords.slice(0, 10).map(w => {
+              const stat = ws[w];
+              const wordAcc = Math.round((stat.correct / stat.attempts) * 100);
+              return (
+                <span key={w} style={{
+                  padding: "3px 8px", borderRadius: 8, fontSize: 12,
+                  fontWeight: 700, fontFamily: "'Russo One', sans-serif", letterSpacing: 1,
+                  background: C.accent + "15", color: C.accent,
+                  border: `1px solid ${C.accent}25`,
+                }}>
+                  {w} <span style={{ fontSize: 9, opacity: 0.7 }}>{wordAcc}% ({stat.attempts}x)</span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Stats row */}
       <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
@@ -1297,20 +1508,30 @@ function ProgressTracker({ progress, kidName }) {
                 </span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                {words.map(w => (
-                  <span key={w} style={{
-                    padding: "3px 8px", borderRadius: 8, fontSize: 12,
-                    fontWeight: 700, fontFamily: "'Russo One', sans-serif", letterSpacing: 1,
-                    background: progress.mastered[w] ? C.green + "20" :
-                               progress.learning[w] ? C.accent + "15" : C.bg,
-                    color: progress.mastered[w] ? C.green :
-                           progress.learning[w] ? C.accent : C.muted + "80",
-                    border: `1px solid ${progress.mastered[w] ? C.green + "35" :
-                             progress.learning[w] ? C.accent + "25" : C.muted + "15"}`,
-                  }}>
-                    {progress.mastered[w] && "★ "}{w}
-                  </span>
-                ))}
+                {words.map(w => {
+                  const stat = ws[w];
+                  const hasStats = stat && stat.attempts > 0;
+                  const wordAcc = hasStats ? Math.round((stat.correct / stat.attempts) * 100) : null;
+                  const sessionsLeft = hasStats ? Math.max(0, MASTERY_SESSIONS - (stat.sessionsCorrect || 0)) : MASTERY_SESSIONS;
+                  return (
+                    <span key={w} style={{
+                      padding: "3px 8px", borderRadius: 8, fontSize: 12,
+                      fontWeight: 700, fontFamily: "'Russo One', sans-serif", letterSpacing: 1,
+                      background: progress.mastered[w] ? C.green + "20" :
+                                 progress.learning[w] ? C.accent + "15" : C.bg,
+                      color: progress.mastered[w] ? C.green :
+                             progress.learning[w] ? C.accent : C.muted + "80",
+                      border: `1px solid ${progress.mastered[w] ? C.green + "35" :
+                               progress.learning[w] ? C.accent + "25" : C.muted + "15"}`,
+                      position: "relative",
+                    }} title={hasStats ? `${wordAcc}% accuracy, ${stat.attempts} attempts, ${sessionsLeft} sessions to mastery` : "Not practiced yet"}>
+                      {progress.mastered[w] && "★ "}{w}
+                      {hasStats && !progress.mastered[w] && (
+                        <span style={{ fontSize: 8, opacity: 0.6, marginLeft: 2 }}>{wordAcc}%</span>
+                      )}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           );
@@ -1343,6 +1564,8 @@ export default function WordHeroApp() {
     const p = loadKidProgress(activeKid.id);
     dispatch({ type: "LOAD", data: p });
     dispatch({ type: "NEW_SESSION" });
+    // Check for 7-day mastery decay after loading
+    setTimeout(() => dispatch({ type: "CHECK_REVIEW_DECAY" }), 100);
   }, [activeKid]);
 
   // Auto-save progress on changes (debounced)
