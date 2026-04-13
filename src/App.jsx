@@ -23,6 +23,7 @@ export default function WordHeroApp() {
   const [activeKid, setActiveKid] = useState(null);
   const [mode, setMode] = useState("menu");
   const [findItGroup, setFindItGroup] = useState(0);
+  const [modeKey, setModeKey] = useState(0);
   const [progress, dispatch] = useReducer(progressReducer, null, initProgress);
   const [loaded, setLoaded] = useState(false);
   const saveTimer = useRef(null);
@@ -145,7 +146,7 @@ export default function WordHeroApp() {
       <ModeSelectScreen
         kid={activeKid}
         progress={progress}
-        onSelectMode={(m) => setMode(m)}
+        onSelectMode={(m) => { setMode(m); setModeKey((k) => k + 1); }}
         onBack={() => setActiveKid(null)}
       />
     );
@@ -175,6 +176,7 @@ export default function WordHeroApp() {
           padding: "16px 16px 8px",
           position: "relative",
           zIndex: 1,
+          animation: "modeStagger 0.4s ease-out 0.1s both",
         }}
       >
         <button
@@ -250,7 +252,7 @@ export default function WordHeroApp() {
         {modes.map((m) => (
           <button
             key={m.key}
-            onClick={() => setMode(m.key)}
+            onClick={() => { setMode(m.key); setModeKey((k) => k + 1); }}
             style={{
               background:
                 mode === m.key
@@ -277,11 +279,13 @@ export default function WordHeroApp() {
 
       {/* Content */}
       <div
+        key={modeKey}
         style={{
           position: "relative",
           zIndex: 1,
           maxWidth: 600,
           margin: "0 auto",
+          animation: "modeEnter 0.4s ease-out",
         }}
       >
         {mode === "flash" && (
