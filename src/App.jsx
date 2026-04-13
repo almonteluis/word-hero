@@ -3365,11 +3365,16 @@ function ProgressTracker({ progress, kidName }) {
 // ─── MODE SELECTION SCREEN ──────────────────────────────────
 function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
   const [transitioning, setTransitioning] = useState(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, []);
 
   const handleSelect = (key) => {
     if (transitioning) return;
     setTransitioning(key);
-    setTimeout(() => onSelectMode(key), 550);
+    timerRef.current = setTimeout(() => onSelectMode(key), 550);
   };
 
   const findItUnlocked = (progress?.sessions || 0) > 0;
