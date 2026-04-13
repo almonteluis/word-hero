@@ -658,6 +658,7 @@ function shuffle(arr) {
 // ─── SPEECH RECOGNITION HELPER ─────────────────────────────
 function useSpeechRecognition() {
   const recRef = useRef(null);
+  const matchFnRef = useRef(null);
   const [listening, setListening] = useState(false);
   const [result, setResult] = useState("");
   const [supported, setSupported] = useState(true);
@@ -667,20 +668,35 @@ function useSpeechRecognition() {
     if (!SR) { setSupported(false); return; }
     const rec = new SR();
     rec.continuous = false;
-    rec.interimResults = false;
+    rec.interimResults = true;
     rec.lang = "en-US";
     rec.maxAlternatives = 5;
     rec.onresult = (e) => {
+      const latestResult = e.results[e.results.length - 1];
       const alternatives = [];
-      for (let i = 0; i < e.results[0].length; i++) {
-        alternatives.push(e.results[0][i].transcript.toLowerCase().trim());
+      for (let i = 0; i < latestResult.length; i++) {
+        alternatives.push(latestResult[i].transcript.toLowerCase().trim());
       }
-      setResult(alternatives.join("|"));
+      const transcript = alternatives.join("|");
+      if (!latestResult.isFinal) {
+        // On interim results, stop early if we already have a match
+        if (matchFnRef.current && matchFnRef.current(transcript)) {
+          try { rec.stop(); } catch {}
+          setResult(transcript);
+          setListening(false);
+        }
+        return;
+      }
+      setResult(transcript);
       setListening(false);
     };
     rec.onerror = () => setListening(false);
     rec.onend = () => setListening(false);
     recRef.current = rec;
+  }, []);
+
+  const setMatchFn = useCallback((fn) => {
+    matchFnRef.current = fn;
   }, []);
 
   const startListening = useCallback(() => {
@@ -697,7 +713,7 @@ function useSpeechRecognition() {
     setListening(false);
   }, []);
 
-  return { listening, result, startListening, stopListening, supported };
+  return { listening, result, startListening, stopListening, supported, setMatchFn };
 }
 
 function wordMatch(spokenResult, target) {
@@ -769,7 +785,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const [showMicPrompt, setShowMicPrompt] = useState(false);
   const [micReady, setMicReady] = useState(false);
 
-  const { listening, result, startListening, stopListening, supported } = useSpeechRecognition();
+  const { listening, result, startListening, stopListening, supported, setMatchFn } = useSpeechRecognition();
 
   const word = shuffled[idx];
   const timerSeconds = round === 2 ? 10 : round === 3 ? 5 : 0;
@@ -803,6 +819,11 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     const t = setTimeout(() => speak(word), 50);
     return () => clearTimeout(t);
   }, [word]);
+
+  // Keep the early-match function in sync with the current word
+  useEffect(() => {
+    setMatchFn((transcript) => wordMatch(transcript, word));
+  }, [word, setMatchFn]);
 
   // Rounds 2 & 3: auto-start mic when new word appears (after mic prompt dismissed)
   useEffect(() => {
@@ -1215,10 +1236,13 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
   const [combo, setCombo] = useState(0);
   const TOTAL = 10;
 
+  const progressRef = useRef(progress);
+  useEffect(() => { progressRef.current = progress; });
+
   const genRound = useCallback(() => {
     const words = WORD_GROUPS[GROUP_NAMES[group]];
     // Use weighted selection: struggling words appear more often as targets
-    const weighted = weightedShuffle(words, progress.wordStats || {}, progress.mastered || {});
+    const weighted = weightedShuffle(words, progressRef.current.wordStats || {}, progressRef.current.mastered || {});
     const t = weighted[0]; // Pick the highest-weighted word as target
     const others = words.filter(w => w !== t).sort(() => Math.random() - 0.5).slice(0, 3);
     setTarget(t);
@@ -1226,9 +1250,13 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
     setFeedback(null);
     setShakeWord(null);
     speak(t);
-  }, [group, progress.wordStats, progress.mastered]);
+  }, [group]);
 
-  useEffect(() => { genRound(); }, [genRound, round]);
+  // Debounced so StrictMode's double-invoke cancels the first call (same pattern as Flash mode)
+  useEffect(() => {
+    const t = setTimeout(() => genRound(), 50);
+    return () => clearTimeout(t);
+  }, [genRound]);
 
   const handlePick = (w) => {
     if (feedback) return;
@@ -1237,8 +1265,9 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
       setCombo(c => c + 1);
       dispatch({ type: "MARK_CORRECT", word: target });
       setScore(s => s + 1);
+      const nextRound = round + 1;
       setTimeout(() => {
-        if (round + 1 < TOTAL) setRound(r => r + 1);
+        if (nextRound < TOTAL) { setRound(nextRound); genRound(); }
         else setFeedback("done");
       }, 1000);
     } else {
