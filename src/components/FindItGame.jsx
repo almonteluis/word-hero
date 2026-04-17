@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { WORD_GROUPS, GROUP_NAMES, C, FONT, RADIUS } from "../constants";
 import GroupSelector from "./GroupSelector";
 import Btn from "./Btn";
+import VictoryScreen from "./VictoryScreen";
 import { speak } from "../utils/speech";
 import { weightedShuffle } from "../utils/progress";
 
@@ -70,46 +71,13 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
   };
 
   if (feedback === "done") {
-    const msg =
-      score >= 9
-        ? "Legendary Hero!"
-        : score >= 7
-          ? "Super Hero!"
-          : score >= 5
-            ? "Hero in Training!"
-            : "Keep Going, Hero!";
     return (
-      <div
-        style={{
-          textAlign: "center",
-          padding: "40px 16px",
-          animation: "fadeUp 0.4s ease-out",
-        }}
-      >
-        <div style={{ fontSize: 80, marginBottom: 8 }}>🏆</div>
-        <div
-          style={{
-            fontSize: 40,
-            fontFamily: FONT,
-            color: C.accent,
-            fontWeight: 700,
-          }}
-        >
-          {score}/{TOTAL}
-        </div>
-        <div
-          style={{
-            color: C.green,
-            fontFamily: FONT,
-            fontSize: 22,
-            fontWeight: 700,
-            margin: "8px 0 24px",
-          }}
-        >
-          {msg}
-        </div>
-        <Btn onClick={restart}>Play Again</Btn>
-      </div>
+      <VictoryScreen
+        score={score}
+        total={TOTAL}
+        onRetry={restart}
+        onContinue={restart}
+      />
     );
   }
 

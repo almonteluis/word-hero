@@ -3,6 +3,7 @@ import { WORD_GROUPS, GROUP_NAMES, C, FONT, RADIUS } from "../constants";
 import GroupSelector from "./GroupSelector";
 import CountdownTimer from "./CountdownTimer";
 import Btn from "./Btn";
+import VictoryScreen from "./VictoryScreen";
 import { speak } from "../utils/speech";
 import { shuffle } from "../utils/shuffle";
 import { weightedShuffle } from "../utils/progress";
@@ -249,147 +250,22 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   // ─── FINAL SUMMARY SCREEN ────────────────────────────────
   if (showFinalSummary) {
     return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 16,
-          padding: "24px 16px",
-          animation: "fadeUp 0.4s",
+      <VictoryScreen
+        score={totalCorrect}
+        total={totalAttempts}
+        onRetry={() => {
+          setRound(1);
+          setRoundScores({
+            1: { correct: 0, total: 0 },
+            2: { correct: 0, total: 0 },
+            3: { correct: 0, total: 0 },
+          });
+          setShuffled(getWordsForRound(1));
+          setIdx(0);
+          setShowFinalSummary(false);
         }}
-      >
-        <div style={{ fontSize: 64 }}>{passed ? "🏆" : "💪"}</div>
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 22,
-            color: C.accent,
-            fontWeight: 700,
-          }}
-        >
-          All 3 Rounds Done!
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            flexWrap: "wrap",
-            justifyContent: "center",
-          }}
-        >
-          {[1, 2, 3].map((r) => {
-            const rs = roundScores[r];
-            const p =
-              rs.total > 0 ? Math.round((rs.correct / rs.total) * 100) : 0;
-            return (
-              <div
-                key={r}
-                style={{
-                  background: "white",
-                  borderRadius: RADIUS.card,
-                  padding: "12px 18px",
-                  textAlign: "center",
-                  border: `3px solid ${p >= 80 ? C.green : C.accent}40`,
-                  boxShadow: `0 4px 12px ${C.shadow}`,
-                  minWidth: 85,
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: FONT,
-                    fontSize: 12,
-                    color: C.muted,
-                    fontWeight: 500,
-                  }}
-                >
-                  Round {r}
-                </div>
-                <div
-                  style={{
-                    fontFamily: FONT,
-                    fontSize: 22,
-                    color: p >= 80 ? C.green : C.accent,
-                    fontWeight: 700,
-                  }}
-                >
-                  {p}%
-                </div>
-                <div
-                  style={{
-                    fontFamily: FONT,
-                    fontSize: 11,
-                    color: C.muted,
-                    fontWeight: 500,
-                  }}
-                >
-                  {rs.correct}/{rs.total}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div
-          style={{
-            fontFamily: FONT,
-            fontSize: 32,
-            color: passed ? C.green : C.accent,
-            fontWeight: 700,
-          }}
-        >
-          {overallPct}% Overall
-        </div>
-
-        {passed ? (
-          <>
-            <div
-              style={{
-                color: C.green,
-                fontFamily: FONT,
-                fontSize: 15,
-                fontWeight: 600,
-                textAlign: "center",
-              }}
-            >
-              You crushed it! Time for Find It!
-            </div>
-            <Btn onClick={() => onAdvanceToFindIt(group)} color={C.secondary}>
-              Go to Find It
-            </Btn>
-          </>
-        ) : (
-          <>
-            <div
-              style={{
-                color: C.muted,
-                fontFamily: FONT,
-                fontSize: 14,
-                fontWeight: 500,
-                textAlign: "center",
-              }}
-            >
-              Need 80% to unlock Find It — keep training!
-            </div>
-            <Btn
-              onClick={() => {
-                setRound(1);
-                setRoundScores({
-                  1: { correct: 0, total: 0 },
-                  2: { correct: 0, total: 0 },
-                  3: { correct: 0, total: 0 },
-                });
-                setShuffled(getWordsForRound(1));
-                setIdx(0);
-                setShowFinalSummary(false);
-              }}
-            >
-              Try Again
-            </Btn>
-          </>
-        )}
-      </div>
+        onContinue={passed ? () => onAdvanceToFindIt(group) : undefined}
+      />
     );
   }
 
