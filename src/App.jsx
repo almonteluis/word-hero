@@ -109,14 +109,14 @@ export default function WordHeroApp() {
       >
         <div
           style={{
-            color: C.accent,
+            color: C.text,
             fontFamily: FONT,
-            fontSize: 24,
+            fontSize: 26,
             fontWeight: 700,
             animation: "starPulse 1.5s ease-in-out infinite",
           }}
         >
-          LOADING...
+          Loading...
         </div>
       </div>
     );
@@ -155,7 +155,7 @@ export default function WordHeroApp() {
     <div
       style={{
         minHeight: "100vh",
-        background: C.bg,
+        background: `linear-gradient(180deg, ${C.bg} 0%, #A8D44E 30%, #C9F0E2 100%)`,
         position: "relative",
         overflow: "hidden",
       }}
@@ -176,15 +176,17 @@ export default function WordHeroApp() {
             setActiveKid(null);
           }}
           style={{
-            background: C.panel,
-            border: `2px solid ${C.border}`,
-            borderRadius: RADIUS.small,
-            padding: "6px 12px",
+            background: "white",
+            border: "none",
+            borderBottom: `3px solid ${C.border}`,
+            borderRadius: RADIUS.button,
+            padding: "6px 14px",
             cursor: "pointer",
             color: C.text,
             fontFamily: FONT,
             fontSize: 13,
             fontWeight: 600,
+            boxShadow: `0 2px 8px ${C.shadow}`,
           }}
         >
           ← Switch
@@ -193,11 +195,11 @@ export default function WordHeroApp() {
         <div style={{ textAlign: "center" }}>
           <div
             style={{
-              fontSize: 22,
+              fontSize: 20,
               fontFamily: FONT,
               color: C.text,
               fontWeight: 700,
-              letterSpacing: 2,
+              letterSpacing: 1,
             }}
           >
             Word Hero
@@ -209,13 +211,13 @@ export default function WordHeroApp() {
             display: "flex",
             alignItems: "center",
             gap: 6,
-            background: C.panel,
-            borderRadius: RADIUS.small,
-            padding: "4px 10px",
-            border: `2px solid ${C.border}`,
+            background: "white",
+            borderRadius: RADIUS.button,
+            padding: "4px 12px 6px",
+            boxShadow: `0 2px 8px ${C.shadow}`,
           }}
         >
-          <span style={{ fontSize: 20 }}>{activeKid.avatar}</span>
+          <span style={{ fontSize: 22 }}>{activeKid.avatar}</span>
           <span
             style={{
               fontFamily: FONT,
@@ -249,10 +251,10 @@ export default function WordHeroApp() {
               background:
                 mode === m.key
                   ? C.accent
-                  : C.panel,
+                  : "white",
               color: mode === m.key ? C.textLight : C.text,
               border: "none",
-              borderBottom: mode === m.key ? `4px solid ${C.accent}cc` : `4px solid ${C.border}`,
+              borderBottom: mode === m.key ? `4px solid ${C.accent}bb` : `3px solid ${C.border}`,
               borderRadius: RADIUS.button,
               padding: "8px 16px",
               cursor: "pointer",
@@ -260,6 +262,7 @@ export default function WordHeroApp() {
               fontSize: 13,
               fontFamily: FONT,
               transition: "all 0.2s",
+              boxShadow: `0 2px 8px ${C.shadow}`,
             }}
           >
             {m.icon} {m.label}
