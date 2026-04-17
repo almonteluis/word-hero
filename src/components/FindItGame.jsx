@@ -18,13 +18,12 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
 
   const genRound = useCallback(() => {
     const words = WORD_GROUPS[GROUP_NAMES[group]];
-    // Use weighted selection: struggling words appear more often as targets
     const weighted = weightedShuffle(
       words,
       progress.wordStats || {},
       progress.mastered || {},
     );
-    const t = weighted[0]; // Pick the highest-weighted word as target
+    const t = weighted[0];
     const others = words
       .filter((w) => w !== t)
       .sort(() => Math.random() - 0.5)
@@ -73,12 +72,12 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
   if (feedback === "done") {
     const msg =
       score >= 9
-        ? "LEGENDARY HERO!"
+        ? "Legendary Hero!"
         : score >= 7
-          ? "SUPER HERO!"
+          ? "Super Hero!"
           : score >= 5
-            ? "HERO IN TRAINING!"
-            : "KEEP GOING, HERO!";
+            ? "Hero in Training!"
+            : "Keep Going, Hero!";
     return (
       <div
         style={{
@@ -93,8 +92,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
             fontSize: 40,
             fontFamily: FONT,
             color: C.accent,
-            textShadow: `0 0 25px ${C.accent}60`,
-            letterSpacing: 4,
+            fontWeight: 700,
           }}
         >
           {score}/{TOTAL}
@@ -104,13 +102,13 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
             color: C.green,
             fontFamily: FONT,
             fontSize: 22,
-            letterSpacing: 3,
+            fontWeight: 700,
             margin: "8px 0 24px",
           }}
         >
           {msg}
         </div>
-        <Btn onClick={restart}>⚡ PLAY AGAIN</Btn>
+        <Btn onClick={restart}>Play Again</Btn>
       </div>
     );
   }
@@ -140,27 +138,27 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
             color: C.accent,
             fontFamily: FONT,
             fontSize: 16,
-            letterSpacing: 2,
+            fontWeight: 700,
           }}
         >
-          ⚡ {score}
+          {score}
         </span>
         <div
           style={{
             width: 140,
-            height: 8,
-            background: C.panel,
-            borderRadius: 8,
+            height: 10,
+            background: "white",
+            borderRadius: RADIUS.button,
             overflow: "hidden",
-            border: `1px solid ${C.accent}20`,
+            border: `2px solid ${C.border}`,
           }}
         >
           <div
             style={{
               width: `${(round / TOTAL) * 100}%`,
               height: "100%",
-              background: `linear-gradient(90deg, ${C.accent}, ${C.red})`,
-              borderRadius: 8,
+              background: C.accent,
+              borderRadius: RADIUS.button,
               transition: "width 0.3s",
             }}
           />
@@ -169,7 +167,8 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
           style={{
             color: C.muted,
             fontFamily: FONT,
-            fontSize: 12,
+            fontSize: 13,
+            fontWeight: 500,
           }}
         >
           {round + 1}/{TOTAL}
@@ -182,54 +181,53 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
             color: C.accent,
             fontFamily: FONT,
             fontSize: 14,
-            letterSpacing: 3,
-            textShadow: `0 0 10px ${C.accent}60`,
+            fontWeight: 700,
             animation: "fadeUp 0.3s ease-out",
           }}
         >
-          🔥 {combo}x COMBO!
+          {combo}x Combo!
         </div>
       )}
 
       {/* Hear word */}
       <div
         style={{
-          background: C.panel,
-          borderRadius: 20,
+          background: "white",
+          borderRadius: RADIUS.card,
           padding: "16px 28px",
-          border: `2px solid ${C.accent}30`,
+          border: `3px solid ${C.accent}30`,
           textAlign: "center",
-          boxShadow: `0 0 25px ${C.accent}10`,
+          boxShadow: `0 4px 16px ${C.shadow}`,
         }}
       >
         <div
           style={{
             color: C.muted,
-            fontSize: 11,
+            fontSize: 12,
             fontFamily: FONT,
-            letterSpacing: 3,
+            fontWeight: 600,
             marginBottom: 8,
           }}
         >
-          🔊 FIND THE WORD
+          Find the word
         </div>
         <button
           onClick={() => speak(target)}
           style={{
-            background: `linear-gradient(135deg, ${C.accent}, ${C.red})`,
+            background: C.accent,
             border: "none",
-            borderRadius: 14,
+            borderBottom: `4px solid ${C.accent}cc`,
+            borderRadius: RADIUS.button,
             padding: "10px 28px",
             cursor: "pointer",
             fontSize: 17,
-            fontWeight: 800,
-            color: C.bg,
+            fontWeight: 700,
+            color: C.textLight,
             fontFamily: FONT,
-            letterSpacing: 3,
-            boxShadow: `0 4px 15px ${C.accent}40`,
+            boxShadow: `0 4px 12px ${C.accent}30`,
           }}
         >
-          🔊 HEAR AGAIN
+          Hear Again
         </button>
       </div>
 
@@ -251,19 +249,26 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
               key={w}
               onClick={() => handlePick(w)}
               style={{
-                background: correct ? C.green : wrong ? C.red : C.panel,
-                border: `2px solid ${correct ? C.green : wrong ? C.red : C.accent + "25"}`,
-                borderRadius: 16,
+                background: correct ? C.green : wrong ? C.heart : "white",
+                border: correct
+                  ? `3px solid ${C.green}`
+                  : wrong
+                    ? `3px solid ${C.heart}`
+                    : `3px solid ${C.border}`,
+                borderBottom: correct
+                  ? `5px solid ${C.green}cc`
+                  : wrong
+                    ? `5px solid ${C.heart}cc`
+                    : `4px solid ${C.border}`,
+                borderRadius: RADIUS.card,
                 padding: "18px 14px",
                 cursor: "pointer",
                 fontSize: 26,
-                fontWeight: 800,
+                fontWeight: 700,
                 fontFamily: FONT,
-                color: C.text,
+                color: correct || wrong ? "white" : C.text,
                 letterSpacing: 3,
-                boxShadow: correct
-                  ? `0 0 20px ${C.green}50`
-                  : `0 4px 12px rgba(0,0,0,0.3)`,
+                boxShadow: `0 4px 12px ${C.shadow}`,
                 transition: "all 0.15s",
                 animation: wrong
                   ? "shake 0.4s ease"
@@ -285,12 +290,11 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
             fontFamily: FONT,
             color: C.green,
             animation: "fadeUp 0.3s",
-            letterSpacing: 3,
-            textShadow: `0 0 12px ${C.green}60`,
+            fontWeight: 700,
           }}
         >
           {
-            ["⚡ HEROIC!", "💥 BOOM!", "🔥 SUPER!", "⭐ AMAZING!"][
+            ["Heroic!", "Boom!", "Super!", "Amazing!"][
               Math.floor(Math.random() * 4)
             ]
           }

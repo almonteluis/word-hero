@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C, FONT } from "../constants";
+import { C, FONT, RADIUS } from "../constants";
 import {
   loadNotificationPrefs,
   saveNotificationPrefs,
@@ -60,11 +60,12 @@ function DailyReminderSettings() {
   return (
     <div
       style={{
-        background: C.panel,
-        borderRadius: 14,
+        background: "white",
+        borderRadius: RADIUS.card,
         padding: 16,
         marginTop: 24,
-        border: `1px solid ${C.blue}25`,
+        border: `3px solid ${C.secondary}25`,
+        boxShadow: `0 4px 12px ${C.shadow}`,
       }}
     >
       <div
