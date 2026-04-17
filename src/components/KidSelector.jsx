@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C } from "../constants";
+import { C, FONT, RADIUS } from "../constants";
 import HomeBackground from "./HomeBackground";
 import Btn from "./Btn";
 
@@ -88,7 +88,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
         >
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: "clamp(50px, 14vw, 74px)",
               color: "#f6c619",
               letterSpacing: "0.03em",
@@ -101,7 +101,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
           </div>
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: "clamp(50px, 14vw, 74px)",
               color: "#f6c619",
               letterSpacing: "0.03em",
@@ -119,7 +119,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
           style={{
             fontSize: 13,
             color: "#7ab8d4",
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             letterSpacing: 6,
             marginBottom: 44,
             textTransform: "uppercase",
@@ -133,7 +133,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
           style={{
             fontSize: 15,
             color: "#f0f0f0",
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             letterSpacing: 3,
             marginBottom: 18,
             fontWeight: 800,
@@ -186,7 +186,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                 <div>
                   <div
                     style={{
-                      fontFamily: "'Russo One', sans-serif",
+                      fontFamily: FONT,
                       fontSize: "clamp(20px, 5.5vw, 26px)",
                       color: "#f0f0f0",
                       letterSpacing: 1,
@@ -196,7 +196,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                   </div>
                   <div
                     style={{
-                      fontFamily: "'Russo One', sans-serif",
+                      fontFamily: FONT,
                       fontSize: 10,
                       color: "#7ab8d4",
                       letterSpacing: 2.5,
@@ -268,7 +268,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
             </span>
             <span
               style={{
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 fontSize: 16,
                 color: "white",
                 letterSpacing: 3,
@@ -304,7 +304,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                 padding: "13px 16px",
                 color: "#f0f0f0",
                 fontSize: 18,
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 letterSpacing: 2,
                 outline: "none",
                 boxSizing: "border-box",

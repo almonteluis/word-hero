@@ -1,5 +1,5 @@
 import { useState, useEffect, useReducer, useRef } from "react";
-import { C } from "./constants";
+import { C, FONT, RADIUS } from "./constants";
 import {
   loadProfiles,
   saveProfiles,
@@ -9,7 +9,6 @@ import {
   saveNotificationPrefs,
 } from "./utils/storage";
 import { initProgress, progressReducer } from "./utils/progress";
-import StarField from "./components/StarField";
 import ProgressTracker from "./components/ProgressTracker";
 import KidSelector from "./components/KidSelector";
 import ModeSelectScreen from "./components/ModeSelectScreen";
@@ -111,13 +110,13 @@ export default function WordHeroApp() {
         <div
           style={{
             color: C.accent,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 24,
-            letterSpacing: 4,
+            fontWeight: 700,
             animation: "starPulse 1.5s ease-in-out infinite",
           }}
         >
-          ⚡ LOADING... ⚡
+          LOADING...
         </div>
       </div>
     );
@@ -161,12 +160,6 @@ export default function WordHeroApp() {
         overflow: "hidden",
       }}
     >
-      <link
-        href="https://fonts.googleapis.com/css2?family=Russo+One&family=Nunito:wght@700;800;900&display=swap"
-        rel="stylesheet"
-      />
-      <StarField />
-
       {/* Header */}
       <div
         style={{
@@ -176,7 +169,6 @@ export default function WordHeroApp() {
           padding: "16px 16px 8px",
           position: "relative",
           zIndex: 1,
-          animation: "modeStagger 0.4s ease-out 0.1s both",
         }}
       >
         <button
@@ -185,30 +177,30 @@ export default function WordHeroApp() {
           }}
           style={{
             background: C.panel,
-            border: `1px solid ${C.muted}30`,
-            borderRadius: 10,
+            border: `2px solid ${C.border}`,
+            borderRadius: RADIUS.small,
             padding: "6px 12px",
             cursor: "pointer",
-            color: C.muted,
-            fontFamily: "'Russo One', sans-serif",
-            fontSize: 12,
-            letterSpacing: 1,
+            color: C.text,
+            fontFamily: FONT,
+            fontSize: 13,
+            fontWeight: 600,
           }}
         >
-          ← SWITCH
+          ← Switch
         </button>
 
         <div style={{ textAlign: "center" }}>
           <div
             style={{
               fontSize: 22,
-              fontFamily: "'Russo One', sans-serif",
-              color: C.accent,
-              letterSpacing: 4,
-              textShadow: `0 0 15px ${C.accent}40, 1px 1px 0 ${C.red}`,
+              fontFamily: FONT,
+              color: C.text,
+              fontWeight: 700,
+              letterSpacing: 2,
             }}
           >
-            ⚡ WORD HERO ⚡
+            Word Hero
           </div>
         </div>
 
@@ -218,18 +210,18 @@ export default function WordHeroApp() {
             alignItems: "center",
             gap: 6,
             background: C.panel,
-            borderRadius: 10,
+            borderRadius: RADIUS.small,
             padding: "4px 10px",
-            border: `1px solid ${C.accent}20`,
+            border: `2px solid ${C.border}`,
           }}
         >
           <span style={{ fontSize: 20 }}>{activeKid.avatar}</span>
           <span
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               color: C.text,
               fontSize: 13,
-              letterSpacing: 1,
+              fontWeight: 600,
             }}
           >
             {activeKid.name}
@@ -256,19 +248,18 @@ export default function WordHeroApp() {
             style={{
               background:
                 mode === m.key
-                  ? `linear-gradient(135deg, ${C.accent}, ${C.red})`
+                  ? C.accent
                   : C.panel,
-              color: mode === m.key ? C.bg : C.muted,
-              border: `2px solid ${mode === m.key ? C.accent : "transparent"}`,
-              borderRadius: 12,
+              color: mode === m.key ? C.textLight : C.text,
+              border: "none",
+              borderBottom: mode === m.key ? `4px solid ${C.accent}cc` : `4px solid ${C.border}`,
+              borderRadius: RADIUS.button,
               padding: "8px 16px",
               cursor: "pointer",
-              fontWeight: 800,
-              fontSize: 12,
-              fontFamily: "'Russo One', sans-serif",
-              letterSpacing: 2,
+              fontWeight: 700,
+              fontSize: 13,
+              fontFamily: FONT,
               transition: "all 0.2s",
-              boxShadow: mode === m.key ? `0 4px 12px ${C.accent}35` : "none",
             }}
           >
             {m.icon} {m.label}
@@ -326,17 +317,17 @@ export default function WordHeroApp() {
           }}
           style={{
             background: "transparent",
-            border: `1px solid ${C.muted}30`,
+            border: `2px solid ${C.border}`,
             color: C.muted,
-            borderRadius: 8,
+            borderRadius: RADIUS.small,
             padding: "5px 14px",
-            fontSize: 10,
+            fontSize: 12,
             cursor: "pointer",
-            fontFamily: "'Russo One', sans-serif",
-            letterSpacing: 2,
+            fontFamily: FONT,
+            fontWeight: 500,
           }}
         >
-          RESET PROGRESS
+          Reset Progress
         </button>
       </div>
 

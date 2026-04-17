@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { WORD_GROUPS, GROUP_NAMES, C } from "../constants";
+import { WORD_GROUPS, GROUP_NAMES, C, FONT, RADIUS } from "../constants";
 import GroupSelector from "./GroupSelector";
 import CountdownTimer from "./CountdownTimer";
 import Btn from "./Btn";
@@ -221,7 +221,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         </div>
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 24,
             color: C.accent,
             letterSpacing: 3,
@@ -231,7 +231,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         </div>
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 36,
             color: pct >= 80 ? C.green : C.accent,
           }}
@@ -241,7 +241,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         <div
           style={{
             color: C.muted,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 13,
             letterSpacing: 2,
             textAlign: "center",
@@ -275,7 +275,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         <div style={{ fontSize: 64 }}>{passed ? "🏆" : "💪"}</div>
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 22,
             color: C.accent,
             letterSpacing: 3,
@@ -311,7 +311,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
               >
                 <div
                   style={{
-                    fontFamily: "'Russo One', sans-serif",
+                    fontFamily: FONT,
                     fontSize: 11,
                     color: C.muted,
                     letterSpacing: 2,
@@ -321,7 +321,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
                 </div>
                 <div
                   style={{
-                    fontFamily: "'Russo One', sans-serif",
+                    fontFamily: FONT,
                     fontSize: 22,
                     color: p >= 80 ? C.green : C.accent,
                   }}
@@ -330,7 +330,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
                 </div>
                 <div
                   style={{
-                    fontFamily: "'Russo One', sans-serif",
+                    fontFamily: FONT,
                     fontSize: 10,
                     color: C.muted,
                   }}
@@ -344,7 +344,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
 
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 32,
             color: passed ? C.green : C.accent,
             textShadow: passed ? `0 0 20px ${C.green}60` : "none",
@@ -359,7 +359,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             <div
               style={{
                 color: C.green,
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 fontSize: 14,
                 letterSpacing: 2,
                 textAlign: "center",
@@ -376,7 +376,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             <div
               style={{
                 color: C.muted,
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 fontSize: 13,
                 letterSpacing: 2,
                 textAlign: "center",
@@ -422,7 +422,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         <div style={{ fontSize: 64 }}>🎤</div>
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 22,
             color: C.accent,
             letterSpacing: 3,
@@ -444,7 +444,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
           <div
             style={{
               color: C.text,
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 13,
               letterSpacing: 1,
               lineHeight: 1.7,
@@ -507,7 +507,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
                     ? C.green
                     : C.panel,
               color: r <= round ? C.bg : C.muted,
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 14,
               fontWeight: 800,
               border: `2px solid ${r === round ? C.accent : r < round ? C.green : C.muted + "30"}`,
@@ -520,7 +520,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         <span
           style={{
             color: C.muted,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 11,
             letterSpacing: 2,
             marginLeft: 4,
@@ -538,7 +538,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         style={{
           color: C.muted,
           fontSize: 12,
-          fontFamily: "'Russo One', sans-serif",
+          fontFamily: FONT,
           letterSpacing: 2,
         }}
       >
@@ -601,7 +601,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
           <div
             style={{
               fontSize: 64,
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               color: C.bg,
               textShadow: "2px 2px 0 rgba(255,255,255,0.2)",
               letterSpacing: 4,
@@ -625,7 +625,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
                 fontWeight: 700,
                 cursor: "pointer",
                 fontSize: 13,
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
               }}
             >
               🔊 HEAR IT
@@ -662,7 +662,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
               alignItems: "center",
               gap: 10,
               color: C.blue,
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 15,
               letterSpacing: 2,
             }}
@@ -691,7 +691,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
           >
             <div
               style={{
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 fontSize: 20,
                 color: C.green,
                 letterSpacing: 3,
@@ -717,7 +717,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
           >
             <div
               style={{
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 fontSize: 16,
                 color: C.red,
                 letterSpacing: 2,
@@ -754,7 +754,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
           >
             <div
               style={{
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 fontSize: 16,
                 color: C.red,
                 letterSpacing: 2,
@@ -781,7 +781,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             <div
               style={{
                 color: C.muted,
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 fontSize: 11,
                 letterSpacing: 1,
               }}
@@ -830,7 +830,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         <div
           style={{
             color: C.muted,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 11,
             letterSpacing: 2,
           }}

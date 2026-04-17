@@ -1,4 +1,4 @@
-import { C } from "../constants";
+import { C, FONT } from "../constants";
 
 const GlobalStyles = () => (
   <style>{`
@@ -46,8 +46,9 @@ const GlobalStyles = () => (
       15%,85% { opacity: 0.85; }
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: ${FONT}; }
     button:active { transform: scale(0.96) !important; }
-    input::placeholder { color: ${C.muted}80; }
+    input::placeholder { color: ${C.muted}99; }
   `}</style>
 );
 

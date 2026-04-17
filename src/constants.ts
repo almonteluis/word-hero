@@ -90,14 +90,33 @@ export const ALL_WORDS = Object.values(WORD_GROUPS).flat();
 export const GROUP_NAMES = Object.keys(WORD_GROUPS);
 
 export const C = {
-  bg: "#0a0e27",
-  panel: "#111638",
-  panelHover: "#181e4a",
-  accent: "#f6c619",
-  red: "#e84545",
-  blue: "#4a90ff",
-  green: "#2ecc71",
-  purple: "#9b59b6",
-  text: "#f0f0f0",
-  muted: "#7a82a6",
+  // Kumi theme — bright, friendly kids palette
+  bg: "#B5DE5E",         // --bg-world: lime green outdoors
+  surface: "#C9F0E2",    // --bg-surface: mint teal cards
+  panel: "#E8F5E0",      // light green panels
+  panelHover: "#D4EDCA",
+  primary: "#8BCF3B",    // --primary-cta: bright green buttons
+  secondary: "#3FAFE8",  // --secondary-cta: sky blue alt buttons
+  accent: "#F5A623",     // --accent-warm: orange highlights/progress
+  heart: "#FF6B7A",      // --accent-heart: red/pink hearts/lives
+  sun: "#FFC93C",        // --accent-sun: yellow coins/stars
+  text: "#3A4A54",       // --text-primary: dark slate body
+  textLight: "#FFFFFF",  // --text-on-cta: white on colored buttons
+  muted: "#7BA68A",      // muted green for secondary text
+  green: "#8BCF3B",      // success/correct (same as primary)
+  red: "#FF6B7A",        // wrong/heart (same as heart)
+  blue: "#3FAFE8",       // info/secondary (same as secondary)
+  purple: "#B088D4",     // soft purple accent
+  // Shadows & borders
+  shadow: "rgba(58, 74, 84, 0.08)",
+  border: "rgba(58, 74, 84, 0.12)",
+};
+
+// Semantic aliases for clarity
+export const FONT = "'Fredoka', sans-serif";
+export const RADIUS = {
+  card: 20,
+  button: 24,
+  pill: 50,
+  small: 12,
 };

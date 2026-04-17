@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C } from "../constants";
+import { C, FONT, RADIUS } from "../constants";
 import HomeBackground from "./HomeBackground";
 
 function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
@@ -114,7 +114,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
               padding: "6px 12px",
               cursor: "pointer",
               color: C.muted,
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 12,
               letterSpacing: 1,
             }}
@@ -161,7 +161,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
         </div>
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 20,
             color: C.text,
             letterSpacing: 2,
@@ -174,7 +174,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
         {/* Title */}
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: "clamp(16px, 5vw, 20px)",
             color: C.accent,
             letterSpacing: 4,
@@ -255,7 +255,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
                 <div style={{ flex: 1 }}>
                   <div
                     style={{
-                      fontFamily: "'Russo One', sans-serif",
+                      fontFamily: FONT,
                       fontSize: 17,
                       color: m.color,
                       letterSpacing: 2,
@@ -265,7 +265,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
                   </div>
                   <div
                     style={{
-                      fontFamily: "'Nunito', sans-serif",
+                      fontFamily: FONT,
                       fontSize: 13,
                       color: C.muted,
                       marginTop: 2,
@@ -282,7 +282,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
                         padding: "2px 8px",
                         background: `${m.color}15`,
                         borderRadius: 6,
-                        fontFamily: "'Nunito', sans-serif",
+                        fontFamily: FONT,
                         fontSize: 10,
                         color: m.color,
                         fontWeight: 800,

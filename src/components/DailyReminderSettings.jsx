@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { C } from "../constants";
+import { C, FONT } from "../constants";
 import {
   loadNotificationPrefs,
   saveNotificationPrefs,
@@ -69,7 +69,7 @@ function DailyReminderSettings() {
     >
       <div
         style={{
-          fontFamily: "'Russo One', sans-serif",
+          fontFamily: FONT,
           fontSize: 13,
           color: C.blue,
           letterSpacing: 2,
@@ -80,7 +80,7 @@ function DailyReminderSettings() {
       </div>
       <div
         style={{
-          fontFamily: "'Russo One', sans-serif",
+          fontFamily: FONT,
           fontSize: 10,
           color: C.muted,
           letterSpacing: 1,
@@ -103,7 +103,7 @@ function DailyReminderSettings() {
         >
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 11,
               color: C.accent,
               letterSpacing: 1,
@@ -117,7 +117,7 @@ function DailyReminderSettings() {
               fontSize: 12,
               color: C.text,
               lineHeight: 1.6,
-              fontFamily: "'Nunito', sans-serif",
+              fontFamily: FONT,
             }}
           >
             To enable notifications on iPhone/iPad:
@@ -144,7 +144,7 @@ function DailyReminderSettings() {
                 padding: "3px 10px",
                 fontSize: 10,
                 cursor: "pointer",
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
               }}
             >
               DISMISS
@@ -162,7 +162,7 @@ function DailyReminderSettings() {
             borderRadius: 10,
             padding: 10,
             marginBottom: 14,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 11,
             color: C.red,
             letterSpacing: 1,
@@ -184,7 +184,7 @@ function DailyReminderSettings() {
       >
         <span
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 12,
             color: C.text,
             letterSpacing: 1,
@@ -243,7 +243,7 @@ function DailyReminderSettings() {
         >
           <span
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 12,
               color: C.text,
               letterSpacing: 1,
@@ -262,7 +262,7 @@ function DailyReminderSettings() {
               border: `1px solid ${C.blue}40`,
               borderRadius: 8,
               color: C.accent,
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 14,
               padding: "4px 10px",
               letterSpacing: 1,
@@ -287,7 +287,7 @@ function DailyReminderSettings() {
                 border: "none",
                 borderRadius: 10,
                 padding: "8px 16px",
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 fontSize: 11,
                 letterSpacing: 2,
                 cursor: "pointer",
@@ -306,7 +306,7 @@ function DailyReminderSettings() {
               border: `1px solid ${C.blue}40`,
               borderRadius: 10,
               padding: "8px 14px",
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 11,
               letterSpacing: 2,
               cursor: "pointer",
@@ -321,7 +321,7 @@ function DailyReminderSettings() {
         <div
           style={{
             marginTop: 10,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 10,
             color: C.muted,
             letterSpacing: 1,

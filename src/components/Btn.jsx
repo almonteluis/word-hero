@@ -1,27 +1,30 @@
-import { C } from "../constants";
+import { C, FONT, RADIUS } from "../constants";
 
 function Btn({
   children,
-  color = C.accent,
+  color = C.primary,
   onClick,
   style = {},
   small = false,
 }) {
+  const isLightFill = color === C.primary || color === C.sun || color === C.panel;
+  // 3D bottom border: darker shade of the fill color
+  const borderDark = `${color}cc`;
+
   return (
     <button
       onClick={onClick}
       style={{
         background: color,
-        color: color === C.accent || color === C.green ? C.bg : "#fff",
+        color: isLightFill ? C.text : C.textLight,
         border: "none",
-        borderRadius: small ? 12 : 16,
-        padding: small ? "8px 18px" : "12px 28px",
-        fontSize: small ? 13 : 16,
-        fontWeight: 800,
+        borderBottom: `4px solid ${borderDark}`,
+        borderRadius: RADIUS.button,
+        padding: small ? "8px 20px" : "12px 28px",
+        fontSize: small ? 14 : 16,
+        fontWeight: 700,
         cursor: "pointer",
-        fontFamily: "'Russo One', sans-serif",
-        letterSpacing: 2,
-        boxShadow: `0 4px 15px ${color}50`,
+        fontFamily: FONT,
         transition: "transform 0.15s",
         ...style,
       }}

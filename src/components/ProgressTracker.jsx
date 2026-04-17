@@ -1,4 +1,4 @@
-import { C, ALL_WORDS, WORD_GROUPS, GROUP_NAMES } from "../constants";
+import { C, FONT, RADIUS, ALL_WORDS, WORD_GROUPS, GROUP_NAMES } from "../constants";
 import { MASTERY_SESSIONS } from "../utils/progress";
 import DailyReminderSettings from "./DailyReminderSettings";
 
@@ -59,7 +59,7 @@ function ProgressTracker({ progress, kidName }) {
         </div>
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 20,
             color: C.accent,
             letterSpacing: 3,
@@ -70,7 +70,7 @@ function ProgressTracker({ progress, kidName }) {
         </div>
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 12,
             color: C.muted,
             letterSpacing: 2,
@@ -94,7 +94,7 @@ function ProgressTracker({ progress, kidName }) {
         >
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 13,
               color: C.red,
               letterSpacing: 2,
@@ -105,7 +105,7 @@ function ProgressTracker({ progress, kidName }) {
           </div>
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 11,
               color: C.muted,
               letterSpacing: 1,
@@ -128,7 +128,7 @@ function ProgressTracker({ progress, kidName }) {
                     borderRadius: 8,
                     fontSize: 12,
                     fontWeight: 700,
-                    fontFamily: "'Russo One', sans-serif",
+                    fontFamily: FONT,
                     letterSpacing: 1,
                     background: C.red + "20",
                     color: C.red,
@@ -157,7 +157,7 @@ function ProgressTracker({ progress, kidName }) {
         >
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 13,
               color: C.accent,
               letterSpacing: 2,
@@ -168,7 +168,7 @@ function ProgressTracker({ progress, kidName }) {
           </div>
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 11,
               color: C.muted,
               letterSpacing: 1,
@@ -189,7 +189,7 @@ function ProgressTracker({ progress, kidName }) {
                     borderRadius: 8,
                     fontSize: 12,
                     fontWeight: 700,
-                    fontFamily: "'Russo One', sans-serif",
+                    fontFamily: FONT,
                     letterSpacing: 1,
                     background: C.accent + "15",
                     color: C.accent,
@@ -259,7 +259,7 @@ function ProgressTracker({ progress, kidName }) {
             <div
               style={{
                 fontSize: 26,
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 color: s.color,
                 letterSpacing: 1,
               }}
@@ -270,7 +270,7 @@ function ProgressTracker({ progress, kidName }) {
               style={{
                 fontSize: 9,
                 color: C.muted,
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 letterSpacing: 2,
               }}
             >
@@ -292,7 +292,7 @@ function ProgressTracker({ progress, kidName }) {
           <span
             style={{
               color: C.muted,
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 11,
               letterSpacing: 2,
             }}
@@ -302,7 +302,7 @@ function ProgressTracker({ progress, kidName }) {
           <span
             style={{
               color: C.accent,
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               fontSize: 11,
             }}
           >
@@ -356,7 +356,7 @@ function ProgressTracker({ progress, kidName }) {
               >
                 <span
                   style={{
-                    fontFamily: "'Russo One', sans-serif",
+                    fontFamily: FONT,
                     color: C.text,
                     fontSize: 14,
                     letterSpacing: 1,
@@ -366,7 +366,7 @@ function ProgressTracker({ progress, kidName }) {
                 </span>
                 <span
                   style={{
-                    fontFamily: "'Russo One', sans-serif",
+                    fontFamily: FONT,
                     color: gm === words.length ? C.green : C.accent,
                     fontSize: 12,
                   }}
@@ -395,7 +395,7 @@ function ProgressTracker({ progress, kidName }) {
                         borderRadius: 8,
                         fontSize: 12,
                         fontWeight: 700,
-                        fontFamily: "'Russo One', sans-serif",
+                        fontFamily: FONT,
                         letterSpacing: 1,
                         background: progress.mastered[w]
                           ? C.green + "20"

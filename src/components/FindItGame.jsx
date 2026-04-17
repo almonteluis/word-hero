@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { WORD_GROUPS, GROUP_NAMES, C } from "../constants";
+import { WORD_GROUPS, GROUP_NAMES, C, FONT, RADIUS } from "../constants";
 import GroupSelector from "./GroupSelector";
 import Btn from "./Btn";
 import { speak } from "../utils/speech";
@@ -91,7 +91,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
         <div
           style={{
             fontSize: 40,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             color: C.accent,
             textShadow: `0 0 25px ${C.accent}60`,
             letterSpacing: 4,
@@ -102,7 +102,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
         <div
           style={{
             color: C.green,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 22,
             letterSpacing: 3,
             margin: "8px 0 24px",
@@ -138,7 +138,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
         <span
           style={{
             color: C.accent,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 16,
             letterSpacing: 2,
           }}
@@ -168,7 +168,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
         <span
           style={{
             color: C.muted,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 12,
           }}
         >
@@ -180,7 +180,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
         <div
           style={{
             color: C.accent,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 14,
             letterSpacing: 3,
             textShadow: `0 0 10px ${C.accent}60`,
@@ -206,7 +206,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
           style={{
             color: C.muted,
             fontSize: 11,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             letterSpacing: 3,
             marginBottom: 8,
           }}
@@ -224,7 +224,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
             fontSize: 17,
             fontWeight: 800,
             color: C.bg,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             letterSpacing: 3,
             boxShadow: `0 4px 15px ${C.accent}40`,
           }}
@@ -258,7 +258,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
                 cursor: "pointer",
                 fontSize: 26,
                 fontWeight: 800,
-                fontFamily: "'Russo One', sans-serif",
+                fontFamily: FONT,
                 color: C.text,
                 letterSpacing: 3,
                 boxShadow: correct
@@ -282,7 +282,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
         <div
           style={{
             fontSize: 20,
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             color: C.green,
             animation: "fadeUp 0.3s",
             letterSpacing: 3,

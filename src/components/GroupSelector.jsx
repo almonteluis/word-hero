@@ -1,4 +1,4 @@
-import { GROUP_NAMES, C } from "../constants";
+import { GROUP_NAMES, C, FONT, RADIUS } from "../constants";
 
 function GroupSelector({ selected, onChange }) {
   return (
@@ -17,15 +17,15 @@ function GroupSelector({ selected, onChange }) {
           onClick={() => onChange(i)}
           style={{
             background: i === selected ? C.accent : C.panel,
-            color: i === selected ? C.bg : C.muted,
-            border: `2px solid ${i === selected ? C.accent : "transparent"}`,
-            borderRadius: 20,
-            padding: "5px 12px",
+            color: i === selected ? C.textLight : C.text,
+            border: "none",
+            borderBottom: i === selected ? `4px solid ${C.accent}cc` : `3px solid ${C.border}`,
+            borderRadius: RADIUS.button,
+            padding: "5px 14px",
             cursor: "pointer",
-            fontWeight: 700,
-            fontSize: 11,
-            fontFamily: "'Russo One', sans-serif",
-            letterSpacing: 1,
+            fontWeight: 600,
+            fontSize: 12,
+            fontFamily: FONT,
             transition: "all 0.2s",
           }}
         >
