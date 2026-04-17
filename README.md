@@ -1,6 +1,6 @@
 # Word Hero — Sight Word Training Academy
 
-A superhero-themed sight word learning app (PWA) built for kids. Features speech recognition, multi-child profiles, gamified progression, and offline support.
+A superhero-themed sight word learning app (PWA) built for kids. Features speech recognition, multi-child profiles, animated mode selection, daily challenge notifications, gamified progression, and offline support.
 
 Built with **React 18 + Vite 6**.
 
@@ -9,13 +9,15 @@ Built with **React 18 + Vite 6**.
 ## Features
 
 - **Kid Profiles** — Each child gets a personalized profile with emoji avatar and separate progress tracking
-- **3-Round Flashcard System:**
+- **Mode Selection Screen** — Animated "Choose Your Mission" screen with portal-expand transitions into each activity
+- **3-Round Flashcard System (Flash Training):**
   - **Round 1 — Listen & Learn:** Word is spoken aloud; child marks it correct/incorrect manually
   - **Round 2 — Say It:** 10-second timer; child must say the word into the mic
   - **Round 3 — Speed Round:** 5-second timer; faster-paced speech recognition challenge
-- **Find It Game** — Hear a word, tap the correct one from 4 on-screen choices
-- **Progress Tracker** — Tracks mastered words, accuracy %, sessions played, and hero rank
-- **Word Mastery Logic** — 3 consecutive correct answers marks a word as mastered; 80%+ overall accuracy unlocks the Find It game
+- **Find It Game** — Hear a word, tap the correct one from 4 on-screen choices (unlocked after completing a Flash Training session)
+- **Hero Stats** — Tracks mastered words, accuracy %, sessions played, and hero rank
+- **Word Mastery** — 3 consecutive correct answers marks a word as mastered; 7-day review decay un-masters words not practiced recently
+- **Daily Challenge Notifications** — Configurable daily reminder to practice (with iOS notification support)
 - **Speech Recognition** — Uses the Web Speech API; falls back to manual buttons if mic is unavailable
 - **PWA** — Installable on iPhone/Android home screen; works fully offline after first load
 
@@ -23,15 +25,16 @@ Built with **React 18 + Vite 6**.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 18 |
-| Build Tool | Vite 6 |
-| PWA | vite-plugin-pwa |
-| Speech | Web Speech API (synthesis + recognition) |
-| Persistence | localStorage |
-| Fonts | Google Fonts (Russo One, Nunito) |
-| Deployment | Vercel |
+| Layer       | Technology                               |
+| ----------- | ---------------------------------------- |
+| Framework   | React 18                                 |
+| Build Tool  | Vite 6                                   |
+| Testing     | Vitest + React Testing Library           |
+| PWA         | vite-plugin-pwa                          |
+| Speech      | Web Speech API (synthesis + recognition) |
+| Persistence | localStorage                             |
+| Fonts       | Google Fonts (Russo One, Nunito)         |
+| Deployment  | Vercel                                   |
 
 ---
 
@@ -114,19 +117,37 @@ word-hero/
 │   ├── icon-512.png       # PWA icon (512x512)
 │   └── icon.svg           # Vector logo
 ├── src/
-│   ├── App.jsx            # Main application (all components + logic)
-│   └── main.jsx           # React entry point
+│   ├── App.jsx            # Main application (~4000 lines, all components + logic)
+│   ├── constants.ts       # Shared constants (word groups, color palette)
+│   ├── main.jsx           # React entry point
+│   └── test-setup.js      # Vitest + jest-dom setup
 ├── index.html             # HTML shell with PWA meta tags
-├── vite.config.js         # Vite + PWA plugin config
+├── vite.config.js         # Vite + PWA plugin + Vitest config
 └── package.json
 ```
+
+### Key Components (in `src/App.jsx`)
+
+| Component              | Description                                              |
+| ---------------------- | -------------------------------------------------------- |
+| `WordHeroApp`          | Root component — manages profiles, active kid, and modes |
+| `KidSelector`          | Profile selection/creation screen with emoji avatars      |
+| `ModeSelectScreen`     | Animated mission-select screen (Flash / Find It / Stats)  |
+| `FlashcardMode`        | 3-round flashcard training with speech recognition        |
+| `FindItGame`           | Tap-the-correct-word recognition game                     |
+| `ProgressTracker`      | Stats dashboard — mastery, accuracy, hero rank            |
+| `DailyReminderSettings`| Notification scheduling and preferences                   |
+| `CountdownTimer`       | Animated countdown used in Rounds 2 and 3                 |
+| `HomeBackground`       | Animated star field background                            |
 
 ---
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start dev server with hot reload |
-| `npm run build` | Build optimized production bundle |
-| `npm run preview` | Preview production build locally |
+| Command            | Description                       |
+| ------------------ | --------------------------------- |
+| `npm run dev`      | Start dev server with hot reload  |
+| `npm run build`    | Build optimized production bundle |
+| `npm run preview`  | Preview production build locally  |
+| `npm run test`     | Run tests once (Vitest)           |
+| `npm run test:watch` | Run tests in watch mode         |
