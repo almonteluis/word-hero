@@ -1,4 +1,5 @@
-import { C, ALL_WORDS, WORD_GROUPS, GROUP_NAMES, MASTERY_SESSIONS } from "../constants";
+import { C, ALL_WORDS, WORD_GROUPS, GROUP_NAMES } from "../constants";
+import { MASTERY_SESSIONS } from "../utils/progress";
 import DailyReminderSettings from "./DailyReminderSettings";
 
 function ProgressTracker({ progress, kidName }) {
