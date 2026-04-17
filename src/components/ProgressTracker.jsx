@@ -2,6 +2,82 @@ import { C, FONT, RADIUS, ALL_WORDS, WORD_GROUPS, GROUP_NAMES } from "../constan
 import { MASTERY_SESSIONS } from "../utils/progress";
 import DailyReminderSettings from "./DailyReminderSettings";
 
+const DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+
+// Build streak from session history or simulate from sessions count
+function getStreak(progress) {
+  const sessions = progress.sessions || 0;
+  const today = new Date();
+  const todayIdx = (today.getDay() + 6) % 7; // Mon=0
+  const streak = [];
+  for (let i = 0; i < 7; i++) {
+    if (i < todayIdx) {
+      // Past days — mark completed if enough sessions
+      streak.push(sessions >= (todayIdx - i) ? "done" : "pending");
+    } else if (i === todayIdx) {
+      streak.push(sessions > 0 ? "done" : "today");
+    } else {
+      streak.push("pending");
+    }
+  }
+  return streak;
+}
+
+// Achievement-style milestones
+function getAchievements(progress, masteredCount) {
+  const ws = progress.wordStats || {};
+  const totalAttempts = progress.totalAttempts || 0;
+  const accuracy =
+    totalAttempts > 0
+      ? Math.round(((progress.totalCorrect || 0) / totalAttempts) * 100)
+      : 0;
+
+  return [
+    {
+      icon: "📚",
+      title: "First Steps",
+      desc: "Learn 5 words",
+      progress: Math.min(masteredCount, 5),
+      total: 5,
+    },
+    {
+      icon: "⚡",
+      title: "Word Warrior",
+      desc: "Learn 20 words",
+      progress: Math.min(masteredCount, 20),
+      total: 20,
+    },
+    {
+      icon: "🛡️",
+      title: "Word Shield",
+      desc: "Learn 40 words",
+      progress: Math.min(masteredCount, 40),
+      total: 40,
+    },
+    {
+      icon: "👑",
+      title: "Word King",
+      desc: "Master all words",
+      progress: masteredCount,
+      total: ALL_WORDS.length,
+    },
+    {
+      icon: "🎯",
+      title: "Sharp Shooter",
+      desc: "80%+ accuracy",
+      progress: accuracy,
+      total: 100,
+    },
+    {
+      icon: "🔥",
+      title: "Streak Master",
+      desc: "Train 7 days",
+      progress: Math.min(progress.sessions || 0, 7),
+      total: 7,
+    },
+  ];
+}
+
 function ProgressTracker({ progress, kidName }) {
   const masteredCount = Object.keys(progress.mastered).length;
   const learningCount = Object.keys(progress.learning).length;
@@ -41,11 +117,25 @@ function ProgressTracker({ progress, kidName }) {
             ? "Hero in Training"
             : "New Recruit";
 
+  const level = Math.floor(masteredCount / 5) + 1;
+  const streak = getStreak(progress);
+  const achievements = getAchievements(progress, masteredCount);
+
   return (
     <div style={{ padding: "16px 16px 32px" }}>
-      {/* Hero rank */}
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <div style={{ fontSize: 48, marginBottom: 4 }}>
+      {/* Hero profile card */}
+      <div
+        style={{
+          background: "white",
+          borderRadius: RADIUS.card,
+          padding: "20px 16px",
+          textAlign: "center",
+          marginBottom: 16,
+          boxShadow: `0 4px 16px ${C.shadow}`,
+          border: `3px solid ${C.border}`,
+        }}
+      >
+        <div style={{ fontSize: 52, marginBottom: 4 }}>
           {masteredCount >= 60
             ? "👑"
             : masteredCount >= 40
@@ -66,13 +156,110 @@ function ProgressTracker({ progress, kidName }) {
         </div>
         <div
           style={{
+            display: "inline-block",
+            background: C.accent,
+            color: "white",
+            borderRadius: RADIUS.button,
+            padding: "3px 14px",
+            fontFamily: FONT,
+            fontSize: 13,
+            fontWeight: 600,
+            marginTop: 6,
+          }}
+        >
+          Lvl {level}
+        </div>
+        <div
+          style={{
             fontFamily: FONT,
             fontSize: 13,
             color: C.muted,
             fontWeight: 500,
+            marginTop: 4,
           }}
         >
           {kidName}'s Hero Profile
+        </div>
+      </div>
+
+      {/* Daily Streak Card */}
+      <div
+        style={{
+          background: "white",
+          borderRadius: RADIUS.card,
+          padding: 16,
+          marginBottom: 16,
+          boxShadow: `0 4px 16px ${C.shadow}`,
+          border: `3px solid ${C.border}`,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 15,
+            color: C.text,
+            fontWeight: 700,
+            marginBottom: 12,
+          }}
+        >
+          🔥 Daily Streak
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 4,
+          }}
+        >
+          {DAYS.map((day, i) => {
+            const state = streak[i];
+            return (
+              <div
+                key={day}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 4,
+                  flex: 1,
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: FONT,
+                    fontSize: 11,
+                    color: C.muted,
+                    fontWeight: 600,
+                  }}
+                >
+                  {day}
+                </div>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background:
+                      state === "done"
+                        ? C.green
+                        : state === "today"
+                          ? C.accent
+                          : C.surface,
+                    color: state === "done" ? "white" : state === "today" ? "white" : C.muted,
+                    fontSize: state === "done" ? 16 : 14,
+                    fontWeight: 700,
+                    border: state === "today" ? `3px solid ${C.accent}` : "none",
+                    boxShadow: state === "today" ? `0 0 12px ${C.accent}40` : "none",
+                  }}
+                >
+                  {state === "done" ? "✓" : state === "today" ? "!" : "·"}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -206,8 +393,8 @@ function ProgressTracker({ progress, kidName }) {
         style={{
           display: "flex",
           justifyContent: "center",
-          gap: 12,
-          marginBottom: 24,
+          gap: 10,
+          marginBottom: 20,
           flexWrap: "wrap",
         }}
       >
@@ -222,17 +409,17 @@ function ProgressTracker({ progress, kidName }) {
             style={{
               background: "white",
               borderRadius: RADIUS.card,
-              padding: "12px 16px",
+              padding: "10px 14px",
               textAlign: "center",
               border: `3px solid ${s.color}25`,
               boxShadow: `0 4px 12px ${C.shadow}`,
-              minWidth: 75,
+              minWidth: 72,
             }}
           >
-            <div style={{ fontSize: 22 }}>{s.icon}</div>
+            <div style={{ fontSize: 20 }}>{s.icon}</div>
             <div
               style={{
-                fontSize: 26,
+                fontSize: 22,
                 fontFamily: FONT,
                 color: s.color,
                 fontWeight: 700,
@@ -255,7 +442,7 @@ function ProgressTracker({ progress, kidName }) {
       </div>
 
       {/* Power bar */}
-      <div style={{ maxWidth: 380, margin: "0 auto 24px" }}>
+      <div style={{ maxWidth: 380, margin: "0 auto 20px" }}>
         <div
           style={{
             display: "flex",
@@ -305,11 +492,131 @@ function ProgressTracker({ progress, kidName }) {
         </div>
       </div>
 
+      {/* Achievements card */}
+      <div
+        style={{
+          background: "white",
+          borderRadius: RADIUS.card,
+          padding: 16,
+          marginBottom: 16,
+          boxShadow: `0 4px 16px ${C.shadow}`,
+          border: `3px solid ${C.border}`,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 15,
+            color: C.text,
+            fontWeight: 700,
+            marginBottom: 12,
+          }}
+        >
+          🏆 Achievements
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          {achievements.map((a) => {
+            const isComplete = a.progress >= a.total;
+            const progressPct = Math.round((a.progress / a.total) * 100);
+            return (
+              <div
+                key={a.title}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "8px 0",
+                  borderBottom: `1px solid ${C.border}`,
+                  opacity: isComplete ? 1 : 0.85,
+                }}
+              >
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 12,
+                    background: isComplete ? `${C.green}18` : C.surface,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 20,
+                    flexShrink: 0,
+                  }}
+                >
+                  {a.icon}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontFamily: FONT,
+                      fontSize: 13,
+                      color: C.text,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {a.title}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: FONT,
+                      fontSize: 11,
+                      color: C.muted,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {a.desc}
+                  </div>
+                  {/* Mini progress bar */}
+                  <div
+                    style={{
+                      height: 5,
+                      background: C.surface,
+                      borderRadius: 3,
+                      marginTop: 4,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${progressPct}%`,
+                        height: "100%",
+                        background: isComplete ? C.green : C.accent,
+                        borderRadius: 3,
+                        transition: "width 0.3s",
+                      }}
+                    />
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontFamily: FONT,
+                    fontSize: 12,
+                    color: isComplete ? C.green : C.accent,
+                    fontWeight: 700,
+                    flexShrink: 0,
+                  }}
+                >
+                  {isComplete ? "✓" : `${a.progress}/${a.total}`}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Word groups */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {GROUP_NAMES.map((gn) => {
           const words = WORD_GROUPS[gn];
           const gm = words.filter((w) => progress.mastered[w]).length;
+          const groupPct = Math.round((gm / words.length) * 100);
+          const isComplete = gm === words.length;
           return (
             <div
               key={gn}
@@ -317,7 +624,7 @@ function ProgressTracker({ progress, kidName }) {
                 background: "white",
                 borderRadius: RADIUS.card,
                 padding: 14,
-                border: `3px solid ${C.border}`,
+                border: `3px solid ${isComplete ? `${C.green}40` : C.border}`,
                 boxShadow: `0 4px 12px ${C.shadow}`,
               }}
             >
@@ -326,14 +633,14 @@ function ProgressTracker({ progress, kidName }) {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: 10,
+                  marginBottom: 6,
                 }}
               >
                 <span
                   style={{
                     fontFamily: FONT,
                     color: C.text,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: 600,
                   }}
                 >
@@ -342,15 +649,35 @@ function ProgressTracker({ progress, kidName }) {
                 <span
                   style={{
                     fontFamily: FONT,
-                    color: gm === words.length ? C.green : C.accent,
+                    color: isComplete ? C.green : C.accent,
                     fontSize: 13,
                     fontWeight: 600,
                   }}
                 >
-                  {gm === words.length ? "✓ Complete" : `${gm}/${words.length}`}
+                  {isComplete ? "✓ Complete" : `${gm}/${words.length}`}
                 </span>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {/* Group progress bar */}
+              <div
+                style={{
+                  height: 6,
+                  background: C.surface,
+                  borderRadius: 3,
+                  marginBottom: 10,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${groupPct}%`,
+                    height: "100%",
+                    background: isComplete ? C.green : C.accent,
+                    borderRadius: 3,
+                    transition: "width 0.3s",
+                  }}
+                />
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                 {words.map((w) => {
                   const stat = ws[w];
                   const hasStats = stat && stat.attempts > 0;
