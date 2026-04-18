@@ -5,16 +5,15 @@ import CountdownTimer from "./CountdownTimer";
 import Btn from "./Btn";
 import VictoryScreen from "./VictoryScreen";
 import { speak } from "../utils/speech";
-import { shuffle } from "../utils/shuffle";
-import { weightedShuffle } from "../utils/progress";
 import { useSpeechRecognition, wordMatch } from "../utils/speechRecognition";
+import { selectRoundWords } from "../utils/roundWords";
 
 function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const [group, setGroup] = useState(0);
   const [idx, setIdx] = useState(0);
   const [exitAnim, setExitAnim] = useState(null);
   const [shuffled, setShuffled] = useState(() =>
-    shuffle(WORD_GROUPS[GROUP_NAMES[0]]),
+    selectRoundWords(0, progress),
   );
   const [round, setRound] = useState(1);
   const [roundScores, setRoundScores] = useState({
@@ -38,23 +37,14 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
 
   const getWordsForRound = useCallback(
     (r) => {
-      const allGroupWords = WORD_GROUPS[GROUP_NAMES[group]];
-      const words =
-        r >= 2
-          ? allGroupWords.filter((w) => !progress.mastered[w])
-          : allGroupWords;
-      const pool = words.length > 0 ? words : allGroupWords;
-      return weightedShuffle(
-        pool,
-        progress.wordStats || {},
-        progress.mastered || {},
-      );
+      return selectRoundWords(group, progress);
     },
-    [group, progress.mastered, progress.wordStats],
+    [group, progress],
   );
 
   useEffect(() => {
-    setShuffled(getWordsForRound(1));
+    const words = selectRoundWords(group, progress);
+    setShuffled(words);
     setIdx(0);
     setRound(1);
     setRoundScores({
