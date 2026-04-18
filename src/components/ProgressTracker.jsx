@@ -1,27 +1,75 @@
-import { C, ALL_WORDS, WORD_GROUPS, GROUP_NAMES } from "../constants";
-import { MASTERY_SESSIONS } from "../utils/progress";
+import { C, FONT, RADIUS, ALL_WORDS, WORD_GROUPS, GROUP_NAMES } from "../constants";
+import { MASTERY_SESSIONS, getStreak, getHeroStats, STREAK_DAYS } from "../utils/progress";
 import DailyReminderSettings from "./DailyReminderSettings";
 
-function ProgressTracker({ progress, kidName }) {
-  const masteredCount = Object.keys(progress.mastered).length;
-  const learningCount = Object.keys(progress.learning).length;
-  const pct = Math.round((masteredCount / ALL_WORDS.length) * 100);
+// Achievement-style milestones
+function getAchievements(progress, masteredCount) {
+  const ws = progress.wordStats || {};
+  const totalAttempts = progress.totalAttempts || 0;
   const accuracy =
-    progress.totalAttempts > 0
-      ? Math.round((progress.totalCorrect / progress.totalAttempts) * 100)
+    totalAttempts > 0
+      ? Math.round(((progress.totalCorrect || 0) / totalAttempts) * 100)
       : 0;
+
+  return [
+    {
+      icon: "📚",
+      title: "First Steps",
+      desc: "Learn 5 words",
+      progress: Math.min(masteredCount, 5),
+      total: 5,
+    },
+    {
+      icon: "⚡",
+      title: "Word Warrior",
+      desc: "Learn 20 words",
+      progress: Math.min(masteredCount, 20),
+      total: 20,
+    },
+    {
+      icon: "🛡️",
+      title: "Word Shield",
+      desc: "Learn 40 words",
+      progress: Math.min(masteredCount, 40),
+      total: 40,
+    },
+    {
+      icon: "👑",
+      title: "Word King",
+      desc: "Master all words",
+      progress: masteredCount,
+      total: ALL_WORDS.length,
+    },
+    {
+      icon: "🎯",
+      title: "Sharp Shooter",
+      desc: "80%+ accuracy",
+      progress: accuracy,
+      total: 100,
+    },
+    {
+      icon: "🔥",
+      title: "Streak Master",
+      desc: "Train 7 days",
+      progress: Math.min(progress.sessions || 0, 7),
+      total: 7,
+    },
+  ];
+}
+
+function ProgressTracker({ progress, kidName }) {
+  const { masteredCount, learningCount, accuracy, level, rank } = getHeroStats(progress);
+  const pct = Math.round((masteredCount / ALL_WORDS.length) * 100);
   const ws = progress.wordStats || {};
 
-  // Find words needing review (mastered but approaching 7-day limit)
   const now = Date.now();
-  const reviewWarningCutoff = now - 5 * 24 * 60 * 60 * 1000; // warn at 5 days
+  const reviewWarningCutoff = now - 5 * 24 * 60 * 60 * 1000;
   const needsReview = Object.keys(progress.mastered).filter((w) => {
     const stat = ws[w];
     const lastSeen = stat ? stat.lastSeen : progress.mastered[w];
     return lastSeen && lastSeen < reviewWarningCutoff;
   });
 
-  // Find struggling words (attempted 3+ times with < 60% accuracy)
   const strugglingWords = ALL_WORDS.filter((w) => {
     const stat = ws[w];
     if (!stat || stat.attempts < 3) return false;
@@ -32,23 +80,24 @@ function ProgressTracker({ progress, kidName }) {
     return aAcc - bAcc;
   });
 
-  // Rank system
-  const rank =
-    masteredCount >= 60
-      ? "LEGENDARY HERO"
-      : masteredCount >= 40
-        ? "SUPER HERO"
-        : masteredCount >= 20
-          ? "RISING HERO"
-          : masteredCount >= 5
-            ? "HERO IN TRAINING"
-            : "NEW RECRUIT";
+  const streak = getStreak(progress);
+  const achievements = getAchievements(progress, masteredCount);
 
   return (
     <div style={{ padding: "16px 16px 32px" }}>
-      {/* Hero rank */}
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <div style={{ fontSize: 48, marginBottom: 4 }}>
+      {/* Hero profile card */}
+      <div
+        style={{
+          background: "white",
+          borderRadius: RADIUS.card,
+          padding: "20px 16px",
+          textAlign: "center",
+          marginBottom: 16,
+          boxShadow: `0 4px 16px ${C.shadow}`,
+          border: `3px solid ${C.border}`,
+        }}
+      >
+        <div style={{ fontSize: 52, marginBottom: 4 }}>
           {masteredCount >= 60
             ? "👑"
             : masteredCount >= 40
@@ -59,24 +108,120 @@ function ProgressTracker({ progress, kidName }) {
         </div>
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
+            fontFamily: FONT,
             fontSize: 20,
             color: C.accent,
-            letterSpacing: 3,
-            textShadow: `0 0 15px ${C.accent}40`,
+            fontWeight: 700,
           }}
         >
           {rank}
         </div>
         <div
           style={{
-            fontFamily: "'Russo One', sans-serif",
-            fontSize: 12,
-            color: C.muted,
-            letterSpacing: 2,
+            display: "inline-block",
+            background: C.accent,
+            color: "white",
+            borderRadius: RADIUS.button,
+            padding: "3px 14px",
+            fontFamily: FONT,
+            fontSize: 13,
+            fontWeight: 600,
+            marginTop: 6,
           }}
         >
-          {kidName.toUpperCase()}'S HERO PROFILE
+          Lvl {level}
+        </div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 13,
+            color: C.muted,
+            fontWeight: 500,
+            marginTop: 4,
+          }}
+        >
+          {kidName}'s Hero Profile
+        </div>
+      </div>
+
+      {/* Daily Streak Card */}
+      <div
+        style={{
+          background: "white",
+          borderRadius: RADIUS.card,
+          padding: 16,
+          marginBottom: 16,
+          boxShadow: `0 4px 16px ${C.shadow}`,
+          border: `3px solid ${C.border}`,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 15,
+            color: C.text,
+            fontWeight: 700,
+            marginBottom: 12,
+          }}
+        >
+          🔥 Daily Streak
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 4,
+          }}
+        >
+          {STREAK_DAYS.map((day, i) => {
+            const state = streak[i];
+            return (
+              <div
+                key={day}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 4,
+                  flex: 1,
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: FONT,
+                    fontSize: 11,
+                    color: C.muted,
+                    fontWeight: 600,
+                  }}
+                >
+                  {day}
+                </div>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background:
+                      state === "done"
+                        ? C.green
+                        : state === "today"
+                          ? C.accent
+                          : C.surface,
+                    color: state === "done" ? "white" : state === "today" ? "white" : C.muted,
+                    fontSize: state === "done" ? 16 : 14,
+                    fontWeight: 700,
+                    border: state === "today" ? `3px solid ${C.accent}` : "none",
+                    boxShadow: state === "today" ? `0 0 12px ${C.accent}40` : "none",
+                  }}
+                >
+                  {state === "done" ? "✓" : state === "today" ? "!" : "·"}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -84,31 +229,31 @@ function ProgressTracker({ progress, kidName }) {
       {needsReview.length > 0 && (
         <div
           style={{
-            background: `${C.red}15`,
-            borderRadius: 14,
+            background: `${C.heart}10`,
+            borderRadius: RADIUS.card,
             padding: 14,
             marginBottom: 16,
-            border: `2px solid ${C.red}40`,
+            border: `3px solid ${C.heart}30`,
             animation: "fadeUp 0.4s",
           }}
         >
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
-              fontSize: 13,
-              color: C.red,
-              letterSpacing: 2,
+              fontFamily: FONT,
+              fontSize: 14,
+              color: C.heart,
+              fontWeight: 700,
               marginBottom: 8,
             }}
           >
-            THESE WORDS NEED REVIEW
+            These words need review
           </div>
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
-              fontSize: 11,
+              fontFamily: FONT,
+              fontSize: 12,
               color: C.muted,
-              letterSpacing: 1,
+              fontWeight: 500,
               marginBottom: 10,
             }}
           >
@@ -127,12 +272,11 @@ function ProgressTracker({ progress, kidName }) {
                     padding: "3px 8px",
                     borderRadius: 8,
                     fontSize: 12,
-                    fontWeight: 700,
-                    fontFamily: "'Russo One', sans-serif",
-                    letterSpacing: 1,
-                    background: C.red + "20",
-                    color: C.red,
-                    border: `1px solid ${C.red}35`,
+                    fontWeight: 600,
+                    fontFamily: FONT,
+                    background: `${C.heart}18`,
+                    color: C.heart,
+                    border: `2px solid ${C.heart}30`,
                   }}
                 >
                   {w}{" "}
@@ -149,29 +293,29 @@ function ProgressTracker({ progress, kidName }) {
         <div
           style={{
             background: `${C.accent}10`,
-            borderRadius: 14,
+            borderRadius: RADIUS.card,
             padding: 14,
             marginBottom: 16,
-            border: `2px solid ${C.accent}30`,
+            border: `3px solid ${C.accent}30`,
           }}
         >
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
-              fontSize: 13,
+              fontFamily: FONT,
+              fontSize: 14,
               color: C.accent,
-              letterSpacing: 2,
+              fontWeight: 700,
               marginBottom: 8,
             }}
           >
-            TOUGH WORDS
+            Tough Words
           </div>
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
-              fontSize: 11,
+              fontFamily: FONT,
+              fontSize: 12,
               color: C.muted,
-              letterSpacing: 1,
+              fontWeight: 500,
               marginBottom: 10,
             }}
           >
@@ -188,16 +332,15 @@ function ProgressTracker({ progress, kidName }) {
                     padding: "3px 8px",
                     borderRadius: 8,
                     fontSize: 12,
-                    fontWeight: 700,
-                    fontFamily: "'Russo One', sans-serif",
-                    letterSpacing: 1,
-                    background: C.accent + "15",
+                    fontWeight: 600,
+                    fontFamily: FONT,
+                    background: `${C.accent}15`,
                     color: C.accent,
-                    border: `1px solid ${C.accent}25`,
+                    border: `2px solid ${C.accent}25`,
                   }}
                 >
                   {w}{" "}
-                  <span style={{ fontSize: 9, opacity: 0.7 }}>
+                  <span style={{ fontSize: 9, opacity: 0.6 }}>
                     {wordAcc}% ({stat.attempts}x)
                   </span>
                 </span>
@@ -212,66 +355,46 @@ function ProgressTracker({ progress, kidName }) {
         style={{
           display: "flex",
           justifyContent: "center",
-          gap: 12,
-          marginBottom: 24,
+          gap: 10,
+          marginBottom: 20,
           flexWrap: "wrap",
         }}
       >
         {[
-          {
-            label: "MASTERED",
-            value: masteredCount,
-            color: C.green,
-            icon: "🛡️",
-          },
-          {
-            label: "LEARNING",
-            value: learningCount,
-            color: C.accent,
-            icon: "⚡",
-          },
-          {
-            label: "ACCURACY",
-            value: `${accuracy}%`,
-            color: C.blue,
-            icon: "🎯",
-          },
-          {
-            label: "SESSIONS",
-            value: progress.sessions || 0,
-            color: C.purple,
-            icon: "📅",
-          },
+          { label: "Mastered", value: masteredCount, color: C.green, icon: "🛡️" },
+          { label: "Learning", value: learningCount, color: C.accent, icon: "⚡" },
+          { label: "Accuracy", value: `${accuracy}%`, color: C.secondary, icon: "🎯" },
+          { label: "Sessions", value: progress.sessions || 0, color: C.purple, icon: "📅" },
         ].map((s) => (
           <div
             key={s.label}
             style={{
-              background: C.panel,
-              borderRadius: 14,
-              padding: "12px 16px",
+              background: "white",
+              borderRadius: RADIUS.card,
+              padding: "10px 14px",
               textAlign: "center",
-              border: `1px solid ${s.color}25`,
-              boxShadow: `0 0 15px ${s.color}10`,
-              minWidth: 75,
+              border: `3px solid ${s.color}25`,
+              boxShadow: `0 4px 12px ${C.shadow}`,
+              minWidth: 72,
             }}
           >
-            <div style={{ fontSize: 22 }}>{s.icon}</div>
+            <div style={{ fontSize: 20 }}>{s.icon}</div>
             <div
               style={{
-                fontSize: 26,
-                fontFamily: "'Russo One', sans-serif",
+                fontSize: 22,
+                fontFamily: FONT,
                 color: s.color,
-                letterSpacing: 1,
+                fontWeight: 700,
               }}
             >
               {s.value}
             </div>
             <div
               style={{
-                fontSize: 9,
+                fontSize: 10,
                 color: C.muted,
-                fontFamily: "'Russo One', sans-serif",
-                letterSpacing: 2,
+                fontFamily: FONT,
+                fontWeight: 600,
               }}
             >
               {s.label}
@@ -281,7 +404,7 @@ function ProgressTracker({ progress, kidName }) {
       </div>
 
       {/* Power bar */}
-      <div style={{ maxWidth: 380, margin: "0 auto 24px" }}>
+      <div style={{ maxWidth: 380, margin: "0 auto 20px" }}>
         <div
           style={{
             display: "flex",
@@ -292,18 +415,19 @@ function ProgressTracker({ progress, kidName }) {
           <span
             style={{
               color: C.muted,
-              fontFamily: "'Russo One', sans-serif",
-              fontSize: 11,
-              letterSpacing: 2,
+              fontFamily: FONT,
+              fontSize: 12,
+              fontWeight: 600,
             }}
           >
-            HERO POWER
+            Hero Power
           </span>
           <span
             style={{
               color: C.accent,
-              fontFamily: "'Russo One', sans-serif",
-              fontSize: 11,
+              fontFamily: FONT,
+              fontSize: 12,
+              fontWeight: 600,
             }}
           >
             {masteredCount}/{ALL_WORDS.length}
@@ -312,22 +436,139 @@ function ProgressTracker({ progress, kidName }) {
         <div
           style={{
             height: 12,
-            background: C.panel,
-            borderRadius: 8,
+            background: "white",
+            borderRadius: RADIUS.button,
             overflow: "hidden",
-            border: `1px solid ${C.accent}20`,
+            border: `2px solid ${C.border}`,
           }}
         >
           <div
             style={{
               width: `${pct}%`,
               height: "100%",
-              background: `linear-gradient(90deg, ${C.blue}, ${C.accent}, ${C.red})`,
-              borderRadius: 8,
+              background: C.accent,
+              borderRadius: RADIUS.button,
               transition: "width 0.6s",
-              boxShadow: `0 0 12px ${C.accent}40`,
             }}
           />
+        </div>
+      </div>
+
+      {/* Achievements card */}
+      <div
+        style={{
+          background: "white",
+          borderRadius: RADIUS.card,
+          padding: 16,
+          marginBottom: 16,
+          boxShadow: `0 4px 16px ${C.shadow}`,
+          border: `3px solid ${C.border}`,
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 15,
+            color: C.text,
+            fontWeight: 700,
+            marginBottom: 12,
+          }}
+        >
+          🏆 Achievements
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          {achievements.map((a) => {
+            const isComplete = a.progress >= a.total;
+            const progressPct = Math.round((a.progress / a.total) * 100);
+            return (
+              <div
+                key={a.title}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "8px 0",
+                  borderBottom: `1px solid ${C.border}`,
+                  opacity: isComplete ? 1 : 0.85,
+                }}
+              >
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 12,
+                    background: isComplete ? `${C.green}18` : C.surface,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 20,
+                    flexShrink: 0,
+                  }}
+                >
+                  {a.icon}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontFamily: FONT,
+                      fontSize: 13,
+                      color: C.text,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {a.title}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: FONT,
+                      fontSize: 11,
+                      color: C.muted,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {a.desc}
+                  </div>
+                  {/* Mini progress bar */}
+                  <div
+                    style={{
+                      height: 5,
+                      background: C.surface,
+                      borderRadius: 3,
+                      marginTop: 4,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${progressPct}%`,
+                        height: "100%",
+                        background: isComplete ? C.green : C.accent,
+                        borderRadius: 3,
+                        transition: "width 0.3s",
+                      }}
+                    />
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontFamily: FONT,
+                    fontSize: 12,
+                    color: isComplete ? C.green : C.accent,
+                    fontWeight: 700,
+                    flexShrink: 0,
+                  }}
+                >
+                  {isComplete ? "✓" : `${a.progress}/${a.total}`}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -336,14 +577,17 @@ function ProgressTracker({ progress, kidName }) {
         {GROUP_NAMES.map((gn) => {
           const words = WORD_GROUPS[gn];
           const gm = words.filter((w) => progress.mastered[w]).length;
+          const groupPct = Math.round((gm / words.length) * 100);
+          const isComplete = gm === words.length;
           return (
             <div
               key={gn}
               style={{
-                background: C.panel,
-                borderRadius: 14,
+                background: "white",
+                borderRadius: RADIUS.card,
                 padding: 14,
-                border: `1px solid ${C.accent}15`,
+                border: `3px solid ${isComplete ? `${C.green}40` : C.border}`,
+                boxShadow: `0 4px 12px ${C.shadow}`,
               }}
             >
               <div
@@ -351,30 +595,51 @@ function ProgressTracker({ progress, kidName }) {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginBottom: 10,
+                  marginBottom: 6,
                 }}
               >
                 <span
                   style={{
-                    fontFamily: "'Russo One', sans-serif",
+                    fontFamily: FONT,
                     color: C.text,
                     fontSize: 14,
-                    letterSpacing: 1,
+                    fontWeight: 600,
                   }}
                 >
                   {gn}
                 </span>
                 <span
                   style={{
-                    fontFamily: "'Russo One', sans-serif",
-                    color: gm === words.length ? C.green : C.accent,
-                    fontSize: 12,
+                    fontFamily: FONT,
+                    color: isComplete ? C.green : C.accent,
+                    fontSize: 13,
+                    fontWeight: 600,
                   }}
                 >
-                  {gm === words.length ? "✓ COMPLETE" : `${gm}/${words.length}`}
+                  {isComplete ? "✓ Complete" : `${gm}/${words.length}`}
                 </span>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {/* Group progress bar */}
+              <div
+                style={{
+                  height: 6,
+                  background: C.surface,
+                  borderRadius: 3,
+                  marginBottom: 10,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${groupPct}%`,
+                    height: "100%",
+                    background: isComplete ? C.green : C.accent,
+                    borderRadius: 3,
+                    transition: "width 0.3s",
+                  }}
+                />
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                 {words.map((w) => {
                   const stat = ws[w];
                   const hasStats = stat && stat.attempts > 0;
@@ -394,27 +659,25 @@ function ProgressTracker({ progress, kidName }) {
                         padding: "3px 8px",
                         borderRadius: 8,
                         fontSize: 12,
-                        fontWeight: 700,
-                        fontFamily: "'Russo One', sans-serif",
-                        letterSpacing: 1,
+                        fontWeight: 600,
+                        fontFamily: FONT,
                         background: progress.mastered[w]
-                          ? C.green + "20"
+                          ? `${C.green}18`
                           : progress.learning[w]
-                            ? C.accent + "15"
-                            : C.bg,
+                            ? `${C.accent}12`
+                            : C.surface,
                         color: progress.mastered[w]
                           ? C.green
                           : progress.learning[w]
                             ? C.accent
-                            : C.muted + "80",
-                        border: `1px solid ${
+                            : `${C.text}80`,
+                        border: `2px solid ${
                           progress.mastered[w]
-                            ? C.green + "35"
+                            ? `${C.green}30`
                             : progress.learning[w]
-                              ? C.accent + "25"
-                              : C.muted + "15"
+                              ? `${C.accent}25`
+                              : C.border
                         }`,
-                        position: "relative",
                       }}
                       title={
                         hasStats

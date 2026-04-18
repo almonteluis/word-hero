@@ -23,8 +23,8 @@ function speak(word) {
 
   const buildUtterances = (voice) => {
     const utt = new SpeechSynthesisUtterance(word);
-    utt.rate = 0.85;
-    utt.pitch = 1.3;
+    utt.rate = 0.9;
+    utt.pitch = 1.0;
     utt.volume = 1.0;
     if (voice) utt.voice = voice;
     window.speechSynthesis.speak(utt);

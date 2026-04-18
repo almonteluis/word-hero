@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { C } from "../constants";
-import HomeBackground from "./HomeBackground";
+import { C, FONT, RADIUS, ALL_WORDS } from "../constants";
+import { getStreak, getHeroStats, STREAK_DAYS } from "../utils/progress";
 
 function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
   const [transitioning, setTransitioning] = useState(null);
@@ -8,39 +8,32 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
   const handleSelect = (key) => {
     if (transitioning) return;
     setTransitioning(key);
-    setTimeout(() => onSelectMode(key), 550);
+    setTimeout(() => onSelectMode(key), 400);
   };
 
-  const findItUnlocked = (progress?.sessions || 0) > 0;
+  const { masteredCount, learningCount, accuracy, level, rank, rankIcon } =
+    getHeroStats(progress);
+  const pct = Math.round((masteredCount / ALL_WORDS.length) * 100);
+  const streak = getStreak(progress);
 
-  const missions = [
+  const activities = [
     {
       key: "flash",
       icon: "⚡",
-      label: "FLASH TRAINING",
+      label: "Flash Training",
       desc: "Learn your words",
       color: C.accent,
-      gradient: "linear-gradient(135deg, rgba(246,198,25,0.18) 0%, rgba(200,160,10,0.08) 100%)",
-      glowColor: "rgba(246,198,25,0.35)",
+      bg: `${C.accent}15`,
+      borderColor: `${C.accent}40`,
     },
     {
       key: "find",
       icon: "🔍",
-      label: "FIND IT",
+      label: "Find It",
       desc: "Word recognition",
-      color: C.blue,
-      gradient: "linear-gradient(135deg, rgba(74,144,255,0.18) 0%, rgba(50,100,200,0.08) 100%)",
-      glowColor: "rgba(74,144,255,0.35)",
-      badge: !findItUnlocked ? "Complete Flash first" : null,
-    },
-    {
-      key: "stats",
-      icon: "🛡️",
-      label: "HERO STATS",
-      desc: "Check your progress",
-      color: C.green,
-      gradient: "linear-gradient(135deg, rgba(46,204,113,0.18) 0%, rgba(30,150,80,0.08) 100%)",
-      glowColor: "rgba(46,204,113,0.35)",
+      color: C.secondary,
+      bg: `${C.secondary}15`,
+      borderColor: `${C.secondary}40`,
     },
   ];
 
@@ -48,7 +41,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(180deg,#0c1130 0%,#0a0e27 55%,#0c1530 100%)",
+        background: `linear-gradient(180deg, ${C.secondary} 0%, #E0F2FE 50%, ${C.green} 100%)`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -56,40 +49,36 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
         overflowX: "hidden",
       }}
     >
-      <HomeBackground />
-
       <style>{`
         @keyframes heroZoomIn {
           0% { transform: scale(0.3); opacity: 0; }
           60% { transform: scale(1.1); opacity: 1; }
           100% { transform: scale(1); }
         }
-        @keyframes heroGlowBurst {
-          0% { transform: scale(0); opacity: 0.9; }
-          100% { transform: scale(2.5); opacity: 0; }
-        }
-        @keyframes missionTitleReveal {
-          0% { opacity: 0; transform: translateY(12px); }
+        @keyframes fadeSlideUp {
+          0% { opacity: 0; transform: translateY(16px); }
           100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes missionCardSlideUp {
-          0% { opacity: 0; transform: translateY(24px) scale(0.96); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes missionCardFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
         }
         @keyframes portalExpand {
           0% { transform: scale(1); }
-          50% { transform: scale(1.15); }
-          100% { transform: scale(3); opacity: 0; }
+          50% { transform: scale(1.08); }
+          100% { transform: scale(1.15); opacity: 0; }
         }
-        .mission-card:hover {
+        .activity-card:hover {
           transform: translateY(-3px) !important;
-          filter: brightness(1.1);
+          box-shadow: 0 8px 28px ${C.shadow} !important;
         }
       `}</style>
+
+      {/* Decorative clouds */}
+      <div style={{ position: "absolute", top: "8%", right: "5%", opacity: 0.35, pointerEvents: "none" }}>
+        <div style={{ width: 70, height: 26, background: "white", borderRadius: 16 }} />
+        <div style={{ width: 45, height: 20, background: "white", borderRadius: 12, marginLeft: 16, marginTop: -10 }} />
+      </div>
+      <div style={{ position: "absolute", top: "14%", left: "8%", opacity: 0.2, pointerEvents: "none" }}>
+        <div style={{ width: 50, height: 18, background: "white", borderRadius: 12 }} />
+        <div style={{ width: 35, height: 14, background: "white", borderRadius: 10, marginLeft: 10, marginTop: -8 }} />
+      </div>
 
       <div
         style={{
@@ -103,208 +92,394 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
           alignItems: "center",
         }}
       >
-        {/* Back button */}
-        <div style={{ width: "100%", marginBottom: 12 }}>
+        {/* Top bar */}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 20,
+          }}
+        >
           <button
+            className="toy-block toy-pressable"
             onClick={onBack}
             style={{
-              background: C.panel,
-              border: `1px solid ${C.muted}30`,
-              borderRadius: 10,
-              padding: "6px 12px",
-              cursor: "pointer",
-              color: C.muted,
-              fontFamily: "'Russo One', sans-serif",
-              fontSize: 12,
+              padding: "8px 16px",
+              color: C.text,
+              fontFamily: FONT,
+              fontSize: 14,
+              fontWeight: 700,
+              background: C.surface,
+              borderWidth: "3px", // thin block mode
+              boxShadow: `3px 4px 0px ${C.ink}`,
+              borderRadius: "16px",
+            }}
+          >
+            ← Switch
+          </button>
+          <div
+            style={{
+              fontSize: 18,
+              fontFamily: FONT,
+              color: C.text,
+              fontWeight: 700,
               letterSpacing: 1,
             }}
           >
-            ← BACK
-          </button>
+            Word Hero
+          </div>
+          <div style={{ width: 70 }} />
         </div>
 
-        {/* Hero avatar + name */}
+        {/* Hero avatar + greeting */}
         <div
           style={{
-            position: "relative",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            marginBottom: 8,
+            marginBottom: 20,
+            animation: "heroZoomIn 0.5s ease-out both",
           }}
         >
-          {/* Glow burst behind avatar */}
           <div
             style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: 80,
-              height: 80,
-              borderRadius: "50%",
-              background: `radial-gradient(circle, ${C.accent}60 0%, transparent 70%)`,
-              transform: "translate(-50%, -50%)",
-              animation: "heroGlowBurst 0.8s ease-out forwards",
-              pointerEvents: "none",
-            }}
-          />
-          <div
-            style={{
-              fontSize: 56,
+              fontSize: 48,
               lineHeight: 1,
-              animation: "heroZoomIn 0.6s ease-out both",
-              position: "relative",
+              background: C.surface,
+              width: 84,
+              height: 84,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: `4px 6px 0px ${C.ink}`,
+              border: `4px solid ${C.ink}`,
             }}
           >
             {kid.avatar}
           </div>
-        </div>
-        <div
-          style={{
-            fontFamily: "'Russo One', sans-serif",
-            fontSize: 20,
-            color: C.text,
-            letterSpacing: 2,
-            animation: "heroZoomIn 0.6s ease-out 0.1s both",
-          }}
-        >
-          {kid.name}
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 20,
+              color: C.text,
+              fontWeight: 700,
+              marginTop: 8,
+            }}
+          >
+            {kid.name}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+            <span style={{ fontSize: 16 }}>{rankIcon}</span>
+            <span
+              style={{
+                fontFamily: FONT,
+                fontSize: 14,
+                color: C.accent,
+                fontWeight: 700,
+              }}
+            >
+              {rank}
+            </span>
+            <span
+              style={{
+                background: C.accent,
+                color: "white",
+                borderRadius: RADIUS.button,
+                padding: "2px 10px",
+                fontFamily: FONT,
+                fontSize: 11,
+                fontWeight: 700,
+              }}
+            >
+              Lvl {level}
+            </span>
+          </div>
         </div>
 
-        {/* Title */}
-        <div
-          style={{
-            fontFamily: "'Russo One', sans-serif",
-            fontSize: "clamp(16px, 5vw, 20px)",
-            color: C.accent,
-            letterSpacing: 4,
-            marginTop: 24,
-            marginBottom: 28,
-            textShadow: `0 0 18px ${C.accent}50`,
-            animation: "missionTitleReveal 0.5s ease-out 0.3s both",
-          }}
-        >
-          CHOOSE YOUR MISSION
-        </div>
-
-        {/* Mission cards */}
+        {/* Stats row */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            gap: 14,
+            justifyContent: "center",
+            gap: 8,
             width: "100%",
+            marginBottom: 16,
+            animation: "fadeSlideUp 0.4s ease-out 0.15s both",
           }}
         >
-          {missions.map((m, i) => {
+          {[
+            { label: "Mastered", value: masteredCount, color: C.green, icon: "🛡️" },
+            { label: "Learning", value: learningCount, color: C.accent, icon: "⚡" },
+            { label: "Accuracy", value: `${accuracy}%`, color: C.secondary, icon: "🎯" },
+            { label: "Sessions", value: progress.sessions || 0, color: C.purple, icon: "📅" },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="toy-block"
+              style={{
+                background: C.surface,
+                padding: "8px 6px",
+                textAlign: "center",
+                borderWidth: "3px",
+                boxShadow: `2px 3px 0 ${C.ink}`,
+                borderRadius: "16px",
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              <div style={{ fontSize: 16 }}>{s.icon}</div>
+              <div
+                style={{
+                  fontSize: 18,
+                  fontFamily: FONT,
+                  color: s.color,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                }}
+              >
+                {s.value}
+              </div>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: C.muted,
+                  fontFamily: FONT,
+                  fontWeight: 600,
+                }}
+              >
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Hero Power progress bar */}
+        <div
+          style={{
+            width: "100%",
+            maxWidth: 340,
+            marginBottom: 20,
+            animation: "fadeSlideUp 0.4s ease-out 0.25s both",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 4,
+            }}
+          >
+            <span
+              style={{
+                color: C.text,
+                fontFamily: FONT,
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              Hero Power
+            </span>
+            <span
+              style={{
+                color: C.accent,
+                fontFamily: FONT,
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              {masteredCount}/{ALL_WORDS.length}
+            </span>
+          </div>
+          <div
+            style={{
+              height: 12,
+              background: C.surface,
+              borderRadius: RADIUS.button,
+              overflow: "hidden",
+              border: `3px solid ${C.ink}`,
+              boxShadow: `inset 0 2px 4px rgba(0,0,0,0.1)`,
+            }}
+          >
+            <div
+              style={{
+                width: `${pct}%`,
+                height: "100%",
+                background: `linear-gradient(90deg, ${C.accent}, ${C.sun})`,
+                borderRadius: RADIUS.button,
+                transition: "width 0.6s",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Daily Streak */}
+        <div
+          className="toy-block"
+          style={{
+            width: "100%",
+            background: C.surface,
+            padding: "14px 16px",
+            marginBottom: 20,
+            borderWidth: "3px",
+            boxShadow: `3px 4px 0px ${C.ink}`,
+            animation: "fadeSlideUp 0.4s ease-out 0.3s both",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 14,
+              color: C.text,
+              fontWeight: 700,
+              marginBottom: 10,
+            }}
+          >
+            🔥 Daily Streak
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 4 }}>
+            {STREAK_DAYS.map((day, i) => {
+              const state = streak[i];
+              return (
+                <div
+                  key={day}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 3,
+                    flex: 1,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: FONT,
+                      fontSize: 10,
+                      color: C.muted,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {day}
+                  </div>
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background:
+                        state === "done"
+                          ? C.green
+                          : state === "today"
+                            ? C.accent
+                            : C.surface,
+                      color: state === "done" ? "white" : state === "today" ? C.ink : C.muted,
+                      fontSize: state === "done" ? 14 : 12,
+                      fontWeight: 700,
+                      border: state === "today" ? `3px solid ${C.ink}` : `2px solid ${C.ink}20`,
+                      boxShadow: state === "today" ? `2px 2px 0px ${C.ink}` : "none",
+                    }}
+                  >
+                    {state === "done" ? "✓" : state === "today" ? "!" : "·"}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Activity cards */}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 14,
+              color: C.text,
+              fontWeight: 600,
+              marginBottom: 2,
+              animation: "fadeSlideUp 0.4s ease-out 0.4s both",
+            }}
+          >
+            Start Training
+          </div>
+          {activities.map((m, i) => {
             const isTransitioning = transitioning === m.key;
             return (
               <button
                 key={m.key}
-                className="mission-card"
+                className="toy-block toy-pressable"
                 onClick={() => handleSelect(m.key)}
                 style={{
                   width: "100%",
-                  background: m.gradient,
-                  border: `2.5px solid ${m.color}55`,
-                  borderRadius: 20,
-                  padding: "20px 22px",
-                  cursor: transitioning ? "default" : "pointer",
+                  background: m.key === "flash" ? C.primary : C.secondary,
+                  padding: "16px 20px",
                   display: "flex",
                   alignItems: "center",
-                  gap: 16,
+                  gap: 14,
                   textAlign: "left",
-                  backdropFilter: "blur(6px)",
                   position: "relative",
                   overflow: "hidden",
-                  transition: "transform 0.22s, border-color 0.22s, box-shadow 0.22s",
-                  boxShadow: isTransitioning
-                    ? `0 0 40px ${m.color}80`
-                    : `0 0 14px ${m.color}15`,
-                  animation: `missionCardSlideUp 0.4s ease-out ${0.4 + i * 0.12}s both${
-                    !isTransitioning ? `, missionCardFloat ${3 + i * 0.5}s ease-in-out ${i * 1.2}s infinite` : ""
-                  }`,
+                  animation: `fadeSlideUp 0.4s ease-out ${0.45 + i * 0.08}s both`,
                   ...(isTransitioning
                     ? {
-                        animation: `portalExpand 0.5s ease-in forwards`,
-                        borderColor: m.color,
+                        animation: `portalExpand 0.4s ease-in forwards`,
                       }
                     : {}),
                 }}
               >
-                {/* Icon */}
                 <div
                   style={{
-                    fontSize: 36,
+                    fontSize: 32,
                     lineHeight: 1,
                     flexShrink: 0,
-                    width: 48,
-                    height: 48,
+                    width: 52,
+                    height: 52,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    borderRadius: 14,
-                    background: `${m.color}20`,
-                    border: `1px solid ${m.color}30`,
+                    borderRadius: 16,
+                    background: C.surface,
+                    border: `3px solid ${C.ink}`,
+                    boxShadow: `2px 3px 0 ${C.ink}`,
                   }}
                 >
                   {m.icon}
                 </div>
-
-                {/* Text */}
                 <div style={{ flex: 1 }}>
                   <div
                     style={{
-                      fontFamily: "'Russo One', sans-serif",
-                      fontSize: 17,
+                      fontFamily: FONT,
+                      fontSize: 16,
                       color: m.color,
-                      letterSpacing: 2,
+                      fontWeight: 700,
                     }}
                   >
                     {m.label}
                   </div>
                   <div
                     style={{
-                      fontFamily: "'Nunito', sans-serif",
-                      fontSize: 13,
+                      fontFamily: FONT,
+                      fontSize: 12,
                       color: C.muted,
-                      marginTop: 2,
-                      fontWeight: 700,
+                      fontWeight: 500,
+                      marginTop: 1,
                     }}
                   >
                     {m.desc}
                   </div>
-                  {/* Soft badge for Find It */}
-                  {m.badge && (
-                    <div
-                      style={{
-                        marginTop: 6,
-                        padding: "2px 8px",
-                        background: `${m.color}15`,
-                        borderRadius: 6,
-                        fontFamily: "'Nunito', sans-serif",
-                        fontSize: 10,
-                        color: m.color,
-                        fontWeight: 800,
-                        letterSpacing: 0.5,
-                        display: "inline-block",
-                      }}
-                    >
-                      {m.badge}
-                    </div>
-                  )}
                 </div>
-
-                {/* Arrow */}
-                <div
-                  style={{
-                    color: m.color,
-                    fontSize: 20,
-                    opacity: 0.6,
-                  }}
-                >
-                  →
-                </div>
+                <div style={{ color: C.ink, fontSize: 24, fontWeight: "bold" }}>→</div>
               </button>
             );
           })}

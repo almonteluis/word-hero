@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { C } from "../constants";
+import { C, FONT } from "../constants";
 
 function CountdownTimer({ seconds, onExpire }) {
   const [remaining, setRemaining] = useState(seconds);
@@ -49,7 +49,7 @@ function CountdownTimer({ seconds, onExpire }) {
       </div>
       <span
         style={{
-          fontFamily: "'Russo One', sans-serif",
+          fontFamily: FONT,
           fontSize: 16,
           color,
           minWidth: 28,

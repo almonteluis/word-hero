@@ -1,28 +1,25 @@
-import { C } from "../constants";
+import { C, FONT, RADIUS } from "../constants";
 
 function Btn({
   children,
-  color = C.accent,
+  color = C.primary,
   onClick,
   style = {},
   small = false,
 }) {
+  const isLightFill = color === C.primary || color === C.sun || color === C.panel;
+
   return (
     <button
+      className="toy-block toy-pressable"
       onClick={onClick}
       style={{
         background: color,
-        color: color === C.accent || color === C.green ? C.bg : "#fff",
-        border: "none",
-        borderRadius: small ? 12 : 16,
-        padding: small ? "8px 18px" : "12px 28px",
-        fontSize: small ? 13 : 16,
-        fontWeight: 800,
-        cursor: "pointer",
-        fontFamily: "'Russo One', sans-serif",
-        letterSpacing: 2,
-        boxShadow: `0 4px 15px ${color}50`,
-        transition: "transform 0.15s",
+        color: isLightFill ? C.text : C.textLight,
+        padding: small ? "8px 20px" : "12px 28px",
+        fontSize: small ? 14 : 16,
+        fontWeight: 700,
+        fontFamily: FONT,
         ...style,
       }}
     >

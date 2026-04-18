@@ -1,6 +1,7 @@
 const MASTERY_SESSIONS = 3;
 const MASTERY_ACCURACY = 0.95;
 const REVIEW_DAYS = 7;
+const STREAK_DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
 function initProgress() {
   return {
@@ -46,6 +47,56 @@ function weightedShuffle(words, wordStats, mastered) {
   });
   scored.sort((a, b) => b.sort - a.sort);
   return scored.map((s) => s.word);
+}
+
+function getStreak(progress) {
+  const sessions = progress.sessions || 0;
+  const today = new Date();
+  const todayIdx = (today.getDay() + 6) % 7;
+  const streak = [];
+  for (let i = 0; i < 7; i++) {
+    if (i < todayIdx) {
+      streak.push(sessions >= (todayIdx - i) ? "done" : "pending");
+    } else if (i === todayIdx) {
+      streak.push(sessions > 0 ? "done" : "today");
+    } else {
+      streak.push("pending");
+    }
+  }
+  return streak;
+}
+
+function getHeroStats(progress) {
+  const masteredCount = Object.keys(progress.mastered || {}).length;
+  const learningCount = Object.keys(progress.learning || {}).length;
+  const totalAttempts = progress.totalAttempts || 0;
+  const accuracy =
+    totalAttempts > 0
+      ? Math.round(((progress.totalCorrect || 0) / totalAttempts) * 100)
+      : 0;
+  const level = Math.floor(masteredCount / 5) + 1;
+
+  const rank =
+    masteredCount >= 60
+      ? "Legendary Hero"
+      : masteredCount >= 40
+        ? "Super Hero"
+        : masteredCount >= 20
+          ? "Rising Hero"
+          : masteredCount >= 5
+            ? "Hero in Training"
+            : "New Recruit";
+
+  const rankIcon =
+    masteredCount >= 60
+      ? "👑"
+      : masteredCount >= 40
+        ? "🦸"
+        : masteredCount >= 20
+          ? "⚡"
+          : "🛡️";
+
+  return { masteredCount, learningCount, accuracy, level, rank, rankIcon };
 }
 
 function progressReducer(state, action) {
@@ -171,9 +222,12 @@ export {
   MASTERY_SESSIONS,
   MASTERY_ACCURACY,
   REVIEW_DAYS,
+  STREAK_DAYS,
   initProgress,
   getWordStats,
   checkMastery,
   weightedShuffle,
+  getStreak,
+  getHeroStats,
   progressReducer,
 };

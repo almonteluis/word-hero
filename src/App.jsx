@@ -1,5 +1,5 @@
 import { useState, useEffect, useReducer, useRef } from "react";
-import { C } from "./constants";
+import { C, FONT, RADIUS } from "./constants";
 import {
   loadProfiles,
   saveProfiles,
@@ -9,8 +9,6 @@ import {
   saveNotificationPrefs,
 } from "./utils/storage";
 import { initProgress, progressReducer } from "./utils/progress";
-import StarField from "./components/StarField";
-import ProgressTracker from "./components/ProgressTracker";
 import KidSelector from "./components/KidSelector";
 import ModeSelectScreen from "./components/ModeSelectScreen";
 import FindItGame from "./components/FindItGame";
@@ -110,14 +108,14 @@ export default function WordHeroApp() {
       >
         <div
           style={{
-            color: C.accent,
-            fontFamily: "'Russo One', sans-serif",
-            fontSize: 24,
-            letterSpacing: 4,
+            color: C.text,
+            fontFamily: FONT,
+            fontSize: 26,
+            fontWeight: 700,
             animation: "starPulse 1.5s ease-in-out infinite",
           }}
         >
-          ⚡ LOADING... ⚡
+          Loading...
         </div>
       </div>
     );
@@ -137,7 +135,6 @@ export default function WordHeroApp() {
   const modes = [
     { key: "flash", label: "FLASH", icon: "⚡" },
     { key: "find", label: "FIND IT", icon: "🔍" },
-    { key: "stats", label: "STATS", icon: "🛡️" },
   ];
 
   // Mode selection screen has its own full layout
@@ -156,16 +153,15 @@ export default function WordHeroApp() {
     <div
       style={{
         minHeight: "100vh",
-        background: C.bg,
+        background: `linear-gradient(180deg, ${C.secondary} 0%, #E0F2FE 50%, ${C.green} 100%)`,
         position: "relative",
         overflow: "hidden",
       }}
     >
-      <link
-        href="https://fonts.googleapis.com/css2?family=Russo+One&family=Nunito:wght@700;800;900&display=swap"
-        rel="stylesheet"
-      />
-      <StarField />
+      {/* Playful Floating Background Shapes */}
+      <div style={{ position: "absolute", top: "5%", left: "10%", width: 120, height: 120, background: C.primary, borderRadius: "40% 60% 70% 30%", opacity: 0.15, animation: "floatBlob 8s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "25%", right: "-5%", width: 200, height: 200, background: C.secondary, borderRadius: "60% 40% 30% 70%", opacity: 0.15, animation: "floatBlobRev 12s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "10%", left: "-10%", width: 180, height: 160, background: C.accent, borderRadius: "50% 50% 50% 50%", opacity: 0.15, animation: "floatBlob 10s ease-in-out infinite", pointerEvents: "none" }} />
 
       {/* Header */}
       <div
@@ -176,60 +172,62 @@ export default function WordHeroApp() {
           padding: "16px 16px 8px",
           position: "relative",
           zIndex: 1,
-          animation: "modeStagger 0.4s ease-out 0.1s both",
         }}
       >
         <button
+          className="toy-block toy-pressable"
           onClick={() => {
             setActiveKid(null);
           }}
           style={{
-            background: C.panel,
-            border: `1px solid ${C.muted}30`,
-            borderRadius: 10,
-            padding: "6px 12px",
-            cursor: "pointer",
-            color: C.muted,
-            fontFamily: "'Russo One', sans-serif",
-            fontSize: 12,
-            letterSpacing: 1,
+            padding: "8px 16px",
+            color: C.text,
+            fontFamily: FONT,
+            fontSize: 14,
+            fontWeight: 700,
+            background: C.surface,
+            borderWidth: "3px", // slightly thinner for small header button
+            boxShadow: `3px 4px 0px ${C.ink}`,
+            borderRadius: "16px",
           }}
         >
-          ← SWITCH
+          ← Switch
         </button>
 
         <div style={{ textAlign: "center" }}>
           <div
             style={{
-              fontSize: 22,
-              fontFamily: "'Russo One', sans-serif",
-              color: C.accent,
-              letterSpacing: 4,
-              textShadow: `0 0 15px ${C.accent}40, 1px 1px 0 ${C.red}`,
+              fontSize: 20,
+              fontFamily: FONT,
+              color: C.text,
+              fontWeight: 700,
+              letterSpacing: 1,
             }}
           >
-            ⚡ WORD HERO ⚡
+            Word Hero
           </div>
         </div>
 
         <div
+          className="toy-block"
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            background: C.panel,
-            borderRadius: 10,
-            padding: "4px 10px",
-            border: `1px solid ${C.accent}20`,
+            gap: 8,
+            background: C.surface,
+            padding: "4px 14px 4px 8px",
+            borderWidth: "3px",
+            boxShadow: `3px 4px 0px ${C.ink}`,
+            borderRadius: "100px",
           }}
         >
-          <span style={{ fontSize: 20 }}>{activeKid.avatar}</span>
+          <span style={{ fontSize: 24, transform: "translateY(1px)" }}>{activeKid.avatar}</span>
           <span
             style={{
-              fontFamily: "'Russo One', sans-serif",
+              fontFamily: FONT,
               color: C.text,
-              fontSize: 13,
-              letterSpacing: 1,
+              fontSize: 14,
+              fontWeight: 700,
             }}
           >
             {activeKid.name}
@@ -252,23 +250,15 @@ export default function WordHeroApp() {
         {modes.map((m) => (
           <button
             key={m.key}
+            className="toy-block toy-pressable"
             onClick={() => { setMode(m.key); setModeKey((k) => k + 1); }}
             style={{
-              background:
-                mode === m.key
-                  ? `linear-gradient(135deg, ${C.accent}, ${C.red})`
-                  : C.panel,
-              color: mode === m.key ? C.bg : C.muted,
-              border: `2px solid ${mode === m.key ? C.accent : "transparent"}`,
-              borderRadius: 12,
-              padding: "8px 16px",
-              cursor: "pointer",
-              fontWeight: 800,
-              fontSize: 12,
-              fontFamily: "'Russo One', sans-serif",
-              letterSpacing: 2,
-              transition: "all 0.2s",
-              boxShadow: mode === m.key ? `0 4px 12px ${C.accent}35` : "none",
+              background: mode === m.key ? C.accent : C.surface,
+              color: C.text,
+              padding: "10px 20px",
+              fontWeight: 700,
+              fontSize: 14,
+              fontFamily: FONT,
             }}
           >
             {m.icon} {m.label}
@@ -305,9 +295,6 @@ export default function WordHeroApp() {
             initialGroup={findItGroup}
           />
         )}
-        {mode === "stats" && (
-          <ProgressTracker progress={progress} kidName={activeKid.name} />
-        )}
       </div>
 
       {/* Reset */}
@@ -320,23 +307,23 @@ export default function WordHeroApp() {
         }}
       >
         <button
+          className="toy-pressable"
           onClick={() => {
             if (confirm(`Reset ${activeKid.name}'s progress?`))
               dispatch({ type: "RESET" });
           }}
           style={{
             background: "transparent",
-            border: `1px solid ${C.muted}30`,
-            color: C.muted,
-            borderRadius: 8,
-            padding: "5px 14px",
-            fontSize: 10,
-            cursor: "pointer",
-            fontFamily: "'Russo One', sans-serif",
-            letterSpacing: 2,
+            border: `3px solid ${C.ink}40`,
+            color: `${C.ink}80`,
+            borderRadius: RADIUS.button,
+            padding: "8px 16px",
+            fontSize: 13,
+            fontWeight: 700,
+            fontFamily: FONT,
           }}
         >
-          RESET PROGRESS
+          Reset Progress
         </button>
       </div>
 

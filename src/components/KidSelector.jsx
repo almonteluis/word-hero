@@ -1,22 +1,29 @@
 import { useState } from "react";
-import { C } from "../constants";
-import HomeBackground from "./HomeBackground";
-import Btn from "./Btn";
+import { C, FONT, RADIUS } from "../constants";
 
 const AVATARS = [
-  "🦸",
-  "🦸‍♀️",
-  "🦹",
-  "🦹‍♀️",
-  "🧑‍🚀",
-  "👨‍🚀",
-  "🦊",
-  "🐉",
-  "🦁",
-  "🐺",
-  "🦅",
-  "🐲",
+  "🦊", "🐱", "🐻", "🦁", "🐰", "🦄",
+  "🐸", "🐼", "🐨", "🐯", "🦋", "🐧",
 ];
+
+// Sun rays — static positions so they don't shift per render
+const SUN_RAYS = Array.from({ length: 12 }).map((_, i) => ({
+  angle: i * 30,
+  width: 3 + (i % 3),
+  opacity: 0.15 + (i % 3) * 0.05,
+  dur: 4 + (i % 4),
+  delay: (i * 0.3) % 3,
+}));
+
+// Floating particles — seeds, leaves, sparkles
+const PARTICLES = Array.from({ length: 14 }).map((_, i) => ({
+  left: (i * 23.7 + 5) % 95,
+  size: 3 + (i % 3) * 2,
+  emoji: ["✨", "🍃", "🌸", "⭐", "🌿", "💛", "🦋"][i % 7],
+  dur: 6 + (i % 5) * 2,
+  delay: (i * 0.7) % 5,
+  startY: 10 + (i * 13) % 60,
+}));
 
 function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
   const [adding, setAdding] = useState(false);
@@ -39,116 +46,243 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(180deg,#0c1130 0%,#0a0e27 55%,#0c1530 100%)",
+        background: `linear-gradient(180deg, ${C.secondary} 0%, #E0F2FE 50%, ${C.green} 100%)`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        padding: "32px 20px",
         position: "relative",
         overflowX: "hidden",
+        overflowY: "auto",
       }}
     >
-      <HomeBackground />
-
       <style>{`
-        @keyframes titleGlow {
-          0%,100% { filter: drop-shadow(0 0 12px #f6c61970); }
-          50%      { filter: drop-shadow(0 0 28px #f6c619aa); }
+        @keyframes cloudDrift {
+          0% { transform: translateX(0); }
+          50% { transform: translateX(30px); }
+          100% { transform: translateX(0); }
         }
-        @keyframes cardSlideIn {
-          0%   { opacity: 0; transform: translateY(14px) scale(0.95); }
+        @keyframes cloudDriftReverse {
+          0% { transform: translateX(0); }
+          50% { transform: translateX(-25px); }
+          100% { transform: translateX(0); }
+        }
+        @keyframes sunPulse {
+          0%, 100% { transform: scale(1); opacity: 0.9; }
+          50% { transform: scale(1.08); opacity: 1; }
+        }
+        @keyframes sunRayPulse {
+          0%, 100% { opacity: 0.12; }
+          50% { opacity: 0.22; }
+        }
+        @keyframes titleFloat {
+          0%, 100% { transform: translateY(0) rotate(-0.5deg); }
+          50% { transform: translateY(-8px) rotate(0.5deg); }
+        }
+        @keyframes cardBounceIn {
+          0% { opacity: 0; transform: translateY(30px) scale(0.9); }
+          60% { transform: translateY(-4px) scale(1.02); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes addBtnPop {
-          0%   { opacity: 0; transform: translateY(10px); }
-          100% { opacity: 1; transform: translateY(0); }
+        @keyframes formSlideUp {
+          0% { opacity: 0; transform: translateY(20px) scale(0.97); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .ks-hero-card:hover  { border-color: rgba(246,198,25,0.7) !important; box-shadow: 0 0 24px rgba(246,198,25,0.25) !important; }
-        .ks-delete-btn:hover { background: rgba(232,69,69,0.55) !important; border-color: rgba(232,69,69,0.8) !important; }
-        .ks-add-btn:hover    { transform: scale(1.03) !important; box-shadow: 0 8px 32px rgba(74,144,255,0.55) !important; }
+        @keyframes sparkle {
+          0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+          50% { opacity: 1; transform: scale(1) rotate(180deg); }
+        }
+        @keyframes floatUp {
+          0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+          100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        @keyframes addBtnGlow {
+          0%, 100% { box-shadow: 0 6px 24px rgba(63,175,232,0.3); }
+          50% { box-shadow: 0 6px 32px rgba(63,175,232,0.5); }
+        }
+        @keyframes hillSway {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(5px); }
+        }
+        .ks-hero-card {
+          transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s !important;
+        }
+        .ks-hero-card:hover {
+          transform: translateY(-6px) scale(1.02) !important;
+          box-shadow: 0 12px 36px rgba(58,74,84,0.15) !important;
+        }
+        .ks-hero-card:hover .ks-avatar-ring {
+          transform: scale(1.08);
+          box-shadow: 0 0 20px rgba(245,166,35,0.4);
+        }
+        .ks-delete-btn:hover {
+          background: rgba(255,107,122,0.2) !important;
+          transform: scale(1.1);
+        }
       `}</style>
 
+      {/* ═══ SKY LAYER ═══ */}
+
+      {/* Sun */}
+      <div
+        style={{
+          position: "absolute",
+          top: "3%",
+          right: "8%",
+          width: 70,
+          height: 70,
+          zIndex: 0,
+          animation: "sunPulse 4s ease-in-out infinite",
+        }}
+      >
+        <div style={{
+          width: 70,
+          height: 70,
+          borderRadius: "50%",
+          background: C.sun,
+          boxShadow: `0 0 40px ${C.sun}80, 0 0 80px ${C.sun}40, 0 0 120px ${C.sun}20`,
+        }} />
+        {/* Sun rays */}
+        {SUN_RAYS.map((ray, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: ray.width,
+              height: 50,
+              background: C.sun,
+              borderRadius: 3,
+              opacity: ray.opacity,
+              transformOrigin: "50% 0%",
+              transform: `translate(-50%, 0) rotate(${ray.angle}deg) translateY(35px)`,
+              animation: `sunRayPulse ${ray.dur}s ease-in-out ${ray.delay}s infinite`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Pastel Clouds */}
+      <div style={{ position: "absolute", top: "5%", left: "3%", zIndex: 0, animation: "cloudDrift 12s ease-in-out infinite", pointerEvents: "none" }}>
+        <svg width="120" height="50" viewBox="0 0 120 50">
+          <ellipse cx="60" cy="32" rx="58" ry="18" fill="white" opacity="0.9" />
+          <ellipse cx="35" cy="24" rx="30" ry="16" fill="white" opacity="0.95" />
+          <ellipse cx="80" cy="22" rx="26" ry="14" fill="white" opacity="0.92" />
+        </svg>
+      </div>
+      <div style={{ position: "absolute", top: "10%", left: "45%", zIndex: 0, animation: "cloudDriftReverse 15s ease-in-out infinite 3s", pointerEvents: "none" }}>
+        <svg width="90" height="40" viewBox="0 0 90 40">
+          <ellipse cx="45" cy="26" rx="44" ry="14" fill="#FFE4E6" opacity="0.85" />
+          <ellipse cx="28" cy="18" rx="24" ry="12" fill="#FFE4E6" opacity="0.9" />
+        </svg>
+      </div>
+      <div style={{ position: "absolute", top: "16%", right: "2%", zIndex: 0, animation: "cloudDrift 18s ease-in-out infinite 6s", pointerEvents: "none", opacity: 0.7 }}>
+        <svg width="100" height="44" viewBox="0 0 100 44">
+          <ellipse cx="50" cy="28" rx="48" ry="16" fill="#E0F2FE" />
+          <ellipse cx="30" cy="20" rx="28" ry="14" fill="#E0F2FE" />
+        </svg>
+      </div>
+
+      {/* ═══ MAIN CONTENT ═══ */}
       <div
         style={{
           position: "relative",
           zIndex: 1,
           width: "100%",
           maxWidth: 400,
-          textAlign: "center",
+          padding: "48px 20px 160px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
-        {/* ── Title ── */}
+        {/* Title — floating banner feel */}
         <div
           style={{
-            animation: "titleGlow 3.5s ease-in-out infinite",
+            animation: "titleFloat 4s ease-in-out infinite",
             marginBottom: 6,
+            marginTop: 16,
           }}
         >
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
-              fontSize: "clamp(50px, 14vw, 74px)",
-              color: "#f6c619",
-              letterSpacing: "0.03em",
+              fontFamily: FONT,
+              fontSize: "clamp(48px, 14vw, 72px)",
+              color: "white",
+              fontWeight: 700,
               lineHeight: 1.0,
-              textShadow:
-                "3px 3px 0 #c4900a, 6px 6px 0 #7a5800, 0 0 40px rgba(246,198,25,0.4)",
+              textShadow: `
+                3px 3px 0 ${C.accent},
+                5px 5px 0 ${C.text}15,
+                0 0 40px ${C.sun}60
+              `,
+              letterSpacing: 1,
             }}
           >
-            ⚡ WORD
+            Word
           </div>
           <div
             style={{
-              fontFamily: "'Russo One', sans-serif",
-              fontSize: "clamp(50px, 14vw, 74px)",
-              color: "#f6c619",
-              letterSpacing: "0.03em",
+              fontFamily: FONT,
+              fontSize: "clamp(52px, 15vw, 78px)",
+              color: C.sun,
+              fontWeight: 700,
               lineHeight: 1.0,
-              textShadow:
-                "3px 3px 0 #c4900a, 6px 6px 0 #7a5800, 0 0 40px rgba(246,198,25,0.4)",
-              marginBottom: 8,
+              textShadow: `
+                3px 3px 0 ${C.accent},
+                5px 5px 0 ${C.text}15,
+                0 0 40px ${C.accent}50
+              `,
+              letterSpacing: 2,
             }}
           >
-            HERO ⚡ ⚡
+            Hero
           </div>
         </div>
 
+        {/* Tagline */}
         <div
           style={{
-            fontSize: 13,
-            color: "#7ab8d4",
-            fontFamily: "'Russo One', sans-serif",
-            letterSpacing: 6,
-            marginBottom: 44,
-            textTransform: "uppercase",
+            fontFamily: FONT,
+            fontSize: 16,
+            color: C.text,
+            fontWeight: 700,
+            marginBottom: 32,
+            letterSpacing: 0.5,
           }}
         >
-          TRAINING ACADEMY
+          Learn to read, one word at a time!
         </div>
 
-        {/* ── Who's training label ── */}
-        <div
-          style={{
-            fontSize: 15,
-            color: "#f0f0f0",
-            fontFamily: "'Russo One', sans-serif",
-            letterSpacing: 3,
-            marginBottom: 18,
-            fontWeight: 800,
-          }}
-        >
-          WHO'S TRAINING TODAY?
-        </div>
+        {/* Character section header */}
+        {profiles.length > 0 && (
+          <div
+            className="toy-block"
+            style={{
+              fontFamily: FONT,
+              fontSize: 18,
+              color: C.text,
+              fontWeight: 700,
+              marginBottom: 16,
+              background: C.surface,
+              borderRadius: "16px",
+              padding: "6px 22px",
+              borderWidth: "3px",
+              boxShadow: `3px 4px 0px ${C.ink}`,
+            }}
+          >
+            Choose Your Hero
+          </div>
+        )}
 
-        {/* ── Profile cards ── */}
+        {/* Profile cards */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             gap: 14,
-            marginBottom: 22,
+            width: "100%",
+            marginBottom: 20,
           }}
         >
           {profiles.map((kid, idx) => (
@@ -158,56 +292,86 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                 display: "flex",
                 gap: 10,
                 alignItems: "center",
-                animation: `cardSlideIn 0.4s ease-out ${idx * 0.08}s both`,
+                animation: `cardBounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${idx * 0.1 + 0.2}s both`,
               }}
             >
               <button
-                className="ks-hero-card"
+                className="toy-block toy-pressable"
                 onClick={() => onSelect(kid)}
                 style={{
                   flex: 1,
-                  background:
-                    "linear-gradient(135deg,rgba(91,184,212,0.16) 0%,rgba(58,152,176,0.10) 100%)",
-                  border: "2.5px solid rgba(246,198,25,0.32)",
-                  borderRadius: 20,
-                  padding: "15px 18px",
-                  cursor: "pointer",
+                  background: C.surface,
+                  padding: "16px",
                   display: "flex",
                   alignItems: "center",
                   gap: 14,
-                  transition: "border-color 0.22s, box-shadow 0.22s",
-                  backdropFilter: "blur(6px)",
                   textAlign: "left",
                 }}
               >
-                <span style={{ fontSize: 42, lineHeight: 1, flexShrink: 0 }}>
+                {/* Avatar in a character-card ring */}
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: "50%",
+                    background: C.panel,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 32,
+                    flexShrink: 0,
+                    border: `3px solid ${C.ink}`,
+                    boxShadow: `3px 4px 0px ${C.ink}`,
+                  }}
+                >
                   {kid.avatar}
-                </span>
-                <div>
+                </div>
+                <div style={{ flex: 1 }}>
                   <div
                     style={{
-                      fontFamily: "'Russo One', sans-serif",
-                      fontSize: "clamp(20px, 5.5vw, 26px)",
-                      color: "#f0f0f0",
-                      letterSpacing: 1,
+                      fontFamily: FONT,
+                      fontSize: "clamp(18px, 5vw, 22px)",
+                      color: C.text,
+                      fontWeight: 700,
                     }}
                   >
                     {kid.name}
                   </div>
                   <div
                     style={{
-                      fontFamily: "'Russo One', sans-serif",
-                      fontSize: 10,
-                      color: "#7ab8d4",
-                      letterSpacing: 2.5,
-                      marginTop: 3,
+                      fontFamily: FONT,
+                      fontSize: 13,
+                      color: C.accent,
+                      fontWeight: 600,
+                      marginTop: 2,
                     }}
                   >
-                    TAP TO START TRAINING
+                    Tap to start training!
                   </div>
+                </div>
+                {/* Arrow chevron */}
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    background: C.primary,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "white",
+                    fontSize: 16,
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    boxShadow: `2px 2px 0px ${C.ink}`,
+                    border: `2px solid ${C.ink}`,
+                  }}
+                >
+                  →
                 </div>
               </button>
 
+              {/* Delete button */}
               <button
                 className="ks-delete-btn"
                 onClick={() => {
@@ -215,16 +379,17 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                     onDelete(kid.id);
                 }}
                 style={{
-                  background: "rgba(232,69,69,0.22)",
-                  border: "2px solid rgba(232,69,69,0.38)",
+                  background: "rgba(255,255,255,0.6)",
+                  backdropFilter: "blur(8px)",
+                  border: `2px solid ${C.heart}30`,
                   borderRadius: 14,
-                  padding: "11px 13px",
+                  padding: "10px 12px",
                   cursor: "pointer",
-                  color: "#e84545",
-                  fontSize: 18,
-                  fontWeight: 900,
+                  color: C.heart,
+                  fontSize: 14,
+                  fontWeight: 700,
                   lineHeight: 1,
-                  transition: "background 0.18s, border-color 0.18s",
+                  transition: "all 0.18s",
                   flexShrink: 0,
                 }}
               >
@@ -234,87 +399,67 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
           ))}
         </div>
 
-        {/* ── Add hero / form ── */}
+        {/* Add hero / form */}
         {!adding ? (
           <button
-            className="ks-add-btn"
+            className="toy-block toy-pressable"
             onClick={() => setAdding(true)}
             style={{
               width: "100%",
-              background:
-                "linear-gradient(135deg,#2e6fd4 0%,#4a90ff 60%,#5ca8ff 100%)",
-              border: "none",
-              borderRadius: 50,
-              padding: "18px 28px",
-              cursor: "pointer",
+              background: C.primary,
+              padding: "16px 28px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               gap: 10,
-              boxShadow: "0 4px 22px rgba(74,144,255,0.38)",
-              transition: "transform 0.22s, box-shadow 0.22s",
-              animation: "addBtnPop 0.5s ease-out 0.25s both",
+              fontFamily: FONT,
+              fontSize: 18,
+              fontWeight: 700,
+              color: C.textLight,
+              letterSpacing: 0.5,
             }}
           >
-            <span
-              style={{
-                fontSize: 22,
-                color: "#f6c619",
-                fontWeight: 900,
-                lineHeight: 1,
-              }}
-            >
-              +
-            </span>
-            <span
-              style={{
-                fontFamily: "'Russo One', sans-serif",
-                fontSize: 16,
-                color: "white",
-                letterSpacing: 3,
-                fontWeight: 800,
-              }}
-            >
-              ADD A HERO
-            </span>
+            <span style={{ fontSize: 24, lineHeight: 1 }}>+</span>
+            Add a Hero
           </button>
         ) : (
           <div
+            className="toy-block"
             style={{
-              background:
-                "linear-gradient(135deg,rgba(24,38,76,0.97) 0%,rgba(17,22,56,0.97) 100%)",
-              borderRadius: 24,
-              padding: 22,
-              border: "2px solid rgba(74,144,255,0.38)",
-              backdropFilter: "blur(12px)",
-              animation: "cardSlideIn 0.3s ease-out both",
+              background: C.surface,
+              padding: 24,
+              animation: "formSlideUp 0.35s ease-out both",
+              width: "100%",
             }}
           >
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Hero name..."
-              autoFocus
-              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            <div
               style={{
-                width: "100%",
-                background: "rgba(10,14,39,0.85)",
-                border: "2px solid rgba(74,144,255,0.45)",
-                borderRadius: 14,
-                padding: "13px 16px",
-                color: "#f0f0f0",
-                fontSize: 18,
-                fontFamily: "'Russo One', sans-serif",
-                letterSpacing: 2,
-                outline: "none",
-                boxSizing: "border-box",
-                marginBottom: 14,
+                fontFamily: FONT,
+                fontSize: 20,
+                fontWeight: 700,
+                color: C.text,
+                marginBottom: 6,
               }}
-            />
+            >
+              Create Your Hero
+            </div>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 13,
+                color: C.muted,
+                fontWeight: 500,
+                marginBottom: 16,
+              }}
+            >
+              Pick a character and give them a name!
+            </div>
+
+            {/* Avatar picker */}
             <div
               style={{
                 display: "flex",
-                gap: 8,
+                gap: 6,
                 flexWrap: "wrap",
                 justifyContent: "center",
                 marginBottom: 16,
@@ -325,40 +470,85 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                   key={i}
                   onClick={() => setAvatar(i)}
                   style={{
-                    fontSize: 28,
-                    background:
-                      i === avatar ? "rgba(74,144,255,0.22)" : "transparent",
-                    border: `2px solid ${i === avatar ? "#4a90ff" : "transparent"}`,
-                    borderRadius: 12,
-                    padding: 5,
+                    fontSize: 30,
+                    background: i === avatar ? `linear-gradient(135deg, ${C.sun}30, ${C.accent}30)` : "rgba(201,240,226,0.5)",
+                    border: `3px solid ${i === avatar ? C.accent : "transparent"}`,
+                    borderRadius: i === avatar ? "50%" : RADIUS.small,
+                    width: i === avatar ? 52 : 44,
+                    height: i === avatar ? 52 : 44,
                     cursor: "pointer",
                     lineHeight: 1,
-                    transition: "all 0.15s",
+                    transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: i === avatar ? `0 0 16px ${C.accent}30` : "none",
+                    transform: i === avatar ? "scale(1.1)" : "scale(1)",
                   }}
                 >
                   {a}
                 </button>
               ))}
             </div>
+
+            {/* Name input */}
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Hero name..."
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              style={{
+                width: "100%",
+                background: C.surface,
+                border: `3px solid ${C.ink}`,
+                borderRadius: "16px",
+                padding: "12px 18px",
+                color: C.text,
+                fontSize: 17,
+                fontFamily: FONT,
+                fontWeight: 700,
+                outline: "none",
+                boxSizing: "border-box",
+                marginBottom: 16,
+              }}
+            />
+
             <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-              <Btn
+              <button
+                className="toy-block toy-pressable"
                 onClick={() => setAdding(false)}
-                color={C.panel}
-                small
                 style={{
-                  border: "1px solid rgba(122,130,166,0.35)",
-                  color: C.muted,
+                  background: C.panel,
+                  padding: "10px 22px",
+                  fontFamily: FONT,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: C.text,
                 }}
               >
-                CANCEL
-              </Btn>
-              <Btn onClick={handleAdd} color={C.green} small>
-                CREATE HERO
-              </Btn>
+                Cancel
+              </button>
+              <button
+                className="toy-block toy-pressable"
+                onClick={handleAdd}
+                style={{
+                  background: C.primary,
+                  padding: "10px 22px",
+                  fontFamily: FONT,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: C.textLight,
+                }}
+              >
+                Create Hero
+              </button>
             </div>
           </div>
         )}
       </div>
+
+
     </div>
   );
 }
