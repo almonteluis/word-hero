@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { WORD_GROUPS, GROUP_NAMES, C, FONT, RADIUS } from "../constants";
-import GroupSelector from "./GroupSelector";
+import { ALL_WORDS, C, FONT, RADIUS } from "../constants";
 import Btn from "./Btn";
 import VictoryScreen from "./VictoryScreen";
 import { speak } from "../utils/speech";
-import { weightedShuffle } from "../utils/progress";
+import { selectPracticeWords } from "../utils/roundWords";
+import { shuffle } from "../utils/shuffle";
 
-function FindItGame({ progress, dispatch, initialGroup = 0 }) {
-  const [group, setGroup] = useState(initialGroup);
+function FindItGame({ progress, dispatch }) {
   const [target, setTarget] = useState("");
   const [options, setOptions] = useState([]);
   const [feedback, setFeedback] = useState(null);
@@ -15,26 +14,18 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
   const [round, setRound] = useState(0);
   const [shakeWord, setShakeWord] = useState(null);
   const [combo, setCombo] = useState(0);
+  const [targets, setTargets] = useState(() => selectPracticeWords(progress));
   const TOTAL = 10;
 
   const genRound = useCallback(() => {
-    const words = WORD_GROUPS[GROUP_NAMES[group]];
-    const weighted = weightedShuffle(
-      words,
-      progress.wordStats || {},
-      progress.mastered || {},
-    );
-    const t = weighted[0];
-    const others = words
-      .filter((w) => w !== t)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3);
+    const t = targets[round] || targets[0];
+    const others = shuffle(ALL_WORDS.filter((w) => w !== t)).slice(0, 3);
     setTarget(t);
-    setOptions([...others, t].sort(() => Math.random() - 0.5));
+    setOptions(shuffle([...others, t]));
     setFeedback(null);
     setShakeWord(null);
     speak(t);
-  }, [group, progress.wordStats, progress.mastered]);
+  }, [targets, round]);
 
   useEffect(() => {
     genRound();
@@ -64,6 +55,7 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
   };
 
   const restart = () => {
+    setTargets(selectPracticeWords(progress));
     setRound(0);
     setScore(0);
     setCombo(0);
@@ -91,14 +83,6 @@ function FindItGame({ progress, dispatch, initialGroup = 0 }) {
         padding: "16px 16px 24px",
       }}
     >
-      <GroupSelector
-        selected={group}
-        onChange={(i) => {
-          setGroup(i);
-          restart();
-        }}
-      />
-
       {/* Score + Progress */}
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <span

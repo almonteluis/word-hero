@@ -20,7 +20,6 @@ export default function WordHeroApp() {
   const [profiles, setProfiles] = useState(null);
   const [activeKid, setActiveKid] = useState(null);
   const [mode, setMode] = useState("menu");
-  const [findItGroup, setFindItGroup] = useState(0);
   const [modeKey, setModeKey] = useState(0);
   const [progress, dispatch] = useReducer(progressReducer, null, initProgress);
   const [loaded, setLoaded] = useState(false);
@@ -283,18 +282,14 @@ export default function WordHeroApp() {
           <FlashcardMode
             progress={progress}
             dispatch={dispatch}
-            onAdvanceToFindIt={(g) => {
-              setFindItGroup(g);
+            onAdvanceToFindIt={() => {
               setMode("find");
+              setModeKey((k) => k + 1);
             }}
           />
         )}
         {mode === "find" && (
-          <FindItGame
-            progress={progress}
-            dispatch={dispatch}
-            initialGroup={findItGroup}
-          />
+          <FindItGame progress={progress} dispatch={dispatch} />
         )}
       </div>
 
