@@ -435,35 +435,28 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
 
       {/* Card */}
       <div
+        className="toy-block"
         style={{
           width: 300,
           height: 210,
+          background: timerExpired
+            ? `linear-gradient(135deg, ${C.heart}, #d94555)`
+            : micResult === "correct"
+              ? `linear-gradient(135deg, ${C.green}, #A7F3D0)`
+              : micResult === "wrong"
+                ? `linear-gradient(135deg, ${C.heart}, #d94555)`
+                : "white",
+          borderRadius: RADIUS.card,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "background 0.3s",
           animation: exitAnim
             ? `${exitAnim} 0.5s cubic-bezier(0.4, 0, 1, 1) forwards`
             : "cardEnter 0.35s ease-out",
         }}
       >
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            background: timerExpired
-              ? `linear-gradient(135deg, ${C.heart}, #d94555)`
-              : micResult === "correct"
-                ? `linear-gradient(135deg, ${C.green}, #6ab835)`
-                : micResult === "wrong"
-                  ? `linear-gradient(135deg, ${C.heart}, #d94555)`
-                  : "white",
-            borderRadius: RADIUS.card,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: `0 8px 32px ${C.shadow}`,
-            border: `3px solid ${C.border}`,
-            transition: "background 0.3s",
-          }}
-        >
           <div
             style={{
               fontSize: 64,
@@ -481,6 +474,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
           </div>
           {round === 1 && (
             <button
+              className="toy-block toy-pressable"
               onClick={(e) => {
                 e.stopPropagation();
                 speak(word);
@@ -488,13 +482,9 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
               style={{
                 marginTop: 8,
                 background: C.surface,
-                border: "none",
-                borderBottom: `3px solid ${C.border}`,
-                borderRadius: RADIUS.button,
-                padding: "4px 16px",
+                padding: "8px 16px",
                 color: C.text,
                 fontWeight: 600,
-                cursor: "pointer",
                 fontSize: 13,
                 fontFamily: FONT,
               }}
@@ -503,7 +493,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             </button>
           )}
         </div>
-      </div>
 
       {/* Controls based on round */}
       <div

@@ -46,7 +46,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(180deg, #7EC8E3 0%, #A8DCF0 20%, #C5EEBB 40%, #B5DE5E 55%, #A0CC4A 70%, #8BBF3A 100%)",
+        background: `linear-gradient(180deg, ${C.secondary} 0%, #E0F2FE 50%, ${C.green} 100%)`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -162,27 +162,24 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
         ))}
       </div>
 
-      {/* Clouds */}
+      {/* Pastel Clouds */}
       <div style={{ position: "absolute", top: "5%", left: "3%", zIndex: 0, animation: "cloudDrift 12s ease-in-out infinite", pointerEvents: "none" }}>
         <svg width="120" height="50" viewBox="0 0 120 50">
           <ellipse cx="60" cy="32" rx="58" ry="18" fill="white" opacity="0.9" />
           <ellipse cx="35" cy="24" rx="30" ry="16" fill="white" opacity="0.95" />
           <ellipse cx="80" cy="22" rx="26" ry="14" fill="white" opacity="0.92" />
-          <ellipse cx="55" cy="18" rx="22" ry="12" fill="white" />
         </svg>
       </div>
       <div style={{ position: "absolute", top: "10%", left: "45%", zIndex: 0, animation: "cloudDriftReverse 15s ease-in-out infinite 3s", pointerEvents: "none" }}>
         <svg width="90" height="40" viewBox="0 0 90 40">
-          <ellipse cx="45" cy="26" rx="44" ry="14" fill="white" opacity="0.85" />
-          <ellipse cx="28" cy="18" rx="24" ry="12" fill="white" opacity="0.9" />
-          <ellipse cx="65" cy="20" rx="20" ry="10" fill="white" opacity="0.88" />
+          <ellipse cx="45" cy="26" rx="44" ry="14" fill="#FFE4E6" opacity="0.85" />
+          <ellipse cx="28" cy="18" rx="24" ry="12" fill="#FFE4E6" opacity="0.9" />
         </svg>
       </div>
       <div style={{ position: "absolute", top: "16%", right: "2%", zIndex: 0, animation: "cloudDrift 18s ease-in-out infinite 6s", pointerEvents: "none", opacity: 0.7 }}>
         <svg width="100" height="44" viewBox="0 0 100 44">
-          <ellipse cx="50" cy="28" rx="48" ry="16" fill="white" />
-          <ellipse cx="30" cy="20" rx="28" ry="14" fill="white" />
-          <ellipse cx="72" cy="18" rx="22" ry="12" fill="white" />
+          <ellipse cx="50" cy="28" rx="48" ry="16" fill="#E0F2FE" />
+          <ellipse cx="30" cy="20" rx="28" ry="14" fill="#E0F2FE" />
         </svg>
       </div>
 
@@ -248,9 +245,8 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
           style={{
             fontFamily: FONT,
             fontSize: 16,
-            color: "white",
-            fontWeight: 500,
-            textShadow: "1px 1px 2px rgba(0,0,0,0.15)",
+            color: C.text,
+            fontWeight: 700,
             marginBottom: 32,
             letterSpacing: 0.5,
           }}
@@ -261,17 +257,18 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
         {/* Character section header */}
         {profiles.length > 0 && (
           <div
+            className="toy-block"
             style={{
               fontFamily: FONT,
-              fontSize: 19,
+              fontSize: 18,
               color: C.text,
               fontWeight: 700,
               marginBottom: 16,
-              background: "rgba(255,255,255,0.75)",
-              backdropFilter: "blur(8px)",
-              borderRadius: RADIUS.button,
+              background: C.surface,
+              borderRadius: "16px",
               padding: "6px 22px",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+              borderWidth: "3px",
+              boxShadow: `3px 4px 0px ${C.ink}`,
             }}
           >
             Choose Your Hero
@@ -299,39 +296,32 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
               }}
             >
               <button
-                className="ks-hero-card"
+                className="toy-block toy-pressable"
                 onClick={() => onSelect(kid)}
                 style={{
                   flex: 1,
-                  background: "rgba(255,255,255,0.88)",
-                  backdropFilter: "blur(12px)",
-                  border: "none",
-                  borderRadius: RADIUS.card,
-                  padding: "14px 18px",
-                  cursor: "pointer",
+                  background: C.surface,
+                  padding: "16px",
                   display: "flex",
                   alignItems: "center",
                   gap: 14,
-                  boxShadow: `0 6px 24px rgba(58,74,84,0.1), 0 2px 6px rgba(58,74,84,0.06)`,
                   textAlign: "left",
                 }}
               >
                 {/* Avatar in a character-card ring */}
                 <div
-                  className="ks-avatar-ring"
                   style={{
-                    width: 64,
-                    height: 64,
+                    width: 56,
+                    height: 56,
                     borderRadius: "50%",
-                    background: `linear-gradient(135deg, ${C.sun}30, ${C.accent}30)`,
+                    background: C.panel,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 36,
+                    fontSize: 32,
                     flexShrink: 0,
-                    border: `3px solid white`,
-                    boxShadow: `0 2px 10px ${C.accent}30`,
-                    transition: "transform 0.25s, box-shadow 0.25s",
+                    border: `3px solid ${C.ink}`,
+                    boxShadow: `3px 4px 0px ${C.ink}`,
                   }}
                 >
                   {kid.avatar}
@@ -340,7 +330,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                   <div
                     style={{
                       fontFamily: FONT,
-                      fontSize: "clamp(18px, 5vw, 24px)",
+                      fontSize: "clamp(18px, 5vw, 22px)",
                       color: C.text,
                       fontWeight: 700,
                     }}
@@ -353,7 +343,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                       fontSize: 13,
                       color: C.accent,
                       fontWeight: 600,
-                      marginTop: 1,
+                      marginTop: 2,
                     }}
                   >
                     Tap to start training!
@@ -365,7 +355,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                     width: 32,
                     height: 32,
                     borderRadius: "50%",
-                    background: C.accent,
+                    background: C.primary,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -373,7 +363,8 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
                     fontSize: 16,
                     fontWeight: 700,
                     flexShrink: 0,
-                    boxShadow: `0 2px 8px ${C.accent}40`,
+                    boxShadow: `2px 2px 0px ${C.ink}`,
+                    border: `2px solid ${C.ink}`,
                   }}
                 >
                   →
@@ -411,15 +402,12 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
         {/* Add hero / form */}
         {!adding ? (
           <button
+            className="toy-block toy-pressable"
             onClick={() => setAdding(true)}
             style={{
               width: "100%",
-              background: C.secondary,
-              border: "none",
-              borderBottom: `5px solid ${C.secondary}bb`,
-              borderRadius: RADIUS.button,
+              background: C.primary,
               padding: "16px 28px",
-              cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -427,10 +415,8 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
               fontFamily: FONT,
               fontSize: 18,
               fontWeight: 700,
-              color: "white",
+              color: C.textLight,
               letterSpacing: 0.5,
-              animation: "addBtnGlow 3s ease-in-out infinite",
-              transition: "transform 0.2s",
             }}
           >
             <span style={{ fontSize: 24, lineHeight: 1 }}>+</span>
@@ -438,13 +424,10 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
           </button>
         ) : (
           <div
+            className="toy-block"
             style={{
-              background: "rgba(255,255,255,0.92)",
-              backdropFilter: "blur(16px)",
-              borderRadius: RADIUS.card,
+              background: C.surface,
               padding: 24,
-              boxShadow: "0 12px 40px rgba(58,74,84,0.12)",
-              border: `2px solid rgba(255,255,255,0.8)`,
               animation: "formSlideUp 0.35s ease-out both",
               width: "100%",
             }}
@@ -518,56 +501,44 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
               style={{
                 width: "100%",
                 background: C.surface,
-                border: `3px solid ${C.border}`,
-                borderRadius: RADIUS.button,
+                border: `3px solid ${C.ink}`,
+                borderRadius: "16px",
                 padding: "12px 18px",
                 color: C.text,
                 fontSize: 17,
                 fontFamily: FONT,
-                fontWeight: 500,
+                fontWeight: 700,
                 outline: "none",
                 boxSizing: "border-box",
                 marginBottom: 16,
-                transition: "border-color 0.2s",
               }}
-              onFocus={(e) => { e.target.style.borderColor = C.accent; }}
-              onBlur={(e) => { e.target.style.borderColor = C.border; }}
             />
 
             <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
               <button
+                className="toy-block toy-pressable"
                 onClick={() => setAdding(false)}
                 style={{
-                  background: "rgba(201,240,226,0.6)",
-                  border: "none",
-                  borderBottom: `3px solid ${C.border}`,
-                  borderRadius: RADIUS.button,
-                  padding: "10px 22px",
-                  fontFamily: FONT,
-                  fontSize: 15,
-                  fontWeight: 600,
-                  color: C.text,
-                  cursor: "pointer",
-                  transition: "transform 0.15s",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAdd}
-                style={{
-                  background: C.primary,
-                  border: "none",
-                  borderBottom: `4px solid ${C.primary}bb`,
-                  borderRadius: RADIUS.button,
+                  background: C.panel,
                   padding: "10px 22px",
                   fontFamily: FONT,
                   fontSize: 15,
                   fontWeight: 700,
                   color: C.text,
-                  cursor: "pointer",
-                  boxShadow: `0 4px 16px ${C.primary}30`,
-                  transition: "transform 0.15s",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="toy-block toy-pressable"
+                onClick={handleAdd}
+                style={{
+                  background: C.primary,
+                  padding: "10px 22px",
+                  fontFamily: FONT,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: C.textLight,
                 }}
               >
                 Create Hero
@@ -577,107 +548,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
         )}
       </div>
 
-      {/* ═══ GROUND LAYER — hills, trees, flowers ═══ */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 140,
-          pointerEvents: "none",
-          zIndex: 0,
-          overflow: "hidden",
-        }}
-      >
-        {/* Back hill */}
-        <svg
-          viewBox="0 0 400 100"
-          preserveAspectRatio="none"
-          style={{
-            position: "absolute",
-            bottom: 40,
-            left: "-10%",
-            width: "120%",
-            height: 80,
-            animation: "hillSway 8s ease-in-out infinite",
-          }}
-        >
-          <path
-            d="M0,80 Q50,20 120,50 Q200,10 280,45 Q350,25 400,60 L400,100 L0,100 Z"
-            fill="#8BBF3A"
-            opacity="0.7"
-          />
-        </svg>
 
-        {/* Front hill */}
-        <svg
-          viewBox="0 0 400 80"
-          preserveAspectRatio="none"
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: "-5%",
-            width: "110%",
-            height: 60,
-          }}
-        >
-          <path
-            d="M0,50 Q60,15 140,35 Q220,8 300,30 Q360,18 400,40 L400,80 L0,80 Z"
-            fill="#78B032"
-          />
-        </svg>
-
-        {/* Trees */}
-        <div style={{ position: "absolute", bottom: 38, left: "6%", animation: "cloudDrift 10s ease-in-out infinite 1s" }}>
-          <svg width="50" height="70" viewBox="0 0 50 70">
-            <rect x="20" y="45" width="10" height="25" rx="3" fill="#8B6B3E" />
-            <ellipse cx="25" cy="30" rx="22" ry="25" fill="#5DAA1E" />
-            <ellipse cx="25" cy="22" rx="16" ry="18" fill="#6FC422" />
-            <ellipse cx="18" cy="18" rx="8" ry="10" fill="#7DD425" opacity="0.7" />
-          </svg>
-        </div>
-
-        <div style={{ position: "absolute", bottom: 32, right: "8%", animation: "cloudDriftReverse 12s ease-in-out infinite 4s" }}>
-          <svg width="40" height="58" viewBox="0 0 40 58">
-            <rect x="16" y="38" width="8" height="20" rx="2" fill="#8B6B3E" />
-            <ellipse cx="20" cy="24" rx="18" ry="22" fill="#5DAA1E" />
-            <ellipse cx="20" cy="18" rx="13" ry="15" fill="#6FC422" />
-          </svg>
-        </div>
-
-        <div style={{ position: "absolute", bottom: 50, left: "22%", animation: "cloudDrift 14s ease-in-out infinite 2s" }}>
-          <svg width="32" height="48" viewBox="0 0 32 48">
-            <rect x="13" y="32" width="6" height="16" rx="2" fill="#8B6B3E" />
-            <ellipse cx="16" cy="20" rx="14" ry="18" fill="#5DAA1E" />
-            <ellipse cx="16" cy="14" rx="10" ry="12" fill="#6FC422" />
-          </svg>
-        </div>
-
-        {/* Flowers */}
-        <div style={{ position: "absolute", bottom: 48, left: "15%", fontSize: 18, animation: "hillSway 6s ease-in-out infinite 1s" }}>🌸</div>
-        <div style={{ position: "absolute", bottom: 42, left: "35%", fontSize: 14, animation: "hillSway 7s ease-in-out infinite 3s" }}>🌼</div>
-        <div style={{ position: "absolute", bottom: 52, right: "20%", fontSize: 16, animation: "hillSway 5s ease-in-out infinite 2s" }}>🌺</div>
-        <div style={{ position: "absolute", bottom: 44, right: "30%", fontSize: 12, animation: "hillSway 8s ease-in-out infinite 0.5s" }}>🌻</div>
-        <div style={{ position: "absolute", bottom: 46, left: "55%", fontSize: 14, animation: "hillSway 6s ease-in-out infinite 4s" }}>🌷</div>
-
-        {/* Floating sparkles */}
-        {PARTICLES.map((p, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: `${p.left}%`,
-              bottom: `${p.startY}%`,
-              fontSize: p.size + 6,
-              animation: `sparkle ${p.dur}s ease-in-out ${p.delay}s infinite`,
-              pointerEvents: "none",
-            }}
-          >
-            {p.emoji}
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

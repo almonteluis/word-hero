@@ -90,26 +90,30 @@ export const ALL_WORDS = Object.values(WORD_GROUPS).flat();
 export const GROUP_NAMES = Object.keys(WORD_GROUPS);
 
 export const C = {
-  // Kumi theme — bright, friendly kids palette
-  bg: "#B5DE5E",         // --bg-world: lime green outdoors
-  surface: "#C9F0E2",    // --bg-surface: mint teal cards
-  panel: "#E8F5E0",      // light green panels
-  panelHover: "#D4EDCA",
-  primary: "#8BCF3B",    // --primary-cta: bright green buttons
-  secondary: "#3FAFE8",  // --secondary-cta: sky blue alt buttons
-  accent: "#F5A623",     // --accent-warm: orange highlights/progress
-  heart: "#FF6B7A",      // --accent-heart: red/pink hearts/lives
-  sun: "#FFC93C",        // --accent-sun: yellow coins/stars
-  text: "#3A4A54",       // --text-primary: dark slate body
-  textLight: "#FFFFFF",  // --text-on-cta: white on colored buttons
-  muted: "#7BA68A",      // muted green for secondary text
-  green: "#8BCF3B",      // success/correct (same as primary)
-  red: "#FF6B7A",        // wrong/heart (same as heart)
-  blue: "#3FAFE8",       // info/secondary (same as secondary)
-  purple: "#B088D4",     // soft purple accent
-  // Shadows & borders
-  shadow: "rgba(58, 74, 84, 0.08)",
-  border: "rgba(58, 74, 84, 0.12)",
+  // Pastel Pop Squishy Toy Theme
+  bg: "#F9FAFB",         // Soft cream background
+  surface: "#FFFFFF",    // White cards
+  panel: "#F1F5F9",      // Soft gray-blue panels
+  panelHover: "#E2E8F0",
+  primary: "#FF8BA7",    // Cotton Candy Pink
+  secondary: "#BAE6FD",  // Sky Blue
+  accent: "#FFDE59",     // Sunny Yellow
+  heart: "#FF6B8B",      // Bright Pink/Red for lives
+  sun: "#FFD166",        // Warm yellow
+  text: "#334155",       // Soft Ink (Dark slate) - for text
+  textLight: "#FFFFFF",  // White text on dark/colored buttons
+  muted: "#94A3B8",      // Soft slate for secondary text
+  green: "#A7F3D0",      // Mint green
+  pink: "#FF8BA7",       // Extra ref alias
+  red: "#FF6B8B",        
+  blue: "#BAE6FD",       
+  purple: "#DDD6FE",     // Soft Lilac
+  
+  // Shadows & borders for Toy Block (Neobrutalism) effect
+  ink: "#334155",        // Soft ink used for borders and thick toy shadows
+  border: "#334155",     
+  shadowLine: "#334155", // For the main block drop shadows
+  softShadow: "rgba(51, 65, 85, 0.15)", // For soft floating elements
 };
 
 // Semantic aliases for clarity

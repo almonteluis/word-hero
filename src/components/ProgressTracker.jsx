@@ -1,27 +1,6 @@
 import { C, FONT, RADIUS, ALL_WORDS, WORD_GROUPS, GROUP_NAMES } from "../constants";
-import { MASTERY_SESSIONS } from "../utils/progress";
+import { MASTERY_SESSIONS, getStreak, getHeroStats, STREAK_DAYS } from "../utils/progress";
 import DailyReminderSettings from "./DailyReminderSettings";
-
-const DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
-
-// Build streak from session history or simulate from sessions count
-function getStreak(progress) {
-  const sessions = progress.sessions || 0;
-  const today = new Date();
-  const todayIdx = (today.getDay() + 6) % 7; // Mon=0
-  const streak = [];
-  for (let i = 0; i < 7; i++) {
-    if (i < todayIdx) {
-      // Past days — mark completed if enough sessions
-      streak.push(sessions >= (todayIdx - i) ? "done" : "pending");
-    } else if (i === todayIdx) {
-      streak.push(sessions > 0 ? "done" : "today");
-    } else {
-      streak.push("pending");
-    }
-  }
-  return streak;
-}
 
 // Achievement-style milestones
 function getAchievements(progress, masteredCount) {
@@ -79,13 +58,8 @@ function getAchievements(progress, masteredCount) {
 }
 
 function ProgressTracker({ progress, kidName }) {
-  const masteredCount = Object.keys(progress.mastered).length;
-  const learningCount = Object.keys(progress.learning).length;
+  const { masteredCount, learningCount, accuracy, level, rank } = getHeroStats(progress);
   const pct = Math.round((masteredCount / ALL_WORDS.length) * 100);
-  const accuracy =
-    progress.totalAttempts > 0
-      ? Math.round((progress.totalCorrect / progress.totalAttempts) * 100)
-      : 0;
   const ws = progress.wordStats || {};
 
   const now = Date.now();
@@ -106,18 +80,6 @@ function ProgressTracker({ progress, kidName }) {
     return aAcc - bAcc;
   });
 
-  const rank =
-    masteredCount >= 60
-      ? "Legendary Hero"
-      : masteredCount >= 40
-        ? "Super Hero"
-        : masteredCount >= 20
-          ? "Rising Hero"
-          : masteredCount >= 5
-            ? "Hero in Training"
-            : "New Recruit";
-
-  const level = Math.floor(masteredCount / 5) + 1;
   const streak = getStreak(progress);
   const achievements = getAchievements(progress, masteredCount);
 
@@ -211,7 +173,7 @@ function ProgressTracker({ progress, kidName }) {
             gap: 4,
           }}
         >
-          {DAYS.map((day, i) => {
+          {STREAK_DAYS.map((day, i) => {
             const state = streak[i];
             return (
               <div

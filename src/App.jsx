@@ -9,7 +9,6 @@ import {
   saveNotificationPrefs,
 } from "./utils/storage";
 import { initProgress, progressReducer } from "./utils/progress";
-import ProgressTracker from "./components/ProgressTracker";
 import KidSelector from "./components/KidSelector";
 import ModeSelectScreen from "./components/ModeSelectScreen";
 import FindItGame from "./components/FindItGame";
@@ -136,7 +135,6 @@ export default function WordHeroApp() {
   const modes = [
     { key: "flash", label: "FLASH", icon: "⚡" },
     { key: "find", label: "FIND IT", icon: "🔍" },
-    { key: "stats", label: "STATS", icon: "🛡️" },
   ];
 
   // Mode selection screen has its own full layout
@@ -155,11 +153,16 @@ export default function WordHeroApp() {
     <div
       style={{
         minHeight: "100vh",
-        background: `linear-gradient(180deg, ${C.bg} 0%, #A8D44E 30%, #C9F0E2 100%)`,
+        background: `linear-gradient(180deg, ${C.secondary} 0%, #E0F2FE 50%, ${C.green} 100%)`,
         position: "relative",
         overflow: "hidden",
       }}
     >
+      {/* Playful Floating Background Shapes */}
+      <div style={{ position: "absolute", top: "5%", left: "10%", width: 120, height: 120, background: C.primary, borderRadius: "40% 60% 70% 30%", opacity: 0.15, animation: "floatBlob 8s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "25%", right: "-5%", width: 200, height: 200, background: C.secondary, borderRadius: "60% 40% 30% 70%", opacity: 0.15, animation: "floatBlobRev 12s ease-in-out infinite", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: "10%", left: "-10%", width: 180, height: 160, background: C.accent, borderRadius: "50% 50% 50% 50%", opacity: 0.15, animation: "floatBlob 10s ease-in-out infinite", pointerEvents: "none" }} />
+
       {/* Header */}
       <div
         style={{
@@ -172,21 +175,20 @@ export default function WordHeroApp() {
         }}
       >
         <button
+          className="toy-block toy-pressable"
           onClick={() => {
             setActiveKid(null);
           }}
           style={{
-            background: "white",
-            border: "none",
-            borderBottom: `3px solid ${C.border}`,
-            borderRadius: RADIUS.button,
-            padding: "6px 14px",
-            cursor: "pointer",
+            padding: "8px 16px",
             color: C.text,
             fontFamily: FONT,
-            fontSize: 13,
-            fontWeight: 600,
-            boxShadow: `0 2px 8px ${C.shadow}`,
+            fontSize: 14,
+            fontWeight: 700,
+            background: C.surface,
+            borderWidth: "3px", // slightly thinner for small header button
+            boxShadow: `3px 4px 0px ${C.ink}`,
+            borderRadius: "16px",
           }}
         >
           ← Switch
@@ -207,23 +209,25 @@ export default function WordHeroApp() {
         </div>
 
         <div
+          className="toy-block"
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            background: "white",
-            borderRadius: RADIUS.button,
-            padding: "4px 12px 6px",
-            boxShadow: `0 2px 8px ${C.shadow}`,
+            gap: 8,
+            background: C.surface,
+            padding: "4px 14px 4px 8px",
+            borderWidth: "3px",
+            boxShadow: `3px 4px 0px ${C.ink}`,
+            borderRadius: "100px",
           }}
         >
-          <span style={{ fontSize: 22 }}>{activeKid.avatar}</span>
+          <span style={{ fontSize: 24, transform: "translateY(1px)" }}>{activeKid.avatar}</span>
           <span
             style={{
               fontFamily: FONT,
               color: C.text,
-              fontSize: 13,
-              fontWeight: 600,
+              fontSize: 14,
+              fontWeight: 700,
             }}
           >
             {activeKid.name}
@@ -246,23 +250,15 @@ export default function WordHeroApp() {
         {modes.map((m) => (
           <button
             key={m.key}
+            className="toy-block toy-pressable"
             onClick={() => { setMode(m.key); setModeKey((k) => k + 1); }}
             style={{
-              background:
-                mode === m.key
-                  ? C.accent
-                  : "white",
-              color: mode === m.key ? C.textLight : C.text,
-              border: "none",
-              borderBottom: mode === m.key ? `4px solid ${C.accent}bb` : `3px solid ${C.border}`,
-              borderRadius: RADIUS.button,
-              padding: "8px 16px",
-              cursor: "pointer",
+              background: mode === m.key ? C.accent : C.surface,
+              color: C.text,
+              padding: "10px 20px",
               fontWeight: 700,
-              fontSize: 13,
+              fontSize: 14,
               fontFamily: FONT,
-              transition: "all 0.2s",
-              boxShadow: `0 2px 8px ${C.shadow}`,
             }}
           >
             {m.icon} {m.label}
@@ -299,9 +295,6 @@ export default function WordHeroApp() {
             initialGroup={findItGroup}
           />
         )}
-        {mode === "stats" && (
-          <ProgressTracker progress={progress} kidName={activeKid.name} />
-        )}
       </div>
 
       {/* Reset */}
@@ -314,20 +307,20 @@ export default function WordHeroApp() {
         }}
       >
         <button
+          className="toy-pressable"
           onClick={() => {
             if (confirm(`Reset ${activeKid.name}'s progress?`))
               dispatch({ type: "RESET" });
           }}
           style={{
             background: "transparent",
-            border: `2px solid ${C.border}`,
-            color: C.muted,
-            borderRadius: RADIUS.small,
-            padding: "5px 14px",
-            fontSize: 12,
-            cursor: "pointer",
+            border: `3px solid ${C.ink}40`,
+            color: `${C.ink}80`,
+            borderRadius: RADIUS.button,
+            padding: "8px 16px",
+            fontSize: 13,
+            fontWeight: 700,
             fontFamily: FONT,
-            fontWeight: 500,
           }}
         >
           Reset Progress
