@@ -5,6 +5,7 @@ import Btn from "./Btn";
 import VictoryScreen from "./VictoryScreen";
 import { speak } from "../utils/speech";
 import { useSpeechRecognition, wordMatch } from "../utils/speechRecognition";
+import { getPronunciationFeedback } from "../utils/pronunciationFeedback";
 import { selectPracticeWords } from "../utils/roundWords";
 
 function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
@@ -21,6 +22,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const [showFinalSummary, setShowFinalSummary] = useState(false);
   const [timerExpired, setTimerExpired] = useState(false);
   const [micResult, setMicResult] = useState(null);
+  const [micFeedback, setMicFeedback] = useState(null);
   const [waitingForMic, setWaitingForMic] = useState(false);
   const [showMicPrompt, setShowMicPrompt] = useState(false);
   const [micReady, setMicReady] = useState(false);
@@ -56,11 +58,14 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setMicResult(matched ? "correct" : "wrong");
     setWaitingForMic(false);
     if (matched) {
+      setMicFeedback(null);
       dispatch({ type: "MARK_CORRECT", word });
       setRoundScores((s) => ({
         ...s,
         [round]: { correct: s[round].correct + 1, total: s[round].total + 1 },
       }));
+    } else {
+      setMicFeedback(getPronunciationFeedback(result, word));
     }
   }, [result]);
 
@@ -77,6 +82,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
     setExitAnim("pushRight");
     setTimerExpired(false);
     setMicResult(null);
+    setMicFeedback(null);
     setWaitingForMic(false);
     setTimeout(() => {
       setExitAnim(null);
@@ -113,6 +119,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
 
   const handleSayIt = () => {
     setMicResult(null);
+    setMicFeedback(null);
     setWaitingForMic(true);
     startListening();
   };
@@ -133,6 +140,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
       [round]: { ...s[round], total: s[round].total + 1 },
     }));
     setMicResult(null);
+    setMicFeedback(null);
     setWaitingForMic(false);
   };
 
@@ -535,6 +543,25 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             >
               Not quite — try again!
             </div>
+            {micFeedback && (
+              <div
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 14,
+                  color: C.muted,
+                  textAlign: "center",
+                  maxWidth: 280,
+                  lineHeight: 1.4,
+                }}
+              >
+                <div>
+                  I heard <strong>"{micFeedback.heard}"</strong>
+                </div>
+                <div style={{ marginTop: 4, color: C.accent, fontWeight: 500 }}>
+                  {micFeedback.tip}
+                </div>
+              </div>
+            )}
             <div style={{ display: "flex", gap: 10 }}>
               <Btn
                 onClick={() => {
