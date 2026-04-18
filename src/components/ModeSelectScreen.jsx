@@ -87,6 +87,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack }) {
           width: "100%",
           maxWidth: 400,
           padding: "24px 20px 40px",
+          paddingTop: "max(24px, env(safe-area-inset-top))",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
