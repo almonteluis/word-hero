@@ -1,74 +1,21 @@
 // ─── CONSTANTS ─────────────────────────────────────────────
 export const WORD_GROUPS = {
   "Group 1 – Most Common": [
-    "the",
-    "and",
-    "is",
-    "it",
-    "in",
-    "to",
-    "he",
-    "she",
-    "was",
-    "we",
-    "my",
-    "do",
-    "no",
-    "go",
-    "so",
+    "the","and","is","it","in","to","he","she","was","we","my","do","no","go","so",
+    "a","I","at","am","up","if","on","as","be","by","an","or","of","me","us"
   ],
   "Group 2 – Action Words": [
-    "said",
-    "have",
-    "like",
-    "come",
-    "make",
-    "see",
-    "look",
-    "play",
-    "run",
-    "jump",
-    "help",
-    "want",
-    "give",
-    "take",
-    "put",
+    "said","have","like","come","make","see","look","play","run","jump","help","want","give","take","put",
+    "ask","tell","get","let","find","walk","talk","read","sing","draw","work","try","use","show","keep"
   ],
   "Group 3 – Connectors": [
-    "what",
-    "where",
-    "when",
-    "who",
-    "why",
-    "how",
-    "that",
-    "this",
-    "with",
-    "from",
-    "they",
-    "them",
-    "her",
-    "his",
-    "but",
+    "what","where","when","who","why","how","that","this","with","from","they","them","her","his","but",
+    "all","our","out","not","one","had","for","you","are","can","did","its","off","too","two"
   ],
   "Group 4 – Describing Words": [
-    "big",
-    "little",
-    "good",
-    "new",
-    "old",
-    "first",
-    "long",
-    "very",
-    "over",
-    "after",
-    "before",
-    "under",
-    "just",
-    "again",
-    "around",
-  ],
-  "Group 5 – Tricky Words": [
+    "big","little","good","new","old","first","long","very","over","after","before","under","just","again","around",
+    "fast","slow","hot","cold","pretty","funny","happy","sad","nice","well","better","best","more","most","own"
+  ],"Group 5 – Tricky Words": [
     "could",
     "would",
     "should",
@@ -83,11 +30,12 @@ export const WORD_GROUPS = {
     "done",
     "does",
     "goes",
-    "every",
+    "every","once","upon","always","never","often","even","also","only","other","another","many","much","through","though","while"
   ],
 };
 export const ALL_WORDS = Object.values(WORD_GROUPS).flat();
 export const GROUP_NAMES = Object.keys(WORD_GROUPS);
+export const WORDS_PER_ROUND = 10;
 
 export const C = {
   // Pastel Pop Squishy Toy Theme
