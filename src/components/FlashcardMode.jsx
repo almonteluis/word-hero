@@ -1,20 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { WORD_GROUPS, GROUP_NAMES, C, FONT, RADIUS } from "../constants";
-import GroupSelector from "./GroupSelector";
+import { C, FONT, RADIUS } from "../constants";
 import CountdownTimer from "./CountdownTimer";
 import Btn from "./Btn";
 import VictoryScreen from "./VictoryScreen";
 import { speak } from "../utils/speech";
 import { useSpeechRecognition, wordMatch } from "../utils/speechRecognition";
-import { selectRoundWords } from "../utils/roundWords";
+import { selectPracticeWords } from "../utils/roundWords";
 
 function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
-  const [group, setGroup] = useState(0);
   const [idx, setIdx] = useState(0);
   const [exitAnim, setExitAnim] = useState(null);
-  const [shuffled, setShuffled] = useState(() =>
-    selectRoundWords(0, progress),
-  );
+  const [shuffled, setShuffled] = useState(() => selectPracticeWords(progress));
   const [round, setRound] = useState(1);
   const [roundScores, setRoundScores] = useState({
     1: { correct: 0, total: 0 },
@@ -36,27 +32,9 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const timerSeconds = round === 2 ? 10 : round === 3 ? 5 : 0;
 
   const getWordsForRound = useCallback(
-    (r) => {
-      return selectRoundWords(group, progress);
-    },
-    [group, progress],
+    () => selectPracticeWords(progress),
+    [progress],
   );
-
-  useEffect(() => {
-    const words = selectRoundWords(group, progress);
-    setShuffled(words);
-    setIdx(0);
-    setRound(1);
-    setRoundScores({
-      1: { correct: 0, total: 0 },
-      2: { correct: 0, total: 0 },
-      3: { correct: 0, total: 0 },
-    });
-    setShowRoundSummary(false);
-    setShowFinalSummary(false);
-    setShowMicPrompt(false);
-    setMicReady(false);
-  }, [group]);
 
   useEffect(() => {
     if (round !== 1) return;
@@ -161,7 +139,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const startNextRound = () => {
     const nextRound = round + 1;
     setRound(nextRound);
-    setShuffled(getWordsForRound(nextRound));
+    setShuffled(getWordsForRound());
     setIdx(0);
     setShowRoundSummary(false);
     setTimerExpired(false);
@@ -250,11 +228,11 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
             2: { correct: 0, total: 0 },
             3: { correct: 0, total: 0 },
           });
-          setShuffled(getWordsForRound(1));
+          setShuffled(getWordsForRound());
           setIdx(0);
           setShowFinalSummary(false);
         }}
-        onContinue={passed ? () => onAdvanceToFindIt(group) : undefined}
+        onContinue={passed ? () => onAdvanceToFindIt() : undefined}
       />
     );
   }
@@ -336,13 +314,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         padding: "16px 16px 24px",
       }}
     >
-      <GroupSelector
-        selected={group}
-        onChange={(i) => {
-          setGroup(i);
-        }}
-      />
-
       {/* Round indicator */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {[1, 2, 3].map((r) => (
@@ -398,20 +369,11 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
         }}
       >
         Word {idx + 1} of {shuffled.length}
-        {round >= 2 &&
-          Object.keys(progress.mastered).filter((w) =>
-            WORD_GROUPS[GROUP_NAMES[group]].includes(w),
-          ).length > 0 && (
-            <span style={{ color: C.green, marginLeft: 8, fontSize: 11 }}>
-              (
-              {
-                Object.keys(progress.mastered).filter((w) =>
-                  WORD_GROUPS[GROUP_NAMES[group]].includes(w),
-                ).length
-              }{" "}
-              mastered)
-            </span>
-          )}
+        {round >= 2 && Object.keys(progress.mastered).length > 0 && (
+          <span style={{ color: C.green, marginLeft: 8, fontSize: 11 }}>
+            ({Object.keys(progress.mastered).length} mastered)
+          </span>
+        )}
       </div>
 
       {/* Timer for rounds 2 & 3 */}
