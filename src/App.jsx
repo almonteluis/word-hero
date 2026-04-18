@@ -170,6 +170,7 @@ export default function WordHeroApp() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "16px 16px 8px",
+          paddingTop: "max(16px, env(safe-area-inset-top))",
           position: "relative",
           zIndex: 1,
         }}
