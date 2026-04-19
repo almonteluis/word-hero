@@ -9,6 +9,14 @@ import {
   saveNotificationPrefs,
 } from "./utils/storage";
 import { initProgress, progressReducer } from "./utils/progress";
+import {
+  loginWithEmail,
+  loginWithGoogle,
+  createAccount as firebaseCreateAccount,
+  logout as firebaseLogout,
+  resetPassword,
+  onAuthChange,
+} from "./utils/firebase";
 import KidSelector from "./components/KidSelector";
 import ModeSelectScreen from "./components/ModeSelectScreen";
 import FindItGame from "./components/FindItGame";
@@ -18,9 +26,16 @@ import DictionaryScreen from "./components/DictionaryScreen";
 import ModulesScreen from "./components/ModulesScreen";
 import ProfileScreen from "./components/ProfileScreen";
 import GlobalStyles from "./styles/animations.jsx";
+import WelcomeScreen from "./components/auth/WelcomeScreen";
+import LoginScreen from "./components/auth/LoginScreen";
+import ForgotPasswordScreen from "./components/auth/ForgotPasswordScreen";
+import CreateAccountScreen from "./components/auth/CreateAccountScreen";
+import AuthProfileScreen from "./components/auth/ProfileScreen";
 
 // ─── MAIN APP ──────────────────────────────────────────────
 export default function WordHeroApp() {
+  const [user, setUser] = useState(null);
+  const [authScreen, setAuthScreen] = useState("welcome");
   const [profiles, setProfiles] = useState(null);
   const [activeKid, setActiveKid] = useState(null);
   const [tab, setTab] = useState("home");
@@ -30,11 +45,28 @@ export default function WordHeroApp() {
   const [loaded, setLoaded] = useState(false);
   const saveTimer = useRef(null);
 
+  // Listen for Firebase auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthChange((firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          name: firebaseUser.displayName || firebaseUser.email.split("@")[0],
+          email: firebaseUser.email,
+          uid: firebaseUser.uid,
+          photoURL: firebaseUser.photoURL,
+        });
+      } else {
+        setUser(null);
+      }
+      setLoaded(true);
+    });
+    return unsubscribe;
+  }, []);
+
   // Load profiles on mount
   useEffect(() => {
     const p = loadProfiles();
     setProfiles(p || []);
-    setLoaded(true);
   }, []);
 
   // Check and fire daily reminder notification on app open
@@ -78,6 +110,38 @@ export default function WordHeroApp() {
     };
   }, [progress, activeKid]);
 
+  // ─── AUTH HANDLERS ────────────────────────────────────────
+  const handleEmailLogin = async ({ email, password }) => {
+    await loginWithEmail(email, password);
+  };
+
+  const handleGoogleLogin = async () => {
+    await loginWithGoogle();
+  };
+
+  const handleCreateAccount = async ({ parent, password, children }) => {
+    await firebaseCreateAccount(parent.email, password);
+    const kids = children.map((c, i) => ({
+      id: `kid-${Date.now()}-${i}`,
+      name: c.name,
+      age: c.age,
+      avatar: c.avatar,
+    }));
+    setProfiles(kids);
+    saveProfiles(kids);
+  };
+
+  const handleResetPassword = async (email) => {
+    await resetPassword(email);
+  };
+
+  const handleLogout = async () => {
+    await firebaseLogout();
+    setActiveKid(null);
+    setAuthScreen("welcome");
+  };
+
+  // ─── KID HELPERS ──────────────────────────────────────────
   const addKid = (kid) => {
     const next = [...(profiles || []), kid];
     setProfiles(next);
@@ -110,6 +174,7 @@ export default function WordHeroApp() {
     if (newTab === "home") setMode("menu");
   };
 
+  // ─── LOADING ──────────────────────────────────────────────
   if (!loaded) {
     return (
       <div
@@ -136,6 +201,55 @@ export default function WordHeroApp() {
     );
   }
 
+  // ─── AUTH FLOW ────────────────────────────────────────────
+  if (!user) {
+    switch (authScreen) {
+      case "login":
+        return (
+          <LoginScreen
+            onBack={() => setAuthScreen("welcome")}
+            onLogin={handleEmailLogin}
+            onGoogleLogin={handleGoogleLogin}
+            onForgotPassword={() => setAuthScreen("forgot")}
+          />
+        );
+      case "forgot":
+        return (
+          <ForgotPasswordScreen
+            onBack={() => setAuthScreen("login")}
+            onSendCode={handleResetPassword}
+          />
+        );
+      case "create":
+        return (
+          <CreateAccountScreen
+            onBack={() => setAuthScreen("welcome")}
+            onCreateAccount={handleCreateAccount}
+            onGoogleSignup={handleGoogleLogin}
+          />
+        );
+      default:
+        return (
+          <WelcomeScreen
+            onLogin={() => setAuthScreen("login")}
+            onCreateAccount={() => setAuthScreen("create")}
+          />
+        );
+    }
+  }
+
+  // ─── AUTH PROFILE SCREEN ──────────────────────────────────
+  if (mode === "auth-profile") {
+    return (
+      <AuthProfileScreen
+        user={user}
+        children={profiles}
+        onLogout={handleLogout}
+        onBack={() => setMode("menu")}
+      />
+    );
+  }
+
   // Kid selector screen — no bottom nav
   if (!activeKid) {
     return (
@@ -144,6 +258,7 @@ export default function WordHeroApp() {
         onSelect={selectKid}
         onAdd={addKid}
         onDelete={deleteKid}
+        onProfile={() => setMode("auth-profile")}
       />
     );
   }
@@ -157,7 +272,6 @@ export default function WordHeroApp() {
   const renderTabContent = () => {
     switch (tab) {
       case "home":
-        // Menu (activity selection)
         if (mode === "menu") {
           return (
             <ModeSelectScreen
@@ -167,7 +281,6 @@ export default function WordHeroApp() {
             />
           );
         }
-        // Game mode (flash/find)
         return (
           <div
             style={{
