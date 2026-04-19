@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { C, FONT, RADIUS } from "../constants";
 import {
   getHeroStats,
@@ -7,16 +7,32 @@ import {
   getCompletionEstimate,
 } from "../utils/progress";
 import DailyReminderSettings from "./DailyReminderSettings";
+import BottomSheet from "./BottomSheet";
+import GroupedWordList from "./profile/GroupedWordList";
+import ActivitySheet from "./profile/ActivitySheet";
+import WordDetailModal from "./profile/WordDetailModal";
 
-export default function ProfileScreen({ kid, progress, onSwitchProfile }) {
+export default function ProfileScreen({ kid, progress, onSwitchProfile, onPracticeWord }) {
   const { masteredCount, learningCount, level, rank, rankIcon } = getHeroStats(progress);
   const { pct } = getRankProgress(progress);
   const week = getWeekActivity(progress);
   const completion = getCompletionEstimate(progress);
   const settingsRef = useRef(null);
 
+  const [sheet, setSheet] = useState(null); // "mastered" | "learning" | "activity" | null
+  const [selectedWord, setSelectedWord] = useState(null);
+
   const scrollToSettings = () =>
     settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const masteredWords = Object.keys(progress.mastered || {});
+  const learningWords = Object.keys(progress.learning || {});
+
+  const handlePractice = (word) => {
+    setSelectedWord(null);
+    setSheet(null);
+    onPracticeWord?.(word);
+  };
 
   return (
     <div
@@ -42,6 +58,7 @@ export default function ProfileScreen({ kid, progress, onSwitchProfile }) {
           mastered={masteredCount}
           learning={learningCount}
           sessions={progress.sessions || 0}
+          onOpen={setSheet}
         />
 
         <div
@@ -83,6 +100,49 @@ export default function ProfileScreen({ kid, progress, onSwitchProfile }) {
           🔄 Switch Profile
         </button>
       </div>
+
+      <BottomSheet
+        open={sheet === "mastered"}
+        onClose={() => setSheet(null)}
+        title={`Mastered · ${masteredCount}`}
+      >
+        <GroupedWordList
+          words={masteredWords}
+          progress={progress}
+          variant="mastered"
+          onWordTap={setSelectedWord}
+          emptyMessage="No words mastered yet. Keep practicing!"
+        />
+      </BottomSheet>
+
+      <BottomSheet
+        open={sheet === "learning"}
+        onClose={() => setSheet(null)}
+        title={`Learning · ${learningCount}`}
+      >
+        <GroupedWordList
+          words={learningWords}
+          progress={progress}
+          variant="learning"
+          onWordTap={setSelectedWord}
+          emptyMessage="Nothing in progress. Start a round to begin!"
+        />
+      </BottomSheet>
+
+      <BottomSheet
+        open={sheet === "activity"}
+        onClose={() => setSheet(null)}
+        title="Activity"
+      >
+        <ActivitySheet progress={progress} />
+      </BottomSheet>
+
+      <WordDetailModal
+        word={selectedWord}
+        progress={progress}
+        onClose={() => setSelectedWord(null)}
+        onPractice={handlePractice}
+      />
     </div>
   );
 }
@@ -420,11 +480,11 @@ function ProgressRing({ pct, rank }) {
   );
 }
 
-function CardsCollected({ mastered, learning, sessions }) {
+function CardsCollected({ mastered, learning, sessions, onOpen }) {
   const items = [
-    { label: "MASTERED", value: mastered, bg: C.green },
-    { label: "LEARNING", value: learning, bg: C.accent },
-    { label: "SESSIONS", value: sessions, bg: C.secondary },
+    { key: "mastered", label: "MASTERED", value: mastered, bg: C.green },
+    { key: "learning", label: "LEARNING", value: learning, bg: C.accent },
+    { key: "activity", label: "SESSIONS", value: sessions, bg: C.secondary },
   ];
   return (
     <>
@@ -448,15 +508,19 @@ function CardsCollected({ mastered, learning, sessions }) {
         }}
       >
         {items.map((s) => (
-          <div
-            key={s.label}
-            className="toy-block"
+          <button
+            key={s.key}
+            onClick={() => onOpen(s.key)}
+            aria-label={`Open ${s.label.toLowerCase()} details`}
+            className="toy-block toy-pressable"
             style={{
               padding: "14px 8px",
               textAlign: "center",
               borderWidth: 3,
               boxShadow: `3px 4px 0 ${C.ink}`,
               background: s.bg,
+              cursor: "pointer",
+              fontFamily: FONT,
             }}
           >
             <div
@@ -482,7 +546,7 @@ function CardsCollected({ mastered, learning, sessions }) {
             >
               {s.label}
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </>
