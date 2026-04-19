@@ -54,8 +54,10 @@ function useSpeechRecognition() {
 
 function wordMatch(spokenResult, target) {
   const alts = spokenResult.split("|");
-  const t = target.toLowerCase().trim();
-  return alts.some((a) => {
+  const normalize = (s) => s.toLowerCase().replace(/[^a-z]/g, "");
+  const t = normalize(target);
+  return alts.some((raw) => {
+    const a = normalize(raw);
     if (a === t) return true;
     if (t.length <= 3) return false;
     if (a.includes(t)) return true;
