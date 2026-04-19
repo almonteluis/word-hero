@@ -8,10 +8,13 @@ import { useSpeechRecognition, wordMatch } from "../utils/speechRecognition";
 import { getPronunciationFeedback } from "../utils/pronunciationFeedback";
 import { selectPracticeWords } from "../utils/roundWords";
 
-function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
+function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, focusedWord }) {
+  const pickWords = () =>
+    focusedWord ? [focusedWord] : selectPracticeWords(progress);
+
   const [idx, setIdx] = useState(0);
   const [exitAnim, setExitAnim] = useState(null);
-  const [shuffled, setShuffled] = useState(() => selectPracticeWords(progress));
+  const [shuffled, setShuffled] = useState(pickWords);
   const [round, setRound] = useState(1);
   const [roundScores, setRoundScores] = useState({
     1: { correct: 0, total: 0 },
@@ -34,8 +37,8 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
   const timerSeconds = round === 2 ? 10 : round === 3 ? 5 : 0;
 
   const getWordsForRound = useCallback(
-    () => selectPracticeWords(progress),
-    [progress],
+    () => (focusedWord ? [focusedWord] : selectPracticeWords(progress)),
+    [progress, focusedWord],
   );
 
   useEffect(() => {
@@ -240,7 +243,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt }) {
           setIdx(0);
           setShowFinalSummary(false);
         }}
-        onContinue={passed ? () => onAdvanceToFindIt() : undefined}
+        onContinue={passed && !focusedWord ? () => onAdvanceToFindIt() : undefined}
       />
     );
   }

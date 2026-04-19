@@ -41,6 +41,7 @@ export default function WordHeroApp() {
   const [tab, setTab] = useState("home");
   const [mode, setMode] = useState("menu");
   const [modeKey, setModeKey] = useState(0);
+  const [focusedWord, setFocusedWord] = useState(null);
   const [progress, dispatch] = useReducer(progressReducer, null, initProgress);
   const [loaded, setLoaded] = useState(false);
   const saveTimer = useRef(null);
@@ -97,6 +98,11 @@ export default function WordHeroApp() {
     dispatch({ type: "NEW_SESSION" });
     setTimeout(() => dispatch({ type: "CHECK_REVIEW_DECAY" }), 100);
   }, [activeKid]);
+
+  // Clear focused-word practice whenever we leave a practice mode
+  useEffect(() => {
+    if (mode === "menu" && focusedWord) setFocusedWord(null);
+  }, [mode, focusedWord]);
 
   // Auto-save progress on changes (debounced)
   useEffect(() => {
@@ -172,6 +178,14 @@ export default function WordHeroApp() {
   const handleTabChange = (newTab) => {
     setTab(newTab);
     if (newTab === "home") setMode("menu");
+    setFocusedWord(null);
+  };
+
+  const practiceWord = (word) => {
+    setFocusedWord(word);
+    setTab("home");
+    setMode("flash");
+    setModeKey((k) => k + 1);
   };
 
   // ─── LOADING ──────────────────────────────────────────────
@@ -395,6 +409,7 @@ export default function WordHeroApp() {
                 <FlashcardMode
                   progress={progress}
                   dispatch={dispatch}
+                  focusedWord={focusedWord}
                   onAdvanceToFindIt={() => {
                     setMode("find");
                     setModeKey((k) => k + 1);
@@ -421,6 +436,7 @@ export default function WordHeroApp() {
             progress={progress}
             dispatch={dispatch}
             onSwitchProfile={switchProfile}
+            onPracticeWord={practiceWord}
           />
         );
 
