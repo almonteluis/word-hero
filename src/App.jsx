@@ -295,7 +295,7 @@ export default function WordHeroApp() {
             <ModeSelectScreen
               kid={activeKid}
               progress={progress}
-              onSelectMode={(m) => { setMode(m); setModeKey((k) => k + 1); }}
+              onSelectMode={(m) => { setFocusedWord(null); setMode(m); setModeKey((k) => k + 1); }}
             />
           );
         }
@@ -383,7 +383,7 @@ export default function WordHeroApp() {
                 <button
                   key={m.key}
                   className="toy-block toy-pressable"
-                  onClick={() => { setMode(m.key); setModeKey((k) => k + 1); }}
+                  onClick={() => { setFocusedWord(null); setMode(m.key); setModeKey((k) => k + 1); }}
                   style={{
                     background: mode === m.key ? C.accent : C.surface,
                     color: C.text,
