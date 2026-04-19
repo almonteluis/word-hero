@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { C, FONT } from "../constants";
 
-function ModeSelectScreen({ kid, progress, onSelectMode }) {
+function ModeSelectScreen({ kid, progress, onSelectMode, onBack, onProfile }) {
   const [transitioning, setTransitioning] = useState(null);
 
   const handleSelect = (key) => {

@@ -25,7 +25,7 @@ const PARTICLES = Array.from({ length: 14 }).map((_, i) => ({
   startY: 10 + (i * 13) % 60,
 }));
 
-function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
+function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState(0);
@@ -197,6 +197,30 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete }) {
         }}
       >
         {/* Title — floating banner feel */}
+        {/* Profile button */}
+        <div style={{ position: "absolute", top: 16, right: 16, zIndex: 2 }}>
+          <button
+            className="toy-block toy-pressable"
+            onClick={onProfile}
+            style={{
+              background: C.surface,
+              border: `3px solid ${C.ink}`,
+              borderRadius: "50%",
+              width: 44,
+              height: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 20,
+              cursor: "pointer",
+              boxShadow: `3px 4px 0px ${C.ink}`,
+              padding: 0,
+            }}
+          >
+            👤
+          </button>
+        </div>
+
         <div
           style={{
             animation: "titleFloat 4s ease-in-out infinite",
