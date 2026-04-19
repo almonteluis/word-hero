@@ -1,14 +1,32 @@
 import { useState } from "react";
-import { C, FONT } from "../constants";
+import { C, FONT, RADIUS } from "../constants";
+import { getHeroStats } from "../utils/progress";
+import StatsRow from "./StatsRow";
+import HeroPowerBar from "./HeroPowerBar";
+import DailyStreak from "./DailyStreak";
+import ProgressScreen from "./ProgressScreen";
 
 function ModeSelectScreen({ kid, progress, onSelectMode, onBack, onProfile }) {
   const [transitioning, setTransitioning] = useState(null);
+  const [showStats, setShowStats] = useState(false);
 
   const handleSelect = (key) => {
     if (transitioning) return;
     setTransitioning(key);
     setTimeout(() => onSelectMode(key), 400);
   };
+
+  const { level, rank, rankIcon } = getHeroStats(progress);
+
+  if (showStats) {
+    return (
+      <ProgressScreen
+        progress={progress}
+        kidName={kid.name}
+        onBack={() => setShowStats(false)}
+      />
+    );
+  }
 
   const activities = [
     {
@@ -87,7 +105,150 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack, onProfile }) {
             animation: "fadeSlideUp 0.4s ease-out both",
           }}
         >
-          ⚡ Word Hero
+          <button
+            className="toy-block toy-pressable"
+            onClick={onBack}
+            style={{
+              padding: "8px 16px",
+              color: C.text,
+              fontFamily: FONT,
+              fontSize: 14,
+              fontWeight: 700,
+              background: C.surface,
+              borderWidth: "3px",
+              boxShadow: `3px 4px 0px ${C.ink}`,
+              borderRadius: "16px",
+            }}
+          >
+            ← Switch
+          </button>
+          <div
+            style={{
+              fontSize: 18,
+              fontFamily: FONT,
+              color: C.text,
+              fontWeight: 700,
+              letterSpacing: 1,
+            }}
+          >
+            Word Hero
+          </div>
+          <button
+            className="toy-block toy-pressable"
+            onClick={() => setShowStats(true)}
+            style={{
+              padding: "8px 16px",
+              color: C.text,
+              fontFamily: FONT,
+              fontSize: 14,
+              fontWeight: 700,
+              background: C.surface,
+              borderWidth: "3px",
+              boxShadow: `3px 4px 0px ${C.ink}`,
+              borderRadius: "16px",
+            }}
+          >
+            📊 Stats
+          </button>
+        </div>
+
+        {/* Hero avatar + greeting */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            marginBottom: 20,
+            animation: "heroZoomIn 0.5s ease-out both",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 48,
+              lineHeight: 1,
+              background: C.surface,
+              width: 84,
+              height: 84,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: `4px 6px 0px ${C.ink}`,
+              border: `4px solid ${C.ink}`,
+            }}
+          >
+            {kid.avatar}
+          </div>
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 20,
+              color: C.text,
+              fontWeight: 700,
+              marginTop: 8,
+            }}
+          >
+            {kid.name}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+            <span style={{ fontSize: 16 }}>{rankIcon}</span>
+            <span
+              style={{
+                fontFamily: FONT,
+                fontSize: 14,
+                color: C.accent,
+                fontWeight: 700,
+              }}
+            >
+              {rank}
+            </span>
+            <span
+              style={{
+                background: C.accent,
+                color: "white",
+                borderRadius: RADIUS.button,
+                padding: "2px 10px",
+                fontFamily: FONT,
+                fontSize: 11,
+                fontWeight: 700,
+              }}
+            >
+              Lvl {level}
+            </span>
+          </div>
+        </div>
+
+        {/* Stats row — shared component */}
+        <div
+          style={{
+            width: "100%",
+            marginBottom: 16,
+            animation: "fadeSlideUp 0.4s ease-out 0.15s both",
+          }}
+        >
+          <StatsRow progress={progress} />
+        </div>
+
+        {/* Hero Power bar — shared component */}
+        <div
+          style={{
+            marginBottom: 20,
+            animation: "fadeSlideUp 0.4s ease-out 0.25s both",
+          }}
+        >
+          <HeroPowerBar progress={progress} />
+        </div>
+
+        {/* Daily Streak — shared component */}
+        <div
+          className="toy-block"
+          style={{
+            width: "100%",
+            marginBottom: 20,
+            animation: "fadeSlideUp 0.4s ease-out 0.3s both",
+          }}
+        >
+          <DailyStreak progress={progress} />
         </div>
 
         {/* Activity cards */}
