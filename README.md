@@ -135,7 +135,10 @@ word-hero/
 | `ModeSelectScreen`     | Animated mission-select screen (Flash / Find It / Stats)  |
 | `FlashcardMode`        | 3-round flashcard training with speech recognition        |
 | `FindItGame`           | Tap-the-correct-word recognition game                     |
-| `ProgressTracker`      | Stats dashboard — mastery, accuracy, hero rank            |
+| `ProgressScreen`       | Full stats dashboard — achievements, word groups, alerts  |
+| `StatsRow`             | Mastered/Learning/Accuracy/Sessions stat badges           |
+| `HeroPowerBar`         | Mastery progress bar                                      |
+| `DailyStreak`          | Weekly streak tracker                                     |
 | `DailyReminderSettings`| Notification scheduling and preferences                   |
 | `CountdownTimer`       | Animated countdown used in Rounds 2 and 3                 |
 | `HomeBackground`       | Animated star field background                            |
