@@ -8,7 +8,7 @@ import { useSpeechRecognition, wordMatch } from "../utils/speechRecognition";
 import { getPronunciationFeedback } from "../utils/pronunciationFeedback";
 import { selectPracticeWords } from "../utils/roundWords";
 
-function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, focusedWord, lang = "en" }) {
+function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, focusedWord, lang = "en" }) {
   const pickWords = () =>
     focusedWord ? [focusedWord] : selectPracticeWords(progress, undefined, lang);
 
@@ -243,7 +243,14 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, focusedWord, lan
           setIdx(0);
           setShowFinalSummary(false);
         }}
-        onContinue={passed && !focusedWord ? () => onAdvanceToFindIt() : undefined}
+        onContinue={
+          focusedWord
+            ? () => onExitFocused?.()
+            : passed
+              ? () => onAdvanceToFindIt()
+              : undefined
+        }
+        continueLabel={focusedWord ? "Done →" : "Continue →"}
       />
     );
   }
