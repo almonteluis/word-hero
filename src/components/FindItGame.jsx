@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { ALL_WORDS, C, FONT, RADIUS } from "../constants";
+import { C, FONT, RADIUS, getWordBank } from "../constants";
 import Btn from "./Btn";
 import VictoryScreen from "./VictoryScreen";
 import { speak } from "../utils/speech";
 import { selectPracticeWords } from "../utils/roundWords";
 import { shuffle } from "../utils/shuffle";
 
-function FindItGame({ progress, dispatch }) {
+function FindItGame({ progress, dispatch, lang = "en" }) {
   const [target, setTarget] = useState("");
   const [options, setOptions] = useState([]);
   const [feedback, setFeedback] = useState(null);
@@ -14,18 +14,19 @@ function FindItGame({ progress, dispatch }) {
   const [round, setRound] = useState(0);
   const [shakeWord, setShakeWord] = useState(null);
   const [combo, setCombo] = useState(0);
-  const [targets, setTargets] = useState(() => selectPracticeWords(progress));
+  const [targets, setTargets] = useState(() => selectPracticeWords(progress, undefined, lang));
   const TOTAL = 10;
 
   const genRound = useCallback(() => {
+    const { ALL_WORDS } = getWordBank(lang);
     const t = targets[round] || targets[0];
     const others = shuffle(ALL_WORDS.filter((w) => w !== t)).slice(0, 3);
     setTarget(t);
     setOptions(shuffle([...others, t]));
     setFeedback(null);
     setShakeWord(null);
-    speak(t);
-  }, [targets, round]);
+    speak(t, lang);
+  }, [targets, round, lang]);
 
   useEffect(() => {
     genRound();
@@ -55,7 +56,7 @@ function FindItGame({ progress, dispatch }) {
   };
 
   const restart = () => {
-    setTargets(selectPracticeWords(progress));
+    setTargets(selectPracticeWords(progress, undefined, lang));
     setRound(0);
     setScore(0);
     setCombo(0);
