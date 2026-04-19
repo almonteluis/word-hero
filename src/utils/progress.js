@@ -1,7 +1,18 @@
+import { ALL_WORDS } from "../constants";
+
 const MASTERY_SESSIONS = 3;
 const MASTERY_ACCURACY = 0.95;
 const REVIEW_DAYS = 7;
 const STREAK_DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const MONTH_LABELS = [
+  "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+  "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER",
+];
+
+function dayKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 function initProgress() {
   return {
@@ -13,6 +24,7 @@ function initProgress() {
     totalAttempts: 0,
     sessions: 0,
     currentSessionId: null,
+    dailyActivity: {},
   };
 }
 
@@ -99,6 +111,71 @@ function getHeroStats(progress) {
   return { masteredCount, learningCount, accuracy, level, rank, rankIcon };
 }
 
+const RANK_BANDS = [
+  { floor: 0, next: 5, rank: "New Recruit" },
+  { floor: 5, next: 20, rank: "Hero in Training" },
+  { floor: 20, next: 40, rank: "Rising Hero" },
+  { floor: 40, next: 60, rank: "Super Hero" },
+  { floor: 60, next: null, rank: "Legendary Hero" },
+];
+
+function getRankProgress(progress) {
+  const masteredCount = Object.keys(progress.mastered || {}).length;
+  let band = RANK_BANDS[0];
+  for (const b of RANK_BANDS) if (masteredCount >= b.floor) band = b;
+  const nextFloor = band.next ?? ALL_WORDS.length;
+  const bandSize = Math.max(1, nextFloor - band.floor);
+  const inBand = Math.max(0, masteredCount - band.floor);
+  const pct = Math.min(100, Math.round((inBand / bandSize) * 100));
+  return { pct, rank: band.rank, inBand, bandSize, nextFloor };
+}
+
+function getWeekActivity(progress) {
+  const daily = progress.dailyActivity || {};
+  const today = new Date();
+  const todayIdx = (today.getDay() + 6) % 7;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - todayIdx);
+  const week = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    week.push({
+      label: WEEKDAY_LABELS[i],
+      date: d.getDate(),
+      done: !!daily[dayKey(d)],
+      isToday: i === todayIdx,
+      isFuture: i > todayIdx,
+    });
+  }
+  return week;
+}
+
+function getCompletionEstimate(progress) {
+  const mastered = progress.mastered || {};
+  const count = Object.keys(mastered).length;
+  const total = ALL_WORDS.length;
+  const remaining = total - count;
+  if (remaining <= 0) return { label: "ALL WORDS MASTERED", hasDate: true };
+  if (count < 3) return { label: "KEEP PRACTICING", hasDate: false };
+
+  const timestamps = Object.values(mastered)
+    .map(Number)
+    .filter((t) => t > 0)
+    .sort((a, b) => a - b);
+  const first = timestamps[0];
+  if (!first) return { label: "KEEP PRACTICING", hasDate: false };
+
+  const daysSince = Math.max(1, (Date.now() - first) / (1000 * 60 * 60 * 24));
+  const ratePerDay = count / daysSince;
+  if (ratePerDay < 0.05) return { label: "KEEP PRACTICING", hasDate: false };
+
+  const daysToFinish = remaining / ratePerDay;
+  const eta = new Date(Date.now() + daysToFinish * 24 * 60 * 60 * 1000);
+  const label = `${eta.getDate()} ${MONTH_LABELS[eta.getMonth()]} ${eta.getFullYear()}`;
+  return { label, hasDate: true };
+}
+
 function progressReducer(state, action) {
   switch (action.type) {
     case "MARK_CORRECT": {
@@ -120,6 +197,7 @@ function progressReducer(state, action) {
         sessionId: state.currentSessionId,
       };
       const wordStats = { ...state.wordStats, [w]: updatedWs };
+      const dailyActivity = { ...(state.dailyActivity || {}), [dayKey(new Date())]: true };
 
       if (checkMastery(updatedWs)) {
         const mastered = { ...state.mastered, [w]: Date.now() };
@@ -133,6 +211,7 @@ function progressReducer(state, action) {
           wordStats,
           totalCorrect,
           totalAttempts,
+          dailyActivity,
         };
       }
       return {
@@ -142,6 +221,7 @@ function progressReducer(state, action) {
         wordStats,
         totalCorrect,
         totalAttempts,
+        dailyActivity,
       };
     }
     case "MARK_WRONG": {
@@ -199,16 +279,19 @@ function progressReducer(state, action) {
     }
     case "NEW_SESSION": {
       const sessionId = Date.now().toString();
+      const dailyActivity = { ...(state.dailyActivity || {}), [dayKey(new Date())]: true };
       return {
         ...state,
         sessions: (state.sessions || 0) + 1,
         currentSessionId: sessionId,
+        dailyActivity,
       };
     }
     case "LOAD": {
       const data = action.data || initProgress();
       if (!data.wordStats) data.wordStats = {};
       if (!data.currentSessionId) data.currentSessionId = null;
+      if (!data.dailyActivity) data.dailyActivity = {};
       return data;
     }
     case "RESET":
@@ -229,5 +312,8 @@ export {
   weightedShuffle,
   getStreak,
   getHeroStats,
+  getRankProgress,
+  getWeekActivity,
+  getCompletionEstimate,
   progressReducer,
 };
