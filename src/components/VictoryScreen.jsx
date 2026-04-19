@@ -23,23 +23,23 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
         position: "fixed",
         inset: 0,
         zIndex: 9999,
-        background: `linear-gradient(180deg, ${C.sun} 0%, ${C.accent} 40%, ${C.bg} 100%)`,
+        background: `linear-gradient(180deg, ${C.sun} 0%, ${C.accent} 35%, #FFF5CC 70%, ${C.bg} 100%)`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         padding: "32px 20px",
         overflow: "hidden",
-        animation: "victoryBgExpand 2s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        animation: "victoryExpand 2s cubic-bezier(0.22, 1, 0.36, 1) forwards",
       }}
     >
       <style>{`
-        @keyframes victoryBgExpand {
+        @keyframes victoryExpand {
           0% {
             clip-path: circle(0% at 50% 50%);
             opacity: 0;
           }
-          30% {
+          20% {
             opacity: 1;
           }
           100% {
@@ -50,42 +50,48 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
         @keyframes starFallIn {
           0% {
             opacity: 0;
-            transform: translateY(-80px) translateX(-30px) scale(0.3) rotate(-45deg);
+            transform: translateY(-100px) translateX(-40px) scale(0.2) rotate(-60deg);
           }
-          50% {
+          45% {
             opacity: 1;
-            transform: translateY(10px) translateX(5px) scale(1.2) rotate(5deg);
+            transform: translateY(8px) translateX(4px) scale(1.25) rotate(8deg);
           }
-          70% {
-            transform: translateY(-5px) translateX(-2px) scale(0.95) rotate(-2deg);
+          65% {
+            transform: translateY(-6px) translateX(-2px) scale(0.92) rotate(-3deg);
+          }
+          85% {
+            transform: translateY(2px) scale(1.04) rotate(1deg);
           }
           100% {
             opacity: 1;
             transform: translateY(0) translateX(0) scale(1) rotate(0deg);
           }
         }
-        @keyframes headlineSlideUp {
+        @keyframes headlineFromBottom {
           0% {
             opacity: 0;
-            transform: translateY(120px) scale(0.8);
+            transform: translateY(140px) scale(0.7);
           }
-          60% {
+          55% {
             opacity: 1;
-            transform: translateY(-8px) scale(1.05);
+            transform: translateY(-10px) scale(1.08);
+          }
+          75% {
+            transform: translateY(4px) scale(0.98);
           }
           100% {
             opacity: 1;
             transform: translateY(0) scale(1);
           }
         }
-        @keyframes scoreSlideRight {
+        @keyframes scoreSlideIn {
           0% {
             opacity: 0;
-            transform: translateX(-60px) scale(0.7);
+            transform: translateX(-80px) scale(0.6);
           }
           60% {
             opacity: 1;
-            transform: translateX(5px) scale(1.05);
+            transform: translateX(6px) scale(1.06);
           }
           100% {
             opacity: 1;
@@ -95,34 +101,41 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
         @keyframes emojiBounceIn {
           0% {
             opacity: 0;
-            transform: scale(0) rotate(-30deg);
+            transform: scale(0) rotate(-40deg);
           }
-          50% {
+          45% {
             opacity: 1;
-            transform: scale(1.4) rotate(10deg);
+            transform: scale(1.5) rotate(12deg);
           }
-          70% {
-            transform: scale(0.9) rotate(-3deg);
+          65% {
+            transform: scale(0.85) rotate(-5deg);
+          }
+          80% {
+            transform: scale(1.1) rotate(2deg);
           }
           100% {
             opacity: 1;
             transform: scale(1) rotate(0deg);
           }
         }
-        @keyframes statsFadeUp {
+        @keyframes statCardIn {
           0% {
             opacity: 0;
-            transform: translateY(40px);
+            transform: translateY(50px) scale(0.8);
+          }
+          60% {
+            opacity: 1;
+            transform: translateY(-4px) scale(1.03);
           }
           100% {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
         }
-        @keyframes buttonsSlideUp {
+        @keyframes buttonsIn {
           0% {
             opacity: 0;
-            transform: translateY(50px);
+            transform: translateY(60px);
           }
           100% {
             opacity: 1;
@@ -135,12 +148,12 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
         }
         @keyframes float {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
+          50% { transform: translateY(-12px); }
         }
       `}</style>
 
-      {/* Confetti particles */}
-      {Array.from({ length: 20 }).map((_, i) => (
+      {/* Confetti particles — start after bg expands */}
+      {Array.from({ length: 24 }).map((_, i) => (
         <div
           key={i}
           style={{
@@ -158,7 +171,7 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
               C.purple,
             ][i % 6],
             borderRadius: i % 2 === 0 ? "50%" : "2px",
-            animation: `confettiFall ${2 + (i % 3)}s ease-in ${2 + i * 0.15}s infinite`,
+            animation: `confettiFall ${2.5 + (i % 3)}s ease-in ${2 + i * 0.12}s infinite`,
             pointerEvents: "none",
             zIndex: 0,
           }}
@@ -172,8 +185,8 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 12,
-          maxWidth: 360,
+          gap: 10,
+          maxWidth: 380,
           width: "100%",
         }}
       >
@@ -181,19 +194,19 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
         <div
           style={{
             display: "flex",
-            gap: 12,
-            marginBottom: 8,
+            gap: 14,
+            marginBottom: 4,
           }}
         >
           {[1, 2, 3].map((s) => (
             <div
               key={s}
               style={{
-                fontSize: s === 2 ? 60 : 48,
+                fontSize: s === 2 ? 64 : 50,
                 lineHeight: 1,
                 animation:
                   s <= stars
-                    ? `starFallIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) ${2.1 + s * 0.3}s both`
+                    ? `starFallIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${2.0 + s * 0.25}s both`
                     : "none",
                 opacity: s <= stars ? undefined : 0.2,
                 filter: s <= stars ? "none" : "grayscale(1)",
@@ -204,28 +217,28 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
           ))}
         </div>
 
-        {/* Headline — slides up from bottom */}
+        {/* Headline — slides up from the bottom */}
         <div
           style={{
             fontFamily: FONT,
-            fontSize: 42,
+            fontSize: 44,
             color: C.text,
             fontWeight: 700,
-            animation: `headlineSlideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 2.4s both`,
+            animation: `headlineFromBottom 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 2.5s both`,
           }}
         >
           {messages[stars]}
         </div>
 
-        {/* Score — slides in from left */}
+        {/* Score — slides in from the left */}
         <div
           style={{
             fontFamily: FONT,
-            fontSize: 52,
+            fontSize: 56,
             color: "white",
             fontWeight: 700,
-            textShadow: "2px 2px 0 rgba(0,0,0,0.15)",
-            animation: `scoreSlideRight 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 2.8s both`,
+            textShadow: "3px 3px 0 rgba(0,0,0,0.12)",
+            animation: `scoreSlideIn 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) 2.9s both`,
           }}
         >
           {score}/{total}
@@ -234,127 +247,63 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
         {/* Celebrating character — bounces in */}
         <div
           style={{
-            fontSize: 72,
-            animation: `emojiBounceIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 3.2s both, float 2s ease-in-out 4s infinite`,
-            margin: "8px 0",
+            fontSize: 76,
+            margin: "4px 0",
+            animation: `emojiBounceIn 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 3.3s both, float 2.5s ease-in-out 4.2s infinite`,
           }}
         >
           {stars >= 2 ? "🎉" : "💪"}
         </div>
 
-        {/* Stats row — fades up with stagger */}
+        {/* Stats row — each card staggers in */}
         <div
           style={{
             display: "flex",
             gap: 12,
             justifyContent: "center",
-            animation: `statsFadeUp 0.6s ease-out 3.5s both`,
           }}
         >
-          <div
-            style={{
-              background: "white",
-              borderRadius: RADIUS.card,
-              padding: "10px 16px",
-              textAlign: "center",
-              boxShadow: `0 4px 12px ${C.shadow}`,
-              border: `3px solid ${C.accent}30`,
-              minWidth: 80,
-              animation: `statsFadeUp 0.5s ease-out ${3.5}s both`,
-            }}
-          >
-            <div style={{ fontSize: 20 }}>🏆</div>
+          {[
+            { emoji: "🏆", value: trophies, label: "trophies", borderColor: C.accent, valueColor: C.accent, delay: 3.7 },
+            { emoji: "🪙", value: coins, label: "coins", borderColor: C.sun, valueColor: C.sun, delay: 3.85 },
+            { emoji: "❤️", value: hearts, label: "hearts", borderColor: C.heart, valueColor: C.heart, delay: 4.0 },
+          ].map((stat) => (
             <div
+              key={stat.label}
               style={{
-                fontFamily: FONT,
-                fontSize: 20,
-                color: C.accent,
-                fontWeight: 700,
+                background: "white",
+                borderRadius: RADIUS.card,
+                padding: "10px 16px",
+                textAlign: "center",
+                boxShadow: `0 4px 12px ${C.shadow}`,
+                border: `3px solid ${stat.borderColor}30`,
+                minWidth: 80,
+                animation: `statCardIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${stat.delay}s both`,
               }}
             >
-              {trophies}
+              <div style={{ fontSize: 20 }}>{stat.emoji}</div>
+              <div
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 20,
+                  color: stat.valueColor,
+                  fontWeight: 700,
+                }}
+              >
+                {stat.value}
+              </div>
+              <div
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 10,
+                  color: C.muted,
+                  fontWeight: 600,
+                }}
+              >
+                {stat.label}
+              </div>
             </div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 10,
-                color: C.muted,
-                fontWeight: 600,
-              }}
-            >
-              trophies
-            </div>
-          </div>
-
-          <div
-            style={{
-              background: "white",
-              borderRadius: RADIUS.card,
-              padding: "10px 16px",
-              textAlign: "center",
-              boxShadow: `0 4px 12px ${C.shadow}`,
-              border: `3px solid ${C.sun}30`,
-              minWidth: 80,
-              animation: `statsFadeUp 0.5s ease-out ${3.65}s both`,
-            }}
-          >
-            <div style={{ fontSize: 20 }}>🪙</div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 20,
-                color: C.sun,
-                fontWeight: 700,
-              }}
-            >
-              {coins}
-            </div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 10,
-                color: C.muted,
-                fontWeight: 600,
-              }}
-            >
-              coins
-            </div>
-          </div>
-
-          <div
-            style={{
-              background: "white",
-              borderRadius: RADIUS.card,
-              padding: "10px 16px",
-              textAlign: "center",
-              boxShadow: `0 4px 12px ${C.shadow}`,
-              border: `3px solid ${C.heart}30`,
-              minWidth: 80,
-              animation: `statsFadeUp 0.5s ease-out ${3.8}s both`,
-            }}
-          >
-            <div style={{ fontSize: 20 }}>❤️</div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 20,
-                color: C.heart,
-                fontWeight: 700,
-              }}
-            >
-              {hearts}
-            </div>
-            <div
-              style={{
-                fontFamily: FONT,
-                fontSize: 10,
-                color: C.muted,
-                fontWeight: 600,
-              }}
-            >
-              hearts
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Action buttons — slide up last */}
@@ -363,7 +312,7 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
             display: "flex",
             gap: 12,
             marginTop: 16,
-            animation: `buttonsSlideUp 0.6s ease-out 4.1s both`,
+            animation: `buttonsIn 0.6s ease-out 4.3s both`,
           }}
         >
           <button
