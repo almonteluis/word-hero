@@ -419,6 +419,11 @@ export default function WordHeroApp() {
                     setMode("find");
                     setModeKey((k) => k + 1);
                   }}
+                  onExitFocused={() => {
+                    setFocusedWord(null);
+                    setMode("menu");
+                    setTab("profile");
+                  }}
                 />
               )}
               {mode === "find" && (

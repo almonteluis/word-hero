@@ -1,7 +1,7 @@
 import { C, FONT, RADIUS } from "../constants";
 import Btn from "./Btn";
 
-function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary = false }) {
+function VictoryScreen({ score, total, onRetry, onContinue, continueLabel = "Continue →", showRetryAsPrimary = false }) {
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
 
@@ -358,7 +358,7 @@ function VictoryScreen({ score, total, onRetry, onContinue, showRetryAsPrimary =
                 transition: "transform 0.15s",
               }}
             >
-              Continue →
+              {continueLabel}
             </button>
           )}
         </div>
