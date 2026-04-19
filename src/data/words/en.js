@@ -43,7 +43,7 @@ export const WORD_GROUPS = {
   "Group 9 – Time & Order": [
     "day","night","morning","today","tomorrow","yesterday","week","year","now","then",
     "soon","later","next","last","end","begin","still","already","yet","during",
-    "Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","month","season","spring"
+    "monday","tuesday","wednesday","thursday","friday","saturday","sunday","month","season","spring"
   ],
   "Group 10 – Colors & Numbers": [
     "red","blue","green","yellow","orange","purple","pink","black","white","brown",
@@ -51,29 +51,30 @@ export const WORD_GROUPS = {
     "hundred","thousand","color","number","half","pair","both","few","several","enough"
   ],
   "Group 11 – 2nd Grade Sight Words": [
-    "always","around","because","been","before","best","both","buy","call","cold",
-    "does","don't","fast","first","five","found","gave","goes","green","its",
-    "made","many","off","or","pull","read","right","sing","sit","sleep"
+    "been","buy","call","don't","found","gave","made","these","those","wish",
+    "world","your","above","across","along","any","behind","came","down","going",
+    "got","shall","small","warm","fall","far","full","grow","hurt","kind"
   ],
   "Group 12 – 2nd Grade Continued": [
-    "tell","their","these","those","upon","us","use","very","wash","which",
-    "why","wish","work","world","would","write","your","above","across","along",
-    "any","around","behind","bring","came","down","every","goes","going","got"
+    "about","light","myself","which","away","between","brought","certain","cover","deep",
+    "else","group","idea","large","learn","leave","left","letter","life","line",
+    "mean","might","near","page","pattern","point","power","press","real","record"
   ],
   "Group 13 – 3rd Grade Sight Words": [
-    "about","better","bring","carry","clean","cut","done","draw","drink","eight",
-    "fall","far","full","got","grow","hold","hot","hurt","if","keep",
-    "kind","laugh","light","long","much","myself","never","only","own","pick"
+    "bring","laugh","answer","become","believe","body","break","build","change","class",
+    "complete","dark","direct","exercise","face","fact","force","forget","free","gone",
+    "happen","head","heard","high","include","joy","known","mark","mile","note"
   ],
   "Group 14 – 3rd Grade Continued": [
-    "seven","shall","show","six","small","start","ten","today","together","try",
-    "warm","city","community","country","earth","field","flower","forest","garden","lake",
-    "mountain","ocean","planet","river","space","animal","family","island","market","village"
+    "community","country","earth","field","flower","forest","garden","mountain","ocean","planet",
+    "space","animal","island","market","village","together","add","afraid","alive","alone",
+    "ate","became","below","beside","beyond","circle","clear","correct","decide","calm"
   ],
   "Group 15 – Challenge Words": [
-    "although","answer","different","enough","example","favorite","friend","important","interest","knowledge",
-    "listen","minute","mountain","necessary","often","people","question","really","receive","sentence",
-    "several","special","surprise","thought","together","trouble","usually","welcome","whole","wonderful"
+    "although","different","example","favorite","important","interest","knowledge","minute",
+    "necessary","question","really","receive","sentence","special","surprise","thought",
+    "trouble","usually","welcome","whole","wonderful","able","among","cause","consider",
+    "continue","describe","develop","age","agree"
   ],
 };
 
