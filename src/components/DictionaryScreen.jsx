@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { C, FONT, RADIUS, WORD_GROUPS, ALL_WORDS } from "../constants";
+import { C, FONT, RADIUS, getWordBank } from "../constants";
 import { checkMastery, getWordStats } from "../utils/progress";
 
-export default function DictionaryScreen({ progress }) {
+export default function DictionaryScreen({ progress, lang = "en" }) {
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState({});
+
+  const { WORD_GROUPS, ALL_WORDS } = getWordBank(lang);
 
   const toggleGroup = (name) =>
     setExpanded((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -13,9 +15,12 @@ export default function DictionaryScreen({ progress }) {
   const hasSearch = query.length > 0;
 
   // Build group data with word statuses
+  // Spanish entries are objects {word, en}, English are plain strings
+  const getWordText = (w) => (typeof w === "object" ? w.word : w);
+
   const groups = Object.entries(WORD_GROUPS).map(([name, words]) => {
     const filtered = hasSearch
-      ? words.filter((w) => w.includes(query))
+      ? words.filter((w) => getWordText(w).includes(query))
       : words;
     return { name, words: filtered, total: words.length };
   }).filter((g) => g.words.length > 0);
@@ -192,8 +197,10 @@ export default function DictionaryScreen({ progress }) {
                     gap: 6,
                   }}
                 >
-                  {group.words.map((word) => {
-                    const status = getWordStatus(word);
+                  {group.words.map((entry) => {
+                    const word = getWordText(entry);
+                    const translation = typeof entry === "object" ? entry.en : null;
+                    const status = getWordStatus(progress, word);
                     return (
                       <div
                         key={word}
@@ -213,6 +220,11 @@ export default function DictionaryScreen({ progress }) {
                       >
                         <span style={{ fontSize: 10 }}>{status.icon}</span>
                         {word}
+                        {translation && (
+                          <span style={{ fontSize: 10, color: C.muted, fontWeight: 400 }}>
+                            ({translation})
+                          </span>
+                        )}
                       </div>
                     );
                   })}

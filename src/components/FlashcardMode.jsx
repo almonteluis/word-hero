@@ -8,9 +8,9 @@ import { useSpeechRecognition, wordMatch } from "../utils/speechRecognition";
 import { getPronunciationFeedback } from "../utils/pronunciationFeedback";
 import { selectPracticeWords } from "../utils/roundWords";
 
-function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, focusedWord }) {
+function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, focusedWord, lang = "en" }) {
   const pickWords = () =>
-    focusedWord ? [focusedWord] : selectPracticeWords(progress);
+    focusedWord ? [focusedWord] : selectPracticeWords(progress, undefined, lang);
 
   const [idx, setIdx] = useState(0);
   const [exitAnim, setExitAnim] = useState(null);
@@ -31,19 +31,19 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, focusedWord }) {
   const [micReady, setMicReady] = useState(false);
 
   const { listening, result, startListening, stopListening, supported } =
-    useSpeechRecognition();
+    useSpeechRecognition(lang);
 
   const word = shuffled[idx];
   const timerSeconds = round === 2 ? 10 : round === 3 ? 5 : 0;
 
   const getWordsForRound = useCallback(
-    () => (focusedWord ? [focusedWord] : selectPracticeWords(progress)),
-    [progress, focusedWord],
+    () => (focusedWord ? [focusedWord] : selectPracticeWords(progress, undefined, lang)),
+    [progress, focusedWord, lang],
   );
 
   useEffect(() => {
     if (round !== 1) return;
-    const t = setTimeout(() => speak(word), 50);
+    const t = setTimeout(() => speak(word, lang), 50);
     return () => clearTimeout(t);
   }, [word]);
 
@@ -68,7 +68,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, focusedWord }) {
         [round]: { correct: s[round].correct + 1, total: s[round].total + 1 },
       }));
     } else {
-      setMicFeedback(getPronunciationFeedback(result, word));
+      setMicFeedback(getPronunciationFeedback(result, word, lang));
     }
   }, [result]);
 

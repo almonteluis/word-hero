@@ -1,23 +1,20 @@
-import {
-  WORD_GROUPS,
-  GROUP_NAMES,
-  ALL_WORDS,
-  WORDS_PER_ROUND,
-} from "../constants";
+import { getWordBank, WORDS_PER_ROUND } from "../constants";
 import { shuffle } from "./shuffle";
 
 const REVIEW_WARNING_DAYS = 5;
 const STRUGGLING_MIN_ATTEMPTS = 3;
 const STRUGGLING_ACCURACY = 0.6;
 
-function getWordGroup(word) {
+function getWordGroup(word, lang) {
+  const { WORD_GROUPS, GROUP_NAMES } = getWordBank(lang);
   for (const gn of GROUP_NAMES) {
     if (WORD_GROUPS[gn].includes(word)) return gn;
   }
   return null;
 }
 
-function bucketize(progress) {
+function bucketize(progress, lang) {
+  const { WORD_GROUPS, ALL_WORDS, GROUP_NAMES } = getWordBank(lang);
   const ws = progress.wordStats || {};
   const mastered = progress.mastered || {};
   const learning = progress.learning || {};
@@ -61,11 +58,12 @@ function bucketize(progress) {
 }
 
 // Round-robin across groups so a small selection still mixes groups.
-function interleaveByGroup(words) {
+function interleaveByGroup(words, lang) {
+  const { GROUP_NAMES } = getWordBank(lang);
   const byGroup = {};
   for (const gn of GROUP_NAMES) byGroup[gn] = [];
   for (const w of words) {
-    const g = getWordGroup(w);
+    const g = getWordGroup(w, lang);
     if (g) byGroup[g].push(w);
   }
   for (const gn of GROUP_NAMES) byGroup[gn] = shuffle(byGroup[gn]);
@@ -84,8 +82,8 @@ function interleaveByGroup(words) {
   return result;
 }
 
-function selectPracticeWords(progress, count = WORDS_PER_ROUND) {
-  const buckets = bucketize(progress);
+function selectPracticeWords(progress, count = WORDS_PER_ROUND, lang = "en") {
+  const buckets = bucketize(progress, lang);
   const picked = new Set();
   const result = [];
 
@@ -104,7 +102,7 @@ function selectPracticeWords(progress, count = WORDS_PER_ROUND) {
   take(shuffle(buckets.review), 2);
   take(shuffle(buckets.struggling), 3);
   take(shuffle(buckets.learningWords), 3);
-  take(interleaveByGroup(buckets.fresh), count);
+  take(interleaveByGroup(buckets.fresh, lang), count);
   take(shuffle(buckets.masteredFresh), count);
 
   if (result.length < count) {

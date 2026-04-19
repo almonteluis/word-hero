@@ -1,6 +1,6 @@
 import { C, FONT, RADIUS } from "../constants";
 
-export default function ModulesScreen() {
+export default function ModulesScreen({ lang = "en" }) {
   return (
     <div
       style={{

@@ -7,6 +7,8 @@ import {
   saveKidProgress,
   loadNotificationPrefs,
   saveNotificationPrefs,
+  loadLang,
+  saveLang,
 } from "./utils/storage";
 import { initProgress, progressReducer } from "./utils/progress";
 import {
@@ -43,6 +45,7 @@ export default function WordHeroApp() {
   const [modeKey, setModeKey] = useState(0);
   const [focusedWord, setFocusedWord] = useState(null);
   const [progress, dispatch] = useReducer(progressReducer, null, initProgress);
+  const [lang, setLang] = useState("en");
   const [loaded, setLoaded] = useState(false);
   const saveTimer = useRef(null);
 
@@ -96,6 +99,7 @@ export default function WordHeroApp() {
     const p = loadKidProgress(activeKid.id);
     dispatch({ type: "LOAD", data: p });
     dispatch({ type: "NEW_SESSION" });
+    setLang(loadLang(activeKid.id));
     setTimeout(() => dispatch({ type: "CHECK_REVIEW_DECAY" }), 100);
   }, [activeKid]);
 
@@ -410,6 +414,7 @@ export default function WordHeroApp() {
                   progress={progress}
                   dispatch={dispatch}
                   focusedWord={focusedWord}
+                  lang={lang}
                   onAdvanceToFindIt={() => {
                     setMode("find");
                     setModeKey((k) => k + 1);
@@ -417,17 +422,17 @@ export default function WordHeroApp() {
                 />
               )}
               {mode === "find" && (
-                <FindItGame progress={progress} dispatch={dispatch} />
+                <FindItGame progress={progress} dispatch={dispatch} lang={lang} />
               )}
             </div>
           </div>
         );
 
       case "dictionary":
-        return <DictionaryScreen progress={progress} />;
+        return <DictionaryScreen progress={progress} lang={lang} />;
 
       case "modules":
-        return <ModulesScreen />;
+        return <ModulesScreen lang={lang} />;
 
       case "profile":
         return (
@@ -437,6 +442,11 @@ export default function WordHeroApp() {
             dispatch={dispatch}
             onSwitchProfile={switchProfile}
             onPracticeWord={practiceWord}
+            lang={lang}
+            onLangChange={(newLang) => {
+              setLang(newLang);
+              if (activeKid) saveLang(activeKid.id, newLang);
+            }}
           />
         );
 

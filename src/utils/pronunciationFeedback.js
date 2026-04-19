@@ -131,13 +131,75 @@ function buildTip(target, heard) {
   return `Say it slowly: sound out each part of "${target}".`;
 }
 
-function getPronunciationFeedback(spokenResult, target) {
+// Spanish-specific pronunciation hints
+const ES_HINT_MAP = {
+  "perro|pero": "La 'rr' es más fuerte — vibra tu lengua.",
+  "carro|caro": "Haz vibrar la 'rr' — toca el techo de tu boca.",
+  "arroz|aros": "La 'rr' suena fuerte — práctica 'rrrr'.",
+  "llave|yave": "La 'll' suena como 'y' — está bien así.",
+  "calle|caye": "La 'll' suena como 'y' en muchos lugares.",
+  "hola|ola": "La 'h' es silenciosa — suena igual.",
+  "hacer|aser": "La 'h' no suena — está bien.",
+  "niño|nino": "La 'ñ' es como 'ny' — tongue al paladar.",
+  "año|ano": "La 'ñ' suena como 'ny' — pone la lengua arriba.",
+  "señal|senal": "La 'ñ' es especial — 'ny' junto.",
+  "gato|ato": "No olvides la 'g' al principio.",
+  "guitarra|uitarra": "La 'g' suena suave antes de 'i'.",
+  "queso|ceso": "La 'q' suena como 'k'.",
+  "zapato|sapato": "La 'z' suena como 's' en muchos lugares.",
+  "ce|se": "La 'c' antes de 'e' suena como 's' (o 'th' en España).",
+};
+
+function esHintFromRules(target, heard) {
+  // Silent h
+  if (target.startsWith("h") && heard === target.slice(1)) {
+    return "La 'h' es muda — no suena. Está bien.";
+  }
+  // rr vs r
+  if (target.includes("rr") && !heard.includes("rr") && heard.includes("r")) {
+    return "La 'rr' suena más fuerte — haz vibrar tu lengua.";
+  }
+  // ñ
+  if (target.includes("ñ") && !heard.includes("ñ")) {
+    return "La 'ñ' suena como 'ny' — sube la lengua al paladar.";
+  }
+  // Missing initial consonant
+  if (target.length > 1 && heard === target.slice(1)) {
+    return `No olvides la '${target[0]}' al principio.`;
+  }
+  // Missing final letter
+  if (target.length > 1 && heard === target.slice(0, -1)) {
+    return `Termina con '${target[target.length - 1]}'.`;
+  }
+  return null;
+}
+
+function buildEsTip(target, heard) {
+  if (heard === target) {
+    return `Casi — di "${target}" un poco más claro.`;
+  }
+  const mapped = ES_HINT_MAP[`${target}|${heard}`];
+  if (mapped) return mapped;
+  const ruled = esHintFromRules(target, heard);
+  if (ruled) return ruled;
+  return `Dilo despacio: suena cada parte de "${target}".`;
+}
+
+function getPronunciationFeedback(spokenResult, target, lang = "en") {
   if (!spokenResult || !target) return null;
   const alts = spokenResult.split("|").filter(Boolean);
   if (alts.length === 0) return null;
-  const t = target.toLowerCase().trim();
-  const heard = pickClosest(alts, t);
-  return { heard, tip: buildTip(t, heard) };
+  // Normalize accents for better matching in Spanish
+  const normalize = (s) =>
+    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const t = normalize(target.trim());
+  const normalizedAlts = alts.map(normalize);
+  const heard = pickClosest(normalizedAlts, t);
+  const tip =
+    lang === "es"
+      ? buildEsTip(t, heard)
+      : buildTip(t, heard);
+  return { heard, tip };
 }
 
 export { getPronunciationFeedback };

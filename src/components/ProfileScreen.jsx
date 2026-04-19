@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { C, FONT, RADIUS } from "../constants";
+import { C, FONT, RADIUS, getWordBank, SUPPORTED_LANGS, LANG_LABELS } from "../constants";
 import {
   getHeroStats,
   getRankProgress,
@@ -12,7 +12,7 @@ import GroupedWordList from "./profile/GroupedWordList";
 import ActivitySheet from "./profile/ActivitySheet";
 import WordDetailModal from "./profile/WordDetailModal";
 
-export default function ProfileScreen({ kid, progress, onSwitchProfile, onPracticeWord }) {
+export default function ProfileScreen({ kid, progress, dispatch, onSwitchProfile, onPracticeWord, lang = "en", onLangChange }) {
   const { masteredCount, learningCount, level, rank, rankIcon } = getHeroStats(progress);
   const { pct } = getRankProgress(progress);
   const week = getWeekActivity(progress);
@@ -75,6 +75,56 @@ export default function ProfileScreen({ kid, progress, onSwitchProfile, onPracti
           ⚙️ Settings
         </div>
         <DailyReminderSettings />
+
+        {/* Language toggle */}
+        {onLangChange && (
+          <div
+            className="toy-block"
+            style={{
+              marginTop: 10,
+              padding: "12px 16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderWidth: "3px",
+              boxShadow: `3px 4px 0px ${C.ink}`,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: FONT,
+                fontSize: 13,
+                fontWeight: 600,
+                color: C.text,
+              }}
+            >
+              🌐 Language / Idioma
+            </span>
+            <div style={{ display: "flex", gap: 6 }}>
+              {SUPPORTED_LANGS.map((l) => (
+                <button
+                  key={l}
+                  onClick={() => onLangChange(l)}
+                  className={l === lang ? "" : "toy-pressable"}
+                  style={{
+                    padding: "6px 14px",
+                    fontFamily: FONT,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    borderRadius: RADIUS.button,
+                    border: l === lang ? `3px solid ${C.ink}` : `2px solid ${C.ink}30`,
+                    background: l === lang ? C.accent : C.surface,
+                    color: l === lang ? "white" : C.text,
+                    boxShadow: l === lang ? `2px 3px 0px ${C.ink}` : "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {LANG_LABELS[l]}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button
           className="toy-block toy-pressable"

@@ -46,6 +46,19 @@ function saveNotificationPrefs(prefs) {
   } catch {}
 }
 
+function loadLang(kidId) {
+  try {
+    return localStorage.getItem(`word-hero-lang-${kidId}`) || "en";
+  } catch {
+    return "en";
+  }
+}
+function saveLang(kidId, lang) {
+  try {
+    localStorage.setItem(`word-hero-lang-${kidId}`, lang);
+  } catch {}
+}
+
 export {
   NOTIF_PREFS_KEY,
   loadProfiles,
@@ -54,4 +67,6 @@ export {
   saveKidProgress,
   loadNotificationPrefs,
   saveNotificationPrefs,
+  loadLang,
+  saveLang,
 };

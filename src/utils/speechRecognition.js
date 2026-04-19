@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-function useSpeechRecognition() {
+function useSpeechRecognition(lang = "en") {
   const recRef = useRef(null);
   const [listening, setListening] = useState(false);
   const [result, setResult] = useState("");
@@ -15,7 +15,7 @@ function useSpeechRecognition() {
     const rec = new SR();
     rec.continuous = false;
     rec.interimResults = false;
-    rec.lang = "en-US";
+    rec.lang = lang === "es" ? "es-MX" : "en-US";
     rec.maxAlternatives = 5;
     rec.onresult = (e) => {
       const alternatives = [];
@@ -28,7 +28,7 @@ function useSpeechRecognition() {
     rec.onerror = () => setListening(false);
     rec.onend = () => setListening(false);
     recRef.current = rec;
-  }, []);
+  }, [lang]);
 
   const startListening = useCallback(() => {
     setResult("");
@@ -54,7 +54,12 @@ function useSpeechRecognition() {
 
 function wordMatch(spokenResult, target) {
   const alts = spokenResult.split("|");
-  const normalize = (s) => s.toLowerCase().replace(/[^a-z]/g, "");
+  const normalize = (s) =>
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z]/g, "");
   const t = normalize(target);
   return alts.some((raw) => {
     const a = normalize(raw);
