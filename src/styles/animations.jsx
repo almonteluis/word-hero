@@ -45,6 +45,15 @@ const GlobalStyles = () => (
       0%, 100% { transform: translateY(0) rotate(0deg); }
       50% { transform: translateY(-20px) rotate(-3deg); }
     }
+    @keyframes tabPop {
+      0% { transform: scale(0.85); opacity: 0.6; }
+      60% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes screenEnter {
+      0% { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: ${FONT}; background: ${C.bg}; }
     input::placeholder { color: ${C.muted}99; }
