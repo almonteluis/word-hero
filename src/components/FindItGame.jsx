@@ -5,6 +5,8 @@ import { speak } from "../utils/speech";
 import { selectPracticeWords } from "../utils/roundWords";
 import { shuffle } from "../utils/shuffle";
 
+const TOTAL = 10;
+
 function FindItGame({ progress, dispatch, lang = "en" }) {
   const [target, setTarget] = useState("");
   const [options, setOptions] = useState([]);
@@ -13,7 +15,6 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
   const [round, setRound] = useState(0);
   const [wrongWord, setWrongWord] = useState(null);
   const [targets, setTargets] = useState(() => selectPracticeWords(progress, undefined, lang));
-  const TOTAL = 10;
 
   const genRound = useCallback(() => {
     const { ALL_WORDS } = getWordBank(lang);
@@ -28,7 +29,7 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
 
   useEffect(() => {
     genRound();
-  }, [genRound, round]);
+  }, [genRound]);
 
   const handlePick = (w) => {
     if (feedback) return;
@@ -144,7 +145,6 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
         </div>
       </div>
 
-      {/* Options — 2x2 grid */}
       <div
         style={{
           display: "grid",
