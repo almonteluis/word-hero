@@ -281,11 +281,6 @@ export default function WordHeroApp() {
     );
   }
 
-  const modes = [
-    { key: "flash", label: "FLASH", icon: "⚡" },
-    { key: "find", label: "FIND IT", icon: "🔍" },
-  ];
-
   // Tab content rendering
   const renderTabContent = () => {
     switch (tab) {
@@ -366,36 +361,6 @@ export default function WordHeroApp() {
                   {activeKid.name}
                 </span>
               </div>
-            </div>
-
-            {/* Mode tabs */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 6,
-                padding: "8px 16px 4px",
-                position: "relative",
-                zIndex: 1,
-              }}
-            >
-              {modes.map((m) => (
-                <button
-                  key={m.key}
-                  className="toy-block toy-pressable"
-                  onClick={() => { setFocusedWord(null); setMode(m.key); setModeKey((k) => k + 1); }}
-                  style={{
-                    background: mode === m.key ? C.accent : C.surface,
-                    color: C.text,
-                    padding: "10px 20px",
-                    fontWeight: 700,
-                    fontSize: 14,
-                    fontFamily: FONT,
-                  }}
-                >
-                  {m.icon} {m.label}
-                </button>
-              ))}
             </div>
 
             {/* Game content */}
