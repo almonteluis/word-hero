@@ -1,44 +1,291 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { C, FONT, RADIUS } from "../constants";
 
-const AVATARS = [
+const ANIMAL_HEROES = [
   "🦊", "🐱", "🐻", "🦁", "🐰", "🦄",
   "🐸", "🐼", "🐨", "🐯", "🦋", "🐧",
 ];
 
-// Sun rays — static positions so they don't shift per render
-const SUN_RAYS = Array.from({ length: 12 }).map((_, i) => ({
-  angle: i * 30,
-  width: 3 + (i % 3),
-  opacity: 0.15 + (i % 3) * 0.05,
-  dur: 4 + (i % 4),
-  delay: (i * 0.3) % 3,
-}));
+const KID_HEROES = [
+  "👦🏻", "👧🏻", "👦🏽", "👧🏽", "👦🏾", "👧🏾",
+  "👦🏿", "👧🏿", "🧒🏻", "🧒🏽", "🧒🏿", "🧑🏻",
+];
 
-// Floating particles — seeds, leaves, sparkles
-const PARTICLES = Array.from({ length: 14 }).map((_, i) => ({
-  left: (i * 23.7 + 5) % 95,
-  size: 3 + (i % 3) * 2,
-  emoji: ["✨", "🍃", "🌸", "⭐", "🌿", "💛", "🦋"][i % 7],
-  dur: 6 + (i % 5) * 2,
-  delay: (i * 0.7) % 5,
-  startY: 10 + (i * 13) % 60,
-}));
+const ALL_AVATARS = [...KID_HEROES, ...ANIMAL_HEROES];
 
+// ─── SwipeRow ───────────────────────────────────────────────
+function SwipeRow({ kid, onSelect, onDelete, idx }) {
+  const [offset, setOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const startX = useRef(null);
+  const startOffset = useRef(0);
+  const REVEAL = 72;
+
+  const begin = (clientX) => {
+    startX.current = clientX;
+    startOffset.current = offset;
+    setDragging(true);
+  };
+  const move = (clientX) => {
+    if (!dragging || startX.current === null) return;
+    const dx = clientX - startX.current;
+    setOffset(Math.max(-REVEAL, Math.min(0, startOffset.current + dx)));
+  };
+  const end = () => {
+    if (!dragging) return;
+    setDragging(false);
+    setOffset(offset < -REVEAL / 2 ? -REVEAL : 0);
+    startX.current = null;
+  };
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        borderRadius: 20,
+        animation: `cardBounceIn .5s cubic-bezier(.34,1.56,.64,1) ${idx * 0.1 + 0.2}s both`,
+      }}
+      onMouseMove={(e) => move(e.clientX)}
+      onMouseUp={end}
+      onMouseLeave={end}
+    >
+      {/* Delete zone */}
+      <div
+        style={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: REVEAL,
+          background: C.heart,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "0 20px 20px 0",
+          border: `4px solid ${C.ink}`,
+          borderLeft: "none",
+        }}
+      >
+        <button
+          onClick={onDelete}
+          style={{
+            background: "none",
+            border: "none",
+            color: "white",
+            cursor: "pointer",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <span style={{ fontSize: 20 }}>🗑️</span>
+          <span
+            style={{
+              fontFamily: FONT,
+              fontSize: 9,
+              fontWeight: 700,
+              color: "white",
+              letterSpacing: 0.3,
+            }}
+          >
+            DELETE
+          </span>
+        </button>
+      </div>
+
+      {/* Sliding card */}
+      <div
+        style={{
+          transform: `translateX(${offset}px)`,
+          transition: dragging ? "none" : "transform .25s cubic-bezier(.4,0,.2,1)",
+        }}
+        onTouchStart={(e) => begin(e.touches[0].clientX)}
+        onTouchMove={(e) => move(e.touches[0].clientX)}
+        onTouchEnd={end}
+        onMouseDown={(e) => begin(e.clientX)}
+      >
+        <button
+          className="toy-block toy-pressable"
+          onClick={() => {
+            if (offset < 0) {
+              setOffset(0);
+              return;
+            }
+            onSelect(kid);
+          }}
+          style={{
+            width: "100%",
+            background: C.surface,
+            padding: "14px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            textAlign: "left",
+            borderWidth: 3,
+            cursor: "pointer",
+          }}
+        >
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: "50%",
+              background: C.panel,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 30,
+              flexShrink: 0,
+              border: `3px solid ${C.ink}`,
+              boxShadow: `3px 4px 0 ${C.ink}`,
+            }}
+          >
+            {kid.avatar}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 20,
+                color: C.text,
+                fontWeight: 700,
+              }}
+            >
+              {kid.name}
+            </div>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 12,
+                color: C.muted,
+                fontWeight: 500,
+                marginTop: 2,
+              }}
+            >
+              Tap to play · swipe ← to delete
+            </div>
+          </div>
+          <div
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              background: C.primary,
+              border: `2px solid ${C.ink}`,
+              boxShadow: `2px 2px 0 ${C.ink}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontSize: 15,
+              fontWeight: 700,
+            }}
+          >
+            →
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── AvatarPicker ────────────────────────────────────────────
+function AvatarPicker({ value, onChange }) {
+  const [tab, setTab] = useState(value && ANIMAL_HEROES.includes(value) ? "animals" : "heroes");
+
+  const avatars = tab === "heroes" ? KID_HEROES : ANIMAL_HEROES;
+
+  return (
+    <div>
+      {/* Toggle tabs */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        {[
+          { key: "heroes", label: "🧒 Kid Heroes" },
+          { key: "animals", label: "🐾 Animal Heroes" },
+        ].map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            style={{
+              fontFamily: FONT,
+              fontSize: 13,
+              fontWeight: 700,
+              padding: "7px 18px",
+              borderRadius: 50,
+              cursor: "pointer",
+              transition: "all .2s",
+              border: `3px solid ${C.ink}`,
+              background: tab === t.key ? C.accent : "white",
+              boxShadow:
+                tab === t.key
+                  ? `3px 4px 0 ${C.ink}`
+                  : `2px 3px 0 ${C.ink}`,
+              color: tab === t.key ? C.ink : C.muted,
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Avatar grid */}
+      <div
+        style={{
+          display: "flex",
+          gap: 5,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        {avatars.map((a) => {
+          const sel = a === value;
+          return (
+            <button
+              key={a}
+              onClick={() => onChange(a)}
+              style={{
+                fontSize: 26,
+                background: sel
+                  ? "linear-gradient(135deg, #FFDE5930, #FFD16630)"
+                  : "rgba(201,240,226,.5)",
+                border: `3px solid ${sel ? C.accent : "transparent"}`,
+                borderRadius: sel ? "50%" : RADIUS.small,
+                width: sel ? 48 : 44,
+                height: sel ? 48 : 44,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all .18s cubic-bezier(.34,1.56,.64,1)",
+                boxShadow: sel ? "0 0 12px #FFDE5950" : "none",
+              }}
+            >
+              {a}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── KidSelector ─────────────────────────────────────────────
 function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
-  const [avatar, setAvatar] = useState(0);
+  const [avatar, setAvatar] = useState(KID_HEROES[0]);
 
   const handleAdd = () => {
     if (!name.trim()) return;
     onAdd({
       id: Date.now().toString(),
       name: name.trim(),
-      avatar: AVATARS[avatar],
+      avatar,
     });
     setName("");
-    setAvatar(0);
+    setAvatar(KID_HEROES[0]);
     setAdding(false);
   };
 
@@ -58,21 +305,13 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
       <style>{`
         @keyframes cloudDrift {
           0% { transform: translateX(0); }
-          50% { transform: translateX(30px); }
+          50% { transform: translateX(20px); }
           100% { transform: translateX(0); }
         }
         @keyframes cloudDriftReverse {
           0% { transform: translateX(0); }
-          50% { transform: translateX(-25px); }
+          50% { transform: translateX(-18px); }
           100% { transform: translateX(0); }
-        }
-        @keyframes sunPulse {
-          0%, 100% { transform: scale(1); opacity: 0.9; }
-          50% { transform: scale(1.08); opacity: 1; }
-        }
-        @keyframes sunRayPulse {
-          0%, 100% { opacity: 0.12; }
-          50% { opacity: 0.22; }
         }
         @keyframes titleFloat {
           0%, 100% { transform: translateY(0) rotate(-0.5deg); }
@@ -87,116 +326,54 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
           0% { opacity: 0; transform: translateY(20px) scale(0.97); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes sparkle {
-          0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-          50% { opacity: 1; transform: scale(1) rotate(180deg); }
-        }
-        @keyframes floatUp {
-          0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
-          100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
-        }
-        @keyframes addBtnGlow {
-          0%, 100% { box-shadow: 0 6px 24px rgba(63,175,232,0.3); }
-          50% { box-shadow: 0 6px 32px rgba(63,175,232,0.5); }
-        }
-        @keyframes hillSway {
-          0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(5px); }
-        }
-        .ks-hero-card {
-          transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s !important;
-        }
-        .ks-hero-card:hover {
-          transform: translateY(-6px) scale(1.02) !important;
-          box-shadow: 0 12px 36px rgba(58,74,84,0.15) !important;
-        }
-        .ks-hero-card:hover .ks-avatar-ring {
-          transform: scale(1.08);
-          box-shadow: 0 0 20px rgba(245,166,35,0.4);
-        }
-        .ks-delete-btn:hover {
-          background: rgba(255,107,122,0.2) !important;
-          transform: scale(1.1);
-        }
       `}</style>
 
-      {/* ═══ SKY LAYER ═══ */}
-
-      {/* Sun */}
+      {/* Clouds */}
       <div
         style={{
           position: "absolute",
-          top: "3%",
-          right: "8%",
-          width: 70,
-          height: 70,
+          top: "5%",
+          left: "3%",
           zIndex: 0,
-          animation: "sunPulse 4s ease-in-out infinite",
+          animation: "cloudDrift 12s ease-in-out infinite",
+          pointerEvents: "none",
         }}
       >
-        <div style={{
-          width: 70,
-          height: 70,
-          borderRadius: "50%",
-          background: C.sun,
-          boxShadow: `0 0 40px ${C.sun}80, 0 0 80px ${C.sun}40, 0 0 120px ${C.sun}20`,
-        }} />
-        {/* Sun rays */}
-        {SUN_RAYS.map((ray, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: ray.width,
-              height: 50,
-              background: C.sun,
-              borderRadius: 3,
-              opacity: ray.opacity,
-              transformOrigin: "50% 0%",
-              transform: `translate(-50%, 0) rotate(${ray.angle}deg) translateY(35px)`,
-              animation: `sunRayPulse ${ray.dur}s ease-in-out ${ray.delay}s infinite`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Pastel Clouds */}
-      <div style={{ position: "absolute", top: "5%", left: "3%", zIndex: 0, animation: "cloudDrift 12s ease-in-out infinite", pointerEvents: "none" }}>
-        <svg width="120" height="50" viewBox="0 0 120 50">
+        <svg width="110" height="44" viewBox="0 0 120 50">
           <ellipse cx="60" cy="32" rx="58" ry="18" fill="white" opacity="0.9" />
           <ellipse cx="35" cy="24" rx="30" ry="16" fill="white" opacity="0.95" />
           <ellipse cx="80" cy="22" rx="26" ry="14" fill="white" opacity="0.92" />
         </svg>
       </div>
-      <div style={{ position: "absolute", top: "10%", left: "45%", zIndex: 0, animation: "cloudDriftReverse 15s ease-in-out infinite 3s", pointerEvents: "none" }}>
-        <svg width="90" height="40" viewBox="0 0 90 40">
-          <ellipse cx="45" cy="26" rx="44" ry="14" fill="#FFE4E6" opacity="0.85" />
-          <ellipse cx="28" cy="18" rx="24" ry="12" fill="#FFE4E6" opacity="0.9" />
-        </svg>
-      </div>
-      <div style={{ position: "absolute", top: "16%", right: "2%", zIndex: 0, animation: "cloudDrift 18s ease-in-out infinite 6s", pointerEvents: "none", opacity: 0.7 }}>
-        <svg width="100" height="44" viewBox="0 0 100 44">
-          <ellipse cx="50" cy="28" rx="48" ry="16" fill="#E0F2FE" />
-          <ellipse cx="30" cy="20" rx="28" ry="14" fill="#E0F2FE" />
+      <div
+        style={{
+          position: "absolute",
+          top: "12%",
+          right: "5%",
+          zIndex: 0,
+          opacity: 0.6,
+          pointerEvents: "none",
+        }}
+      >
+        <svg width="80" height="34" viewBox="0 0 90 40">
+          <ellipse cx="45" cy="26" rx="44" ry="14" fill="#FFE4E6" opacity="0.9" />
+          <ellipse cx="28" cy="18" rx="24" ry="12" fill="#FFE4E6" opacity="0.95" />
         </svg>
       </div>
 
-      {/* ═══ MAIN CONTENT ═══ */}
+      {/* Main content */}
       <div
         style={{
           position: "relative",
           zIndex: 1,
           width: "100%",
           maxWidth: 400,
-          padding: "48px 20px 160px",
+          padding: "60px 20px 32px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
         }}
       >
-        {/* Title — floating banner feel */}
         {/* Profile button */}
         <div style={{ position: "absolute", top: 16, right: 16, zIndex: 2 }}>
           <button
@@ -221,26 +398,22 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
           </button>
         </div>
 
+        {/* Title */}
         <div
           style={{
             animation: "titleFloat 4s ease-in-out infinite",
-            marginBottom: 6,
-            marginTop: 16,
+            marginBottom: 4,
+            textAlign: "center",
           }}
         >
           <div
             style={{
               fontFamily: FONT,
-              fontSize: "clamp(48px, 14vw, 72px)",
+              fontSize: "clamp(52px, 14vw, 64px)",
               color: "white",
               fontWeight: 700,
-              lineHeight: 1.0,
-              textShadow: `
-                3px 3px 0 ${C.accent},
-                5px 5px 0 ${C.text}15,
-                0 0 40px ${C.sun}60
-              `,
-              letterSpacing: 1,
+              lineHeight: 1,
+              textShadow: `3px 3px 0 ${C.accent}, 0 0 40px ${C.sun}60`,
             }}
           >
             Word
@@ -248,15 +421,11 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
           <div
             style={{
               fontFamily: FONT,
-              fontSize: "clamp(52px, 15vw, 78px)",
+              fontSize: "clamp(56px, 15vw, 70px)",
               color: C.sun,
               fontWeight: 700,
-              lineHeight: 1.0,
-              textShadow: `
-                3px 3px 0 ${C.accent},
-                5px 5px 0 ${C.text}15,
-                0 0 40px ${C.accent}50
-              `,
+              lineHeight: 1,
+              textShadow: `3px 3px 0 ${C.accent}`,
               letterSpacing: 2,
             }}
           >
@@ -268,159 +437,57 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
         <div
           style={{
             fontFamily: FONT,
-            fontSize: 16,
+            fontSize: 15,
             color: C.text,
             fontWeight: 700,
-            marginBottom: 32,
+            marginBottom: 28,
             letterSpacing: 0.5,
           }}
         >
           Learn to read, one word at a time!
         </div>
 
-        {/* Character section header */}
+        {/* Choose header */}
         {profiles.length > 0 && (
           <div
             className="toy-block"
             style={{
               fontFamily: FONT,
-              fontSize: 18,
+              fontSize: 17,
               color: C.text,
               fontWeight: 700,
-              marginBottom: 16,
+              marginBottom: 14,
               background: C.surface,
-              borderRadius: "16px",
-              padding: "6px 22px",
-              borderWidth: "3px",
-              boxShadow: `3px 4px 0px ${C.ink}`,
+              borderRadius: 16,
+              padding: "5px 20px",
+              borderWidth: 3,
+              boxShadow: `3px 4px 0 ${C.ink}`,
             }}
           >
             Choose Your Hero
           </div>
         )}
 
-        {/* Profile cards */}
+        {/* Profile cards — swipe to delete */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 14,
+            gap: 12,
             width: "100%",
-            marginBottom: 20,
+            marginBottom: 16,
           }}
         >
           {profiles.map((kid, idx) => (
-            <div
+            <SwipeRow
               key={kid.id}
-              style={{
-                display: "flex",
-                gap: 10,
-                alignItems: "center",
-                animation: `cardBounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${idx * 0.1 + 0.2}s both`,
+              kid={kid}
+              idx={idx}
+              onSelect={onSelect}
+              onDelete={() => {
+                if (confirm(`Remove ${kid.name}'s profile?`)) onDelete(kid.id);
               }}
-            >
-              <button
-                className="toy-block toy-pressable"
-                onClick={() => onSelect(kid)}
-                style={{
-                  flex: 1,
-                  background: C.surface,
-                  padding: "14px 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  textAlign: "left",
-                  borderRadius: RADIUS.card,
-                }}
-              >
-                {/* Avatar */}
-                <div
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: "50%",
-                    background: C.panel,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 28,
-                    flexShrink: 0,
-                    border: `3px solid ${C.ink}`,
-                    boxShadow: `3px 4px 0px ${C.ink}`,
-                  }}
-                >
-                  {kid.avatar}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontFamily: FONT,
-                      fontSize: 18,
-                      color: C.text,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {kid.name}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: FONT,
-                      fontSize: 12,
-                      color: C.muted,
-                      fontWeight: 600,
-                      marginTop: 2,
-                    }}
-                  >
-                    Tap to start training!
-                  </div>
-                </div>
-                {/* Arrow */}
-                <div
-                  style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: "50%",
-                    background: C.primary,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: 15,
-                    fontWeight: 700,
-                    flexShrink: 0,
-                    boxShadow: `2px 2px 0px ${C.ink}`,
-                    border: `2px solid ${C.ink}`,
-                  }}
-                >
-                  →
-                </div>
-              </button>
-
-              {/* Delete button */}
-              <button
-                className="ks-delete-btn"
-                onClick={() => {
-                  if (confirm(`Remove ${kid.name}'s profile?`))
-                    onDelete(kid.id);
-                }}
-                style={{
-                  background: "rgba(255,255,255,0.6)",
-                  backdropFilter: "blur(8px)",
-                  border: `2px solid ${C.heart}30`,
-                  borderRadius: 14,
-                  padding: "10px 12px",
-                  cursor: "pointer",
-                  color: C.heart,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  lineHeight: 1,
-                  transition: "all 0.18s",
-                  flexShrink: 0,
-                }}
-              >
-                ✕
-              </button>
-            </div>
+            />
           ))}
         </div>
 
@@ -432,19 +499,19 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
             style={{
               width: "100%",
               background: C.primary,
-              padding: "16px 28px",
+              padding: "14px 24px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 10,
+              gap: 8,
               fontFamily: FONT,
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: 700,
               color: C.textLight,
               letterSpacing: 0.5,
             }}
           >
-            <span style={{ fontSize: 24, lineHeight: 1 }}>+</span>
+            <span style={{ fontSize: 22, lineHeight: 1 }}>+</span>
             Add a Hero
           </button>
         ) : (
@@ -452,18 +519,19 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
             className="toy-block"
             style={{
               background: C.surface,
-              padding: 24,
-              animation: "formSlideUp 0.35s ease-out both",
+              padding: 20,
               width: "100%",
+              animation: "formSlideUp 0.35s ease-out both",
+              borderWidth: 3,
             }}
           >
             <div
               style={{
                 fontFamily: FONT,
-                fontSize: 20,
+                fontSize: 18,
                 fontWeight: 700,
                 color: C.text,
-                marginBottom: 6,
+                marginBottom: 4,
               }}
             >
               Create Your Hero
@@ -471,49 +539,17 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
             <div
               style={{
                 fontFamily: FONT,
-                fontSize: 13,
+                fontSize: 12,
                 color: C.muted,
-                fontWeight: 500,
-                marginBottom: 16,
+                marginBottom: 14,
               }}
             >
               Pick a character and give them a name!
             </div>
 
-            {/* Avatar picker */}
-            <div
-              style={{
-                display: "flex",
-                gap: 6,
-                flexWrap: "wrap",
-                justifyContent: "center",
-                marginBottom: 16,
-              }}
-            >
-              {AVATARS.map((a, i) => (
-                <button
-                  key={i}
-                  onClick={() => setAvatar(i)}
-                  style={{
-                    fontSize: 30,
-                    background: i === avatar ? `linear-gradient(135deg, ${C.sun}30, ${C.accent}30)` : "rgba(201,240,226,0.5)",
-                    border: `3px solid ${i === avatar ? C.accent : "transparent"}`,
-                    borderRadius: i === avatar ? "50%" : RADIUS.small,
-                    width: i === avatar ? 52 : 44,
-                    height: i === avatar ? 52 : 44,
-                    cursor: "pointer",
-                    lineHeight: 1,
-                    transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: i === avatar ? `0 0 16px ${C.accent}30` : "none",
-                    transform: i === avatar ? "scale(1.1)" : "scale(1)",
-                  }}
-                >
-                  {a}
-                </button>
-              ))}
+            {/* Tabbed avatar picker */}
+            <div style={{ marginBottom: 14 }}>
+              <AvatarPicker value={avatar} onChange={setAvatar} />
             </div>
 
             {/* Name input */}
@@ -527,27 +563,27 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
                 width: "100%",
                 background: C.surface,
                 border: `3px solid ${C.ink}`,
-                borderRadius: "16px",
-                padding: "12px 18px",
+                borderRadius: 16,
+                padding: "10px 16px",
                 color: C.text,
-                fontSize: 17,
+                fontSize: 16,
                 fontFamily: FONT,
                 fontWeight: 700,
                 outline: "none",
                 boxSizing: "border-box",
-                marginBottom: 16,
+                marginBottom: 14,
               }}
             />
 
-            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
               <button
                 className="toy-block toy-pressable"
                 onClick={() => setAdding(false)}
                 style={{
                   background: C.panel,
-                  padding: "10px 22px",
+                  padding: "8px 18px",
                   fontFamily: FONT,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: 700,
                   color: C.text,
                 }}
@@ -559,9 +595,9 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
                 onClick={handleAdd}
                 style={{
                   background: C.primary,
-                  padding: "10px 22px",
+                  padding: "8px 18px",
                   fontFamily: FONT,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: 700,
                   color: C.textLight,
                 }}
@@ -572,10 +608,9 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
           </div>
         )}
       </div>
-
-
     </div>
   );
 }
 
 export default KidSelector;
+export { ALL_AVATARS, KID_HEROES, ANIMAL_HEROES };
