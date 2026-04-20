@@ -316,46 +316,32 @@ function VictoryScreen({ score, total, onRetry, onContinue, continueLabel = "Con
           }}
         >
           <button
+            className="toy-block toy-pressable"
             onClick={onRetry}
             style={{
-              background: "white",
-              border: "none",
-              borderBottom: `4px solid ${C.border}`,
-              borderRadius: RADIUS.button,
+              background: C.surface,
+              color: C.text,
               padding: "12px 24px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              fontFamily: FONT,
               fontSize: 15,
               fontWeight: 600,
-              color: C.text,
-              boxShadow: `0 4px 12px ${C.shadow}`,
-              transition: "transform 0.15s",
+              fontFamily: FONT,
+              cursor: "pointer",
             }}
           >
             ← Retry
           </button>
           {onContinue && (
             <button
+              className="toy-block toy-pressable"
               onClick={onContinue}
               style={{
                 background: C.primary,
-                border: "none",
-                borderBottom: `4px solid ${C.primary}cc`,
-                borderRadius: RADIUS.button,
+                color: C.text,
                 padding: "12px 24px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                fontFamily: FONT,
                 fontSize: 15,
                 fontWeight: 700,
-                color: C.text,
-                boxShadow: `0 4px 16px ${C.primary}40`,
-                transition: "transform 0.15s",
+                fontFamily: FONT,
+                cursor: "pointer",
               }}
             >
               {continueLabel}
