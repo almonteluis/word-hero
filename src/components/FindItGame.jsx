@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { C, FONT, RADIUS, getWordBank } from "../constants";
-import Btn from "./Btn";
 import VictoryScreen from "./VictoryScreen";
 import { speak } from "../utils/speech";
 import { selectPracticeWords } from "../utils/roundWords";
 import { shuffle } from "../utils/shuffle";
+
+const TOTAL = 10;
 
 function FindItGame({ progress, dispatch, lang = "en" }) {
   const [target, setTarget] = useState("");
@@ -12,10 +13,8 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
   const [feedback, setFeedback] = useState(null);
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(0);
-  const [shakeWord, setShakeWord] = useState(null);
-  const [combo, setCombo] = useState(0);
+  const [wrongWord, setWrongWord] = useState(null);
   const [targets, setTargets] = useState(() => selectPracticeWords(progress, undefined, lang));
-  const TOTAL = 10;
 
   const genRound = useCallback(() => {
     const { ALL_WORDS } = getWordBank(lang);
@@ -24,19 +23,18 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
     setTarget(t);
     setOptions(shuffle([...others, t]));
     setFeedback(null);
-    setShakeWord(null);
+    setWrongWord(null);
     speak(t, lang);
   }, [targets, round, lang]);
 
   useEffect(() => {
     genRound();
-  }, [genRound, round]);
+  }, [genRound]);
 
   const handlePick = (w) => {
     if (feedback) return;
     if (w === target) {
       setFeedback("correct");
-      setCombo((c) => c + 1);
       dispatch({ type: "MARK_CORRECT", word: target });
       setScore((s) => s + 1);
       setTimeout(() => {
@@ -45,12 +43,11 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
       }, 1000);
     } else {
       setFeedback("wrong");
-      setShakeWord(w);
-      setCombo(0);
+      setWrongWord(w);
       dispatch({ type: "MARK_WRONG", word: target });
       setTimeout(() => {
         setFeedback(null);
-        setShakeWord(null);
+        setWrongWord(null);
       }, 800);
     }
   };
@@ -59,7 +56,6 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
     setTargets(selectPracticeWords(progress, undefined, lang));
     setRound(0);
     setScore(0);
-    setCombo(0);
     setFeedback(null);
   };
 
@@ -75,184 +71,125 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 18,
-        padding: "16px 16px 24px",
-      }}
-    >
-      {/* Score + Progress */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <span
-          style={{
-            color: C.accent,
-            fontFamily: FONT,
-            fontSize: 16,
-            fontWeight: 700,
-          }}
-        >
-          {score}
-        </span>
-        <div
-          style={{
-            width: 140,
-            height: 10,
-            background: "white",
-            borderRadius: RADIUS.button,
-            overflow: "hidden",
-            border: `2px solid ${C.border}`,
-          }}
-        >
-          <div
-            style={{
-              width: `${(round / TOTAL) * 100}%`,
-              height: "100%",
-              background: C.accent,
-              borderRadius: RADIUS.button,
-              transition: "width 0.3s",
-            }}
-          />
-        </div>
-        <span
-          style={{
-            color: C.muted,
-            fontFamily: FONT,
-            fontSize: 13,
-            fontWeight: 500,
-          }}
-        >
-          {round + 1}/{TOTAL}
-        </span>
-      </div>
-
-      {combo >= 3 && (
-        <div
-          style={{
-            color: C.accent,
-            fontFamily: FONT,
-            fontSize: 14,
-            fontWeight: 700,
-            animation: "fadeUp 0.3s ease-out",
-          }}
-        >
-          {combo}x Combo!
-        </div>
-      )}
-
-      {/* Hear word */}
+    <div style={{ padding: "0 20px 24px" }}>
+      {/* Progress bar */}
       <div
         style={{
-          background: "white",
-          borderRadius: RADIUS.card,
-          padding: "16px 28px",
-          border: `3px solid ${C.accent}30`,
-          textAlign: "center",
-          boxShadow: `0 4px 16px ${C.shadow}`,
+          background: `${C.ink}20`,
+          borderRadius: RADIUS.pill,
+          height: 10,
+          marginTop: 20,
+          marginBottom: 28,
+          border: `2px solid ${C.ink}`,
+          overflow: "hidden",
         }}
       >
         <div
           style={{
-            color: C.muted,
-            fontSize: 12,
-            fontFamily: FONT,
-            fontWeight: 600,
-            marginBottom: 8,
+            height: "100%",
+            background: C.primary,
+            borderRadius: RADIUS.pill,
+            width: `${(round / TOTAL) * 100}%`,
+            transition: "width 0.4s ease",
           }}
-        >
-          Find the word
-        </div>
-        <button
-          onClick={() => speak(target)}
-          style={{
-            background: C.accent,
-            border: "none",
-            borderBottom: `4px solid ${C.accent}cc`,
-            borderRadius: RADIUS.button,
-            padding: "10px 28px",
-            cursor: "pointer",
-            fontSize: 17,
-            fontWeight: 700,
-            color: C.textLight,
-            fontFamily: FONT,
-            boxShadow: `0 4px 12px ${C.accent}30`,
-          }}
-        >
-          Hear Again
-        </button>
+        />
       </div>
 
-      {/* Options */}
+      {/* Prompt card — tap to replay */}
+      <div
+        className="toy-block"
+        onClick={() => !feedback && speak(target, lang)}
+        style={{
+          background: C.primary,
+          padding: "20px 24px",
+          textAlign: "center",
+          marginBottom: 24,
+          borderWidth: 3,
+          cursor: feedback ? "default" : "pointer",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 14,
+            color: "white",
+            fontWeight: 600,
+            marginBottom: 6,
+          }}
+        >
+          {feedback === "correct" ? "Correct!" : "Tap the word you hear:"}
+        </div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 48,
+            fontWeight: 700,
+            color: "white",
+            letterSpacing: 2,
+            animation: feedback === "correct" ? "fadeRise 0.4s ease-out" : "none",
+          }}
+        >
+          {feedback === "correct" ? target : "🔊"}
+        </div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 12,
+            color: `${C.textLight}cc`,
+            marginTop: 4,
+          }}
+        >
+          {feedback === "correct"
+            ? target
+            : `Question ${round + 1} of ${TOTAL} · tap to hear again`}
+        </div>
+      </div>
+
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gap: 12,
-          width: "100%",
-          maxWidth: 320,
         }}
       >
         {options.map((w) => {
-          const correct = feedback === "correct" && w === target;
-          const wrong = shakeWord === w;
+          const isCorrect = feedback === "correct" && w === target;
+          const isWrong = wrongWord === w;
+          const bg = isCorrect ? C.green : isWrong ? "#FFE4E6" : C.surface;
+          const anim = isCorrect
+            ? "boing 0.45s ease-out"
+            : isWrong
+              ? "wobble 0.4s ease-out"
+              : "none";
+
           return (
             <button
               key={w}
+              className="toy-block toy-pressable"
               onClick={() => handlePick(w)}
               style={{
-                background: correct ? C.green : wrong ? C.heart : "white",
-                border: correct
-                  ? `3px solid ${C.green}`
-                  : wrong
-                    ? `3px solid ${C.heart}`
-                    : `3px solid ${C.border}`,
-                borderBottom: correct
-                  ? `5px solid ${C.green}cc`
-                  : wrong
-                    ? `5px solid ${C.heart}cc`
-                    : `4px solid ${C.border}`,
-                borderRadius: RADIUS.card,
-                padding: "18px 14px",
+                padding: "22px 16px",
+                textAlign: "center",
+                background: bg,
+                borderWidth: 3,
                 cursor: "pointer",
-                fontSize: 26,
-                fontWeight: 700,
-                fontFamily: FONT,
-                color: correct || wrong ? "white" : C.text,
-                letterSpacing: 3,
-                boxShadow: `0 4px 12px ${C.shadow}`,
-                transition: "all 0.15s",
-                animation: wrong
-                  ? "shake 0.4s ease"
-                  : correct
-                    ? "correctPop 0.3s ease"
-                    : "none",
+                animation: anim,
               }}
             >
-              {w}
+              <div
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 28,
+                  fontWeight: 700,
+                  color: C.text,
+                }}
+              >
+                {w}
+              </div>
             </button>
           );
         })}
       </div>
-
-      {feedback === "correct" && (
-        <div
-          style={{
-            fontSize: 20,
-            fontFamily: FONT,
-            color: C.green,
-            animation: "fadeUp 0.3s",
-            fontWeight: 700,
-          }}
-        >
-          {
-            ["Heroic!", "Boom!", "Super!", "Amazing!"][
-              Math.floor(Math.random() * 4)
-            ]
-          }
-        </div>
-      )}
     </div>
   );
 }
