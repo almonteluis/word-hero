@@ -7,7 +7,7 @@ import { shuffle } from "../utils/shuffle";
 
 const TOTAL = 10;
 
-function FindItGame({ progress, dispatch, lang = "en" }) {
+function FindItGame({ progress, dispatch, onHome, lang = "en" }) {
   const [target, setTarget] = useState("");
   const [options, setOptions] = useState([]);
   const [feedback, setFeedback] = useState(null);
@@ -65,7 +65,7 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
         score={score}
         total={TOTAL}
         onRetry={restart}
-        onContinue={restart}
+        onHome={onHome}
       />
     );
   }

@@ -389,10 +389,16 @@ export default function WordHeroApp() {
                     setMode("menu");
                     setTab("profile");
                   }}
+                  onHome={() => { setMode("menu"); setTab("home"); }}
                 />
               )}
               {mode === "find" && (
-                <FindItGame progress={progress} dispatch={dispatch} lang={lang} />
+                <FindItGame
+                  progress={progress}
+                  dispatch={dispatch}
+                  lang={lang}
+                  onHome={() => { setMode("menu"); setTab("home"); }}
+                />
               )}
             </div>
           </div>
