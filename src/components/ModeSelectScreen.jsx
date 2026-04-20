@@ -1,8 +1,22 @@
-import { useState } from "react";
-import { C, FONT } from "../constants";
+import { useState, useMemo } from "react";
+import { C, FONT, ALL_WORDS } from "../constants";
+import { getHeroStats, getWeekActivity } from "../utils/progress";
 
-function ModeSelectScreen({ kid, progress, onSelectMode, onBack, onProfile }) {
+const DAILY_CHALLENGES = [
+  { icon: "⚡", title: "Speed Hero", desc: "Complete Round 3 without a miss", reward: 20, color: C.accent },
+  { icon: "🔍", title: "Word Detective", desc: "Find 5 words correctly in a row", reward: 15, color: C.purple },
+  { icon: "🎯", title: "Perfect Round", desc: "Flash Training with 100%", reward: 25, color: C.green },
+];
+
+function ModeSelectScreen({ kid, progress, onSelectMode }) {
   const [transitioning, setTransitioning] = useState(null);
+
+  const stats = useMemo(() => getHeroStats(progress), [progress]);
+  const week = useMemo(() => getWeekActivity(progress), [progress]);
+
+  const dayIndex = new Date().getDate();
+  const wordOfDay = ALL_WORDS[dayIndex % ALL_WORDS.length];
+  const challenge = DAILY_CHALLENGES[dayIndex % DAILY_CHALLENGES.length];
 
   const handleSelect = (key) => {
     if (transitioning) return;
@@ -10,178 +24,366 @@ function ModeSelectScreen({ kid, progress, onSelectMode, onBack, onProfile }) {
     setTimeout(() => onSelectMode(key), 400);
   };
 
-  const activities = [
-    {
-      key: "flash",
-      icon: "⚡",
-      label: "Flash Training",
-      desc: "Learn your words",
-      color: C.accent,
-    },
-    {
-      key: "find",
-      icon: "🔍",
-      label: "Find It",
-      desc: "Word recognition",
-      color: C.secondary,
-    },
+  return (
+    <div style={{ minHeight: "100vh", background: "#FFF9F0", paddingBottom: 90 }}>
+      {/* Full-bleed header zone */}
+      <div
+        style={{
+          background: "linear-gradient(180deg, #FFF5E4 0%, #FFF9F0 100%)",
+          padding: "max(24px, env(safe-area-inset-top)) 14px 14px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          maxWidth: 420,
+          margin: "0 auto",
+          width: "100%",
+        }}
+      >
+        <WeekStrip week={week} />
+
+        {/* Hero + inline stats as one wide card */}
+        <HeroStatsCard kid={kid} stats={stats} />
+
+        {/* Word of the Day — full width */}
+        <WordOfDay word={wordOfDay} />
+
+        {/* Mode cards — side by side */}
+        <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: C.text, animation: "fadeRise 0.4s ease-out 0.28s both" }}>
+          🎮 Start Training
+        </div>
+        <ModeCardPair onSelect={handleSelect} transitioning={transitioning} />
+
+        <DailyChallenge challenge={challenge} />
+      </div>
+    </div>
+  );
+}
+
+function WeekStrip({ week }) {
+  return (
+    <div
+      className="toy-block"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        gap: 3,
+        padding: "9px 7px",
+        borderWidth: 3,
+        boxShadow: `3px 4px 0 ${C.ink}`,
+        background: C.surface,
+        animation: "fadeRise 0.4s ease-out both",
+      }}
+    >
+      {week.map((d, i) => (
+        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <div style={{ fontFamily: FONT, fontSize: 8, color: C.muted, fontWeight: 600 }}>{d.label}</div>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              background: d.isToday ? C.accent : d.done ? C.green : "transparent",
+              border: d.isToday
+                ? `3px solid ${C.ink}`
+                : d.done
+                  ? `2px solid ${C.ink}`
+                  : `2px solid ${C.muted}55`,
+              boxShadow: d.isToday ? `2px 2px 0 ${C.ink}` : "none",
+              fontFamily: FONT,
+              fontSize: 11,
+              fontWeight: 700,
+              color: C.ink,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {d.done && !d.isToday ? "✓" : d.date}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HeroStatsCard({ kid, stats }) {
+  const inlineStats = [
+    { value: String(stats.masteredCount), emoji: "🔥", label: "Streak" },
+    { value: String(stats.masteredCount), label: "Mastered", bg: C.green },
+    { value: `${stats.accuracy}%`, label: "Accuracy", bg: C.purple },
   ];
 
   return (
     <div
+      className="toy-block"
       style={{
-        minHeight: "100vh",
-        background: `linear-gradient(180deg, ${C.secondary} 0%, #E0F2FE 50%, ${C.green} 100%)`,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        position: "relative",
-        overflowX: "hidden",
-        paddingBottom: 90,
+        background: C.surface,
+        borderWidth: 3,
+        overflow: "hidden",
+        animation: "fadeRise 0.4s ease-out 0.06s both",
       }}
     >
-      <style>{`
-        @keyframes fadeSlideUp {
-          0% { opacity: 0; transform: translateY(16px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes portalExpand {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.08); }
-          100% { transform: scale(1.15); opacity: 0; }
-        }
-      `}</style>
-
-      {/* Decorative clouds */}
-      <div style={{ position: "absolute", top: "8%", right: "5%", opacity: 0.35, pointerEvents: "none" }}>
-        <div style={{ width: 70, height: 26, background: "white", borderRadius: 16 }} />
-        <div style={{ width: 45, height: 20, background: "white", borderRadius: 12, marginLeft: 16, marginTop: -10 }} />
-      </div>
-      <div style={{ position: "absolute", top: "14%", left: "8%", opacity: 0.2, pointerEvents: "none" }}>
-        <div style={{ width: 50, height: 18, background: "white", borderRadius: 12 }} />
-        <div style={{ width: 35, height: 14, background: "white", borderRadius: 10, marginLeft: 10, marginTop: -8 }} />
-      </div>
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100%",
-          maxWidth: 400,
-          padding: "24px 20px 40px",
-          paddingTop: "max(24px, env(safe-area-inset-top))",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        {/* Title */}
-        <div
-          style={{
-            fontSize: 22,
-            fontFamily: FONT,
-            color: C.text,
-            fontWeight: 700,
-            letterSpacing: 1,
-            marginBottom: 24,
-            animation: "fadeSlideUp 0.4s ease-out both",
-          }}
-        >
-          ⚡ Word Hero
-        </div>
-
-        {/* Activity cards */}
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
+      <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Avatar */}
+        <div style={{ position: "relative", flexShrink: 0 }}>
           <div
             style={{
-              fontFamily: FONT,
-              fontSize: 14,
-              color: C.text,
-              fontWeight: 600,
-              marginBottom: 2,
-              animation: "fadeSlideUp 0.4s ease-out 0.1s both",
+              width: 52,
+              height: 52,
+              borderRadius: "50%",
+              background: C.panel,
+              border: `4px solid ${C.ink}`,
+              boxShadow: `3px 3px 0 ${C.ink}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 28,
             }}
           >
-            Start Training
+            {kid.avatar}
           </div>
-          {activities.map((m, i) => {
-            const isTransitioning = transitioning === m.key;
-            return (
-              <button
-                key={m.key}
-                className="toy-block toy-pressable"
-                onClick={() => handleSelect(m.key)}
-                style={{
-                  width: "100%",
-                  background: m.key === "flash" ? C.primary : C.secondary,
-                  padding: "16px 20px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  textAlign: "left",
-                  position: "relative",
-                  overflow: "hidden",
-                  animation: `fadeSlideUp 0.4s ease-out ${0.15 + i * 0.08}s both`,
-                  ...(isTransitioning
-                    ? {
-                        animation: `portalExpand 0.4s ease-in forwards`,
-                      }
-                    : {}),
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 32,
-                    lineHeight: 1,
-                    flexShrink: 0,
-                    width: 52,
-                    height: 52,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: 16,
-                    background: C.surface,
-                    border: `3px solid ${C.ink}`,
-                    boxShadow: `2px 3px 0 ${C.ink}`,
-                  }}
-                >
-                  {m.icon}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontFamily: FONT,
-                      fontSize: 16,
-                      color: m.color,
-                      fontWeight: 700,
-                    }}
-                  >
-                    {m.label}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: FONT,
-                      fontSize: 12,
-                      color: C.muted,
-                      fontWeight: 500,
-                      marginTop: 1,
-                    }}
-                  >
-                    {m.desc}
-                  </div>
-                </div>
-                <div style={{ color: C.ink, fontSize: 24, fontWeight: "bold" }}>→</div>
-              </button>
-            );
-          })}
+          <div
+            style={{
+              position: "absolute",
+              bottom: -4,
+              right: -6,
+              background: C.accent,
+              border: `2px solid ${C.ink}`,
+              borderRadius: 50,
+              padding: "1px 6px",
+              fontFamily: FONT,
+              fontSize: 9,
+              fontWeight: 700,
+              color: C.ink,
+            }}
+          >
+            Lvl {stats.level}
+          </div>
         </div>
+
+        {/* Name + rank */}
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 600, color: C.primary, letterSpacing: 0.4 }}>
+            {stats.rankIcon} {stats.rank.toUpperCase()}
+          </div>
+          <div style={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: C.text }}>{kid.name}</div>
+        </div>
+
+        {/* Inline stats */}
+        <div style={{ display: "flex", gap: 8 }}>
+          {inlineStats.map((s) => (
+            <div
+              key={s.label}
+              style={{
+                textAlign: "center",
+                background: s.bg || "transparent",
+                borderRadius: 10,
+                padding: s.bg ? "6px 8px" : "0 4px",
+                border: s.bg ? `2px solid ${C.ink}` : "none",
+              }}
+            >
+              <div style={{ fontFamily: FONT, fontSize: s.emoji ? 18 : 14, fontWeight: 700, color: C.ink, lineHeight: 1 }}>
+                {s.emoji || s.value}
+              </div>
+              {s.emoji && (
+                <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: C.ink, lineHeight: 1 }}>
+                  {s.value}
+                </div>
+              )}
+              <div style={{ fontFamily: FONT, fontSize: 8, color: C.muted, fontWeight: 600, marginTop: 2 }}>
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WordOfDay({ word }) {
+  return (
+    <div
+      className="toy-block"
+      style={{
+        background: `linear-gradient(120deg, ${C.secondary} 0%, ${C.purple} 100%)`,
+        padding: "16px 18px",
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        borderWidth: 3,
+        animation: "fadeRise 0.4s ease-out 0.14s both",
+      }}
+    >
+      <div style={{ flex: 1 }}>
+        <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: C.ink, opacity: 0.6, letterSpacing: 0.5 }}>
+          ✨ WORD OF THE DAY
+        </div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 40,
+            fontWeight: 700,
+            color: C.ink,
+            letterSpacing: 1,
+            animation: "wordPop 0.5s ease-out 0.3s both",
+          }}
+        >
+          {word}
+        </div>
+        <div style={{ fontFamily: FONT, fontSize: 11, color: `${C.ink}80`, fontWeight: 500 }}>
+          Tap the 🔊 to hear it!
+        </div>
+      </div>
+      <button
+        className="toy-pressable"
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
+          background: C.accent,
+          border: `3px solid ${C.ink}`,
+          boxShadow: `3px 4px 0 ${C.ink}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 22,
+          flexShrink: 0,
+          cursor: "pointer",
+        }}
+      >
+        🔊
+      </button>
+    </div>
+  );
+}
+
+function ModeCardPair({ onSelect, transitioning }) {
+  const modes = [
+    { key: "flash", icon: "⚡", label: "Flash Training", desc: "Learn your words", bg: C.accent },
+    { key: "find", icon: "🔍", label: "Find It", desc: "Word recognition", bg: C.purple },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {modes.map((m, i) => {
+        const isActive = transitioning === m.key;
+        return (
+          <button
+            key={m.key}
+            className="toy-block toy-pressable"
+            onClick={() => onSelect(m.key)}
+            style={{
+              background: m.bg,
+              padding: "14px 18px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              cursor: "pointer",
+              width: "100%",
+              animation: isActive
+                ? "portalExpand 0.4s ease-in forwards"
+                : `fadeRise 0.4s ease-out ${0.32 + i * 0.06}s both`,
+            }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 14,
+                background: C.surface,
+                border: `3px solid ${C.ink}`,
+                boxShadow: `2px 3px 0 ${C.ink}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 28,
+                flexShrink: 0,
+              }}
+            >
+              {m.icon}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 700, color: C.ink }}>{m.label}</div>
+              <div style={{ fontFamily: FONT, fontSize: 11, color: `${C.ink}80`, fontWeight: 500, marginTop: 2 }}>
+                {m.desc}
+              </div>
+            </div>
+            <div style={{ color: C.ink, fontSize: 22, fontWeight: 700, flexShrink: 0 }}>→</div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function DailyChallenge({ challenge }) {
+  return (
+    <div
+      className="toy-block toy-pressable"
+      style={{
+        background: challenge.color,
+        padding: "14px 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        borderWidth: 3,
+        cursor: "pointer",
+        animation: "fadeRise 0.4s ease-out 0.44s both",
+      }}
+    >
+      <div
+        style={{
+          width: 46,
+          height: 46,
+          borderRadius: 13,
+          background: C.surface,
+          border: `3px solid ${C.ink}`,
+          boxShadow: `2px 3px 0 ${C.ink}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 26,
+          flexShrink: 0,
+        }}
+      >
+        {challenge.icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+          <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: C.ink }}>{challenge.title}</div>
+          <div
+            style={{
+              background: C.heart,
+              color: "white",
+              borderRadius: 50,
+              padding: "1px 7px",
+              fontSize: 9,
+              fontWeight: 700,
+              border: `2px solid ${C.ink}`,
+              whiteSpace: "nowrap",
+            }}
+          >
+            NEW
+          </div>
+        </div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 10,
+            color: `${C.ink}80`,
+            fontWeight: 500,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {challenge.desc}
+        </div>
+      </div>
+      <div style={{ flexShrink: 0, textAlign: "center" }}>
+        <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: C.ink }}>+{challenge.reward}</div>
+        <div style={{ fontFamily: FONT, fontSize: 8, fontWeight: 700, color: `${C.ink}70` }}>🪙</div>
       </div>
     </div>
   );

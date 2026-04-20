@@ -409,13 +409,11 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, f
         style={{
           width: 300,
           height: 210,
-          background: timerExpired
-            ? `linear-gradient(135deg, ${C.heart}, #d94555)`
-            : micResult === "correct"
-              ? `linear-gradient(135deg, ${C.green}, #A7F3D0)`
-              : micResult === "wrong"
-                ? `linear-gradient(135deg, ${C.heart}, #d94555)`
-                : "white",
+          background: micResult === "correct"
+            ? C.green
+            : micResult === "wrong" || timerExpired
+              ? "#FFE4E6"
+              : "white",
           borderRadius: RADIUS.card,
           display: "flex",
           flexDirection: "column",
@@ -424,44 +422,39 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, f
           transition: "background 0.3s",
           animation: exitAnim
             ? `${exitAnim} 0.5s cubic-bezier(0.4, 0, 1, 1) forwards`
-            : "cardEnter 0.35s ease-out",
+            : micResult === "correct"
+              ? "boing 0.45s ease-out"
+              : micResult === "wrong"
+                ? "wobble 0.4s ease-out"
+                : "cardEnter 0.35s ease-out",
         }}
       >
           <div
             style={{
               fontSize: 64,
               fontFamily: FONT,
-              color: timerExpired || micResult === "wrong"
-                ? "white"
-                : micResult === "correct"
-                  ? "white"
-                  : C.text,
+              color: C.ink,
               fontWeight: 700,
-              letterSpacing: 4,
+              letterSpacing: 2,
             }}
           >
             {word}
           </div>
-          {round === 1 && (
-            <button
-              className="toy-block toy-pressable"
-              onClick={(e) => {
-                e.stopPropagation();
-                speak(word);
-              }}
-              style={{
-                marginTop: 8,
-                background: C.surface,
-                padding: "8px 16px",
-                color: C.text,
-                fontWeight: 600,
-                fontSize: 13,
-                fontFamily: FONT,
-              }}
-            >
-              Hear It
-            </button>
-          )}
+          <div
+            style={{
+              background: C.accent,
+              border: `3px solid ${C.ink}`,
+              borderRadius: 50,
+              padding: "4px 14px",
+              fontFamily: FONT,
+              fontSize: 12,
+              fontWeight: 700,
+              color: C.ink,
+              marginTop: 8,
+            }}
+          >
+            {micResult === "correct" ? "✓ Correct" : timerExpired ? "Time's up" : `Round ${round} of 3`}
+          </div>
         </div>
 
       {/* Controls based on round */}
@@ -474,14 +467,30 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, f
         }}
       >
         {round === 1 && !micResult && (
-          <div style={{ display: "flex", gap: 14 }}>
-            <Btn onClick={() => markRound1(false)} color={C.heart}>
-              Learning
-            </Btn>
-            <Btn onClick={() => markRound1(true)} color={C.green}>
-              Got It!
-            </Btn>
-          </div>
+          <>
+            <button
+              className="toy-block toy-pressable"
+              onClick={() => speak(word, lang)}
+              style={{
+                background: C.surface,
+                padding: "8px 16px",
+                color: C.text,
+                fontWeight: 600,
+                fontSize: 13,
+                fontFamily: FONT,
+              }}
+            >
+              🔊 Hear It
+            </button>
+            <div style={{ display: "flex", gap: 14 }}>
+              <Btn onClick={() => markRound1(false)} color="#FFE4E6">
+                ✗ Learning
+              </Btn>
+              <Btn onClick={() => markRound1(true)} color={C.green}>
+                ✓ Got It!
+              </Btn>
+            </div>
+          </>
         )}
 
         {listening && (
