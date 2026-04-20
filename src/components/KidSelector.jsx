@@ -325,24 +325,25 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
                 style={{
                   flex: 1,
                   background: C.surface,
-                  padding: "16px",
+                  padding: "14px 16px",
                   display: "flex",
                   alignItems: "center",
-                  gap: 14,
+                  gap: 12,
                   textAlign: "left",
+                  borderRadius: RADIUS.card,
                 }}
               >
-                {/* Avatar in a character-card ring */}
+                {/* Avatar */}
                 <div
                   style={{
-                    width: 56,
-                    height: 56,
+                    width: 52,
+                    height: 52,
                     borderRadius: "50%",
                     background: C.panel,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 32,
+                    fontSize: 28,
                     flexShrink: 0,
                     border: `3px solid ${C.ink}`,
                     boxShadow: `3px 4px 0px ${C.ink}`,
@@ -354,7 +355,7 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
                   <div
                     style={{
                       fontFamily: FONT,
-                      fontSize: "clamp(18px, 5vw, 22px)",
+                      fontSize: 18,
                       color: C.text,
                       fontWeight: 700,
                     }}
@@ -364,8 +365,8 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
                   <div
                     style={{
                       fontFamily: FONT,
-                      fontSize: 13,
-                      color: C.accent,
+                      fontSize: 12,
+                      color: C.muted,
                       fontWeight: 600,
                       marginTop: 2,
                     }}
@@ -373,18 +374,18 @@ function KidSelector({ profiles, onSelect, onAdd, onDelete, onProfile }) {
                     Tap to start training!
                   </div>
                 </div>
-                {/* Arrow chevron */}
+                {/* Arrow */}
                 <div
                   style={{
-                    width: 32,
-                    height: 32,
+                    width: 30,
+                    height: 30,
                     borderRadius: "50%",
                     background: C.primary,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     color: "white",
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: 700,
                     flexShrink: 0,
                     boxShadow: `2px 2px 0px ${C.ink}`,
