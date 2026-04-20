@@ -82,7 +82,7 @@ function interleaveByGroup(words, lang) {
   return result;
 }
 
-function selectPracticeWords(progress, count = WORDS_PER_ROUND, lang = "en") {
+function selectPracticeWords(progress, count = WORDS_PER_ROUND, lang = "en", guaranteeWord = null) {
   const buckets = bucketize(progress, lang);
   const picked = new Set();
   const result = [];
@@ -97,6 +97,11 @@ function selectPracticeWords(progress, count = WORDS_PER_ROUND, lang = "en") {
       added++;
     }
   };
+
+  if (guaranteeWord) {
+    result.push(guaranteeWord);
+    picked.add(guaranteeWord);
+  }
 
   // Priority quotas — fall through to next bucket if the previous is short.
   take(shuffle(buckets.review), 2);

@@ -10,7 +10,7 @@ import { selectPracticeWords } from "../utils/roundWords";
 
 function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, focusedWord, lang = "en" }) {
   const pickWords = () =>
-    focusedWord ? [focusedWord] : selectPracticeWords(progress, undefined, lang);
+    selectPracticeWords(progress, undefined, lang, focusedWord);
 
   const [idx, setIdx] = useState(0);
   const [shuffled, setShuffled] = useState(pickWords);
@@ -36,7 +36,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, f
   const timerSeconds = round === 2 ? 10 : round === 3 ? 5 : 0;
 
   const getWordsForRound = useCallback(
-    () => (focusedWord ? [focusedWord] : selectPracticeWords(progress, undefined, lang)),
+    () => selectPracticeWords(progress, undefined, lang, focusedWord),
     [progress, focusedWord, lang],
   );
 
