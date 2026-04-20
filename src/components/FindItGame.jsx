@@ -94,15 +94,17 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
         />
       </div>
 
-      {/* Prompt card */}
+      {/* Prompt card — tap to replay */}
       <div
         className="toy-block"
+        onClick={() => !feedback && speak(target, lang)}
         style={{
           background: C.primary,
           padding: "20px 24px",
           textAlign: "center",
           marginBottom: 24,
           borderWidth: 3,
+          cursor: feedback ? "default" : "pointer",
         }}
       >
         <div
@@ -114,7 +116,7 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
             marginBottom: 6,
           }}
         >
-          Tap the word you hear:
+          {feedback === "correct" ? "Correct!" : "Tap the word you hear:"}
         </div>
         <div
           style={{
@@ -123,9 +125,10 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
             fontWeight: 700,
             color: "white",
             letterSpacing: 2,
+            animation: feedback === "correct" ? "fadeRise 0.4s ease-out" : "none",
           }}
         >
-          {target}
+          {feedback === "correct" ? target : "🔊"}
         </div>
         <div
           style={{
@@ -135,24 +138,10 @@ function FindItGame({ progress, dispatch, lang = "en" }) {
             marginTop: 4,
           }}
         >
-          Question {round + 1} of {TOTAL}
+          {feedback === "correct"
+            ? target
+            : `Question ${round + 1} of ${TOTAL} · tap to hear again`}
         </div>
-        <button
-          onClick={() => speak(target, lang)}
-          style={{
-            marginTop: 10,
-            background: "rgba(255,255,255,0.2)",
-            border: "none",
-            borderRadius: RADIUS.pill,
-            padding: "4px 14px",
-            cursor: "pointer",
-            fontSize: 16,
-            fontFamily: FONT,
-            color: "white",
-          }}
-        >
-          🔊
-        </button>
       </div>
 
       {/* Options — 2x2 grid */}
