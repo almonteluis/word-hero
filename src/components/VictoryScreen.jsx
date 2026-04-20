@@ -1,7 +1,7 @@
 import { C, FONT, RADIUS } from "../constants";
 import Btn from "./Btn";
 
-function VictoryScreen({ score, total, onRetry, onContinue, continueLabel = "Continue →", showRetryAsPrimary = false }) {
+function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabel = "Continue →" }) {
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
 
@@ -315,21 +315,23 @@ function VictoryScreen({ score, total, onRetry, onContinue, continueLabel = "Con
             animation: `buttonsIn 0.6s ease-out 4.3s both`,
           }}
         >
-          <button
-            className="toy-block toy-pressable"
-            onClick={onRetry}
-            style={{
-              background: C.surface,
-              color: C.text,
-              padding: "12px 24px",
-              fontSize: 15,
-              fontWeight: 600,
-              fontFamily: FONT,
-              cursor: "pointer",
-            }}
-          >
-            ← Retry
-          </button>
+          {onRetry && (
+            <button
+              className="toy-block toy-pressable"
+              onClick={onRetry}
+              style={{
+                background: C.surface,
+                color: C.text,
+                padding: "12px 24px",
+                fontSize: 15,
+                fontWeight: 600,
+                fontFamily: FONT,
+                cursor: "pointer",
+              }}
+            >
+              ← Retry
+            </button>
+          )}
           {onContinue && (
             <button
               className="toy-block toy-pressable"
@@ -345,6 +347,23 @@ function VictoryScreen({ score, total, onRetry, onContinue, continueLabel = "Con
               }}
             >
               {continueLabel}
+            </button>
+          )}
+          {onHome && (
+            <button
+              className="toy-block toy-pressable"
+              onClick={onHome}
+              style={{
+                background: C.green,
+                color: C.text,
+                padding: "12px 24px",
+                fontSize: 15,
+                fontWeight: 700,
+                fontFamily: FONT,
+                cursor: "pointer",
+              }}
+            >
+              🏠 Home
             </button>
           )}
         </div>
