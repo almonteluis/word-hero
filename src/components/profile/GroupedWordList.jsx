@@ -1,5 +1,4 @@
-import { C, FONT, RADIUS, WORD_GROUPS } from "../../constants";
-import { getWordStats } from "../../utils/progress";
+import { C, FONT, RADIUS, SHADOW, WORD_GROUPS } from "../../constants";
 
 const GROUP_DEFS = [
   { key: "mastered", label: "Mastered", emoji: "✅", color: C.green },
@@ -71,17 +70,16 @@ export default function GroupedWordList({ words, progress, variant, onWordTap, e
             >
               {groupDef.emoji}
             </div>
-            <div style={{ flex: 1 }}>
-              <span
-                style={{
-                  fontFamily: FONT,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: C.text,
-                }}
-              >
-                {g.name}
-              </span>
+            <div
+              style={{
+                flex: 1,
+                fontFamily: FONT,
+                fontSize: 14,
+                fontWeight: 700,
+                color: C.text,
+              }}
+            >
+              {g.name}
             </div>
             <div
               style={{
@@ -116,7 +114,7 @@ export default function GroupedWordList({ words, progress, variant, onWordTap, e
                   fontSize: 14,
                   fontWeight: 700,
                   color: C.ink,
-                  boxShadow: `2px 3px 0 ${C.ink}`,
+                  boxShadow: SHADOW.toyXs,
                   cursor: "pointer",
                 }}
               >

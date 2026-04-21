@@ -40,9 +40,7 @@ export const C = {
 };
 
 // ─── TYPOGRAPHY ────────────────────────────────────────────
-// Fredoka for headings + Nunito for body text
 export const FONT = "'Fredoka', sans-serif";
-export const FONT_BODY = "'Nunito', sans-serif";
 
 export const TEXT = {
   hero: "clamp(52px, 15vw, 78px)",   // Splash title
