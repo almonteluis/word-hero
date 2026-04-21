@@ -1,5 +1,4 @@
 import { C, FONT, RADIUS } from "../constants";
-import Btn from "./Btn";
 
 function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabel = "Continue →" }) {
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
@@ -30,6 +29,7 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
         justifyContent: "center",
         padding: "32px 20px",
         overflow: "hidden",
+        WebkitFontSmoothing: "antialiased",
         animation: "victoryExpand 2s cubic-bezier(0.22, 1, 0.36, 1) forwards",
       }}
     >
@@ -152,7 +152,6 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
         }
       `}</style>
 
-      {/* Confetti particles — start after bg expands */}
       {Array.from({ length: 24 }).map((_, i) => (
         <div
           key={i}
@@ -190,7 +189,6 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
           width: "100%",
         }}
       >
-        {/* Stars — fall in left to right, sequentially */}
         <div
           style={{
             display: "flex",
@@ -217,20 +215,19 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
           ))}
         </div>
 
-        {/* Headline — slides up from the bottom */}
         <div
           style={{
             fontFamily: FONT,
             fontSize: 44,
             color: C.text,
             fontWeight: 700,
+            textWrap: "balance",
             animation: `headlineFromBottom 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 2.5s both`,
           }}
         >
           {messages[stars]}
         </div>
 
-        {/* Score — slides in from the left */}
         <div
           style={{
             fontFamily: FONT,
@@ -238,13 +235,13 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
             color: "white",
             fontWeight: 700,
             textShadow: "3px 3px 0 rgba(0,0,0,0.12)",
+            fontVariantNumeric: "tabular-nums",
             animation: `scoreSlideIn 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) 2.9s both`,
           }}
         >
           {score}/{total}
         </div>
 
-        {/* Celebrating character — bounces in */}
         <div
           style={{
             fontSize: 76,
@@ -255,7 +252,6 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
           {stars >= 2 ? "🎉" : "💪"}
         </div>
 
-        {/* Stats row — each card staggers in */}
         <div
           style={{
             display: "flex",
@@ -288,6 +284,7 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
                   fontSize: 20,
                   color: stat.valueColor,
                   fontWeight: 700,
+                  fontVariantNumeric: "tabular-nums",
                 }}
               >
                 {stat.value}
@@ -306,7 +303,6 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
           ))}
         </div>
 
-        {/* Action buttons — slide up last */}
         <div
           style={{
             display: "flex",
