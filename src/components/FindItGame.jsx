@@ -71,8 +71,7 @@ function FindItGame({ progress, dispatch, onHome, lang = "en" }) {
   }
 
   return (
-    <div style={{ padding: "0 20px 24px" }}>
-      {/* Progress bar */}
+    <div style={{ padding: "0 20px 24px", WebkitFontSmoothing: "antialiased" }}>
       <div
         style={{
           background: `${C.ink}20`,
@@ -95,7 +94,6 @@ function FindItGame({ progress, dispatch, onHome, lang = "en" }) {
         />
       </div>
 
-      {/* Prompt card — tap to replay */}
       <div
         className="toy-block"
         onClick={() => !feedback && speak(target, lang)}
@@ -141,7 +139,7 @@ function FindItGame({ progress, dispatch, onHome, lang = "en" }) {
         >
           {feedback === "correct"
             ? target
-            : `Question ${round + 1} of ${TOTAL} · tap to hear again`}
+            : <span style={{ fontVariantNumeric: "tabular-nums" }}>Question {round + 1} of {TOTAL} · tap to hear again</span>}
         </div>
       </div>
 
