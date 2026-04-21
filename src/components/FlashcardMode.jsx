@@ -165,7 +165,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
   const roundColor = roundColors[(round - 1) % 3];
   const roundLabels = ["Listen", "Say It", "Speed"];
 
-  // ─── ROUND SUMMARY SCREEN ────────────────────────────────
   if (showRoundSummary) {
     const rs = roundScores[round];
     const pct = rs.total > 0 ? Math.round((rs.correct / rs.total) * 100) : 0;
@@ -183,7 +182,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
             boxShadow: SHADOW.toySm,
           }}
         >
-          <div style={{ fontFamily: FONT, fontSize: 36, color: C.ink, fontWeight: 700 }}>{rs.correct}/{rs.total} ({pct}%)</div>
+          <div style={{ fontFamily: FONT, fontSize: 36, color: C.ink, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{rs.correct}/{rs.total} ({pct}%)</div>
         </div>
         <div style={{ color: C.muted, fontFamily: FONT, fontSize: 14, fontWeight: 500, textAlign: "center", maxWidth: 280 }}>
           {round === 1 ? "Next: Read the word aloud (10s timer)" : "Next: Speed round (5s timer)"}
@@ -193,7 +192,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
     );
   }
 
-  // ─── FINAL SUMMARY SCREEN ────────────────────────────────
   if (showFinalSummary) {
     return (
       <VictoryScreen
@@ -219,7 +217,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
     );
   }
 
-  // ─── MIC PROMPT MODAL ──
   if (showMicPrompt) {
     const isSpeedRound = round + 1 === 3;
     return (
@@ -249,7 +246,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
     );
   }
 
-  // ─── FLASHCARD VIEW ──────────────────────────────────────
   const cardBg = micResult === "correct"
     ? C.green
     : micResult === "wrong" || timerExpired
@@ -267,9 +263,8 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
       : "Speed round — quick!";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "8px 16px 24px" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "8px 16px 24px", WebkitFontSmoothing: "antialiased" }}>
 
-      {/* ─── Round Tabs (pill style) ─── */}
       <div style={{ display: "flex", justifyContent: "center", gap: 6, padding: "4px 0" }}>
         {[1, 2, 3].map((r) => {
           const isActive = r === round;
@@ -288,8 +283,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
                 boxShadow: isActive ? SHADOW.toySm : "none",
                 background: bg,
                 color: C.text,
-                transition: `all 0.2s ${EASE.out}`,
-                opacity: isDone ? 0.6 : 1,
+                transition: `background 0.2s ${EASE.out}, opacity 0.2s ${EASE.out}, box-shadow 0.2s ${EASE.out}`,
               }}
             >
               {roundLabels[r - 1]}
@@ -298,7 +292,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
         })}
       </div>
 
-      {/* ─── Progress Dots ─── */}
       <div style={{ display: "flex", justifyContent: "center", gap: 6, margin: "4px 0" }}>
         {shuffled.map((_, i) => {
           const isDone = i < idx;
@@ -313,14 +306,13 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
                 background: isDone ? C.green : isCurrent ? C.accent : C.panel,
                 border: `2px solid ${C.ink}`,
                 boxShadow: isCurrent ? "1px 2px 0 " + C.ink : "none",
-                transition: `all 0.2s ${EASE.out}`,
+                transition: `background 0.2s ${EASE.out}, border-color 0.2s ${EASE.out}`,
               }}
             />
           );
         })}
       </div>
 
-      {/* ─── Timer for rounds 2 & 3 ─── */}
       {round >= 2 && !timerExpired && !micResult && (
         <CountdownTimer
           key={`${round}-${idx}`}
@@ -329,7 +321,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
         />
       )}
 
-      {/* ─── Flashcard ─── */}
       <div style={{ display: "flex", justifyContent: "center", padding: "8px 0" }}>
         <div
           key={`${round}-${idx}`}
@@ -354,9 +345,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
         </div>
       </div>
 
-      {/* ─── Action Buttons ─── */}
       <div style={{ display: "flex", gap: 12, justifyContent: "center", padding: "0 4px", width: "100%", maxWidth: 400 }}>
-        {/* Round 1: Miss / Got It */}
         {round === 1 && !micResult && (
           <>
             <Btn onClick={() => markRound1(false)} color="#FFE4E6" style={{ flex: 1, fontSize: 16, padding: "14px", color: C.heart }}>
@@ -368,7 +357,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
           </>
         )}
 
-        {/* Rounds 2-3: Say It / Miss */}
         {round >= 2 && !micResult && !timerExpired && supported && !waitingForMic && (
           <>
             <Btn onClick={handleSayIt} color={C.secondary} style={{ flex: 1, fontSize: 16, padding: "14px", color: C.ink }}>
@@ -380,7 +368,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
           </>
         )}
 
-        {/* Rounds 2-3: Mic not supported fallback */}
         {round >= 2 && !supported && !timerExpired && !micResult && (
           <>
             <Btn
@@ -412,7 +399,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
         )}
       </div>
 
-      {/* ─── Listening indicator ─── */}
       {listening && (
         <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.secondary, fontFamily: FONT, fontSize: 15, fontWeight: 600 }}>
           <div style={{ width: 16, height: 16, borderRadius: "50%", background: C.heart, animation: "starPulse 0.8s ease-in-out infinite" }} />
@@ -420,12 +406,10 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
         </div>
       )}
 
-      {/* ─── Correct result ─── */}
       {micResult === "correct" && (
         <Btn onClick={advanceCard} color={C.green} style={{ fontSize: 16, padding: "14px 28px" }}>Next →</Btn>
       )}
 
-      {/* ─── Wrong / try again ─── */}
       {micResult === "wrong" && (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
           <div style={{ fontFamily: FONT, fontSize: 16, color: C.heart, fontWeight: 600 }}>Not quite — try again!</div>
@@ -442,7 +426,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
         </div>
       )}
 
-      {/* ─── Timer expired ─── */}
       {timerExpired && (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
           <div style={{ fontFamily: FONT, fontSize: 16, color: C.heart, fontWeight: 600 }}>Time's up!</div>
@@ -451,13 +434,12 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
       )}
 
       {/* ─── Word count footer ─── */}
-      <div style={{ textAlign: "center", marginTop: 4, fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600 }}>
+      <div style={{ textAlign: "center", marginTop: 4, fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
         Word {idx + 1} of {shuffled.length} · Round {round}/3
       </div>
 
-      {/* ─── Round score indicator ─── */}
       {roundScores[round].total > 0 && (
-        <div style={{ fontFamily: FONT, fontSize: 12, color: C.muted, fontWeight: 500 }}>
+        <div style={{ fontFamily: FONT, fontSize: 12, color: C.muted, fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
           Round {round}: {roundScores[round].correct}/{roundScores[round].total} correct
         </div>
       )}
