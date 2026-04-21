@@ -24,6 +24,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
         alignItems: "center",
         paddingTop: 8,
         paddingBottom: "max(10px, env(safe-area-inset-bottom))",
+        WebkitFontSmoothing: "antialiased",
         paddingLeft: "env(safe-area-inset-left)",
         paddingRight: "env(safe-area-inset-right)",
       }}
@@ -61,7 +62,6 @@ export default function BottomNav({ activeTab, onTabChange }) {
                 : "";
             }}
           >
-            {/* Icon pill */}
             <div
               style={{
                 width: 40,
@@ -72,7 +72,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
                 justifyContent: "center",
                 fontSize: 20,
                 lineHeight: 1,
-                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                transition: "background 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                 ...(isActive
                   ? {
                       background: C.accent,
@@ -88,7 +88,6 @@ export default function BottomNav({ activeTab, onTabChange }) {
             >
               {tab.icon}
             </div>
-            {/* Label */}
             <span
               style={{
                 fontFamily: FONT,
