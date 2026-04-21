@@ -215,7 +215,7 @@ function AvatarPicker({ value, onChange }) {
               padding: "7px 18px",
               borderRadius: 50,
               cursor: "pointer",
-              transition: "all .2s",
+              transition: "background 0.2s, color 0.2s",
               border: `3px solid ${C.ink}`,
               background: tab === t.key ? C.accent : "white",
               boxShadow:
@@ -258,7 +258,7 @@ function AvatarPicker({ value, onChange }) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                transition: "all .18s cubic-bezier(.34,1.56,.64,1)",
+                transition: "background 0.18s cubic-bezier(.34,1.56,.64,1), border 0.18s cubic-bezier(.34,1.56,.64,1), width 0.18s cubic-bezier(.34,1.56,.64,1), height 0.18s cubic-bezier(.34,1.56,.64,1)",
                 boxShadow: sel ? "0 0 12px #FFDE5950" : "none",
               }}
             >

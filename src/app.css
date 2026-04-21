@@ -211,7 +211,7 @@ input::placeholder {
 }
 
 .toy-pressable:active {
-  transform: translate(2px, 4px) scale(0.95) !important;
+  transform: translate(2px, 4px) scale(0.96) !important;
   box-shadow: var(--shadow-toy-pressed) !important;
   transition-duration: 80ms !important;
 }

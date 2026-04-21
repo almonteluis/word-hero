@@ -60,7 +60,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
                 justifyContent: "center",
                 fontSize: 20,
                 lineHeight: 1,
-                transition: "background 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                transition: "background 0.2s cubic-bezier(0.4, 0, 0.2, 1), border 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                 ...(isActive
                   ? {
                       background: C.accent,

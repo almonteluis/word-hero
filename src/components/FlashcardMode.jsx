@@ -283,7 +283,8 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
                 boxShadow: isActive ? SHADOW.toySm : "none",
                 background: bg,
                 color: C.text,
-                transition: `background 0.2s ${EASE.out}, opacity 0.2s ${EASE.out}, box-shadow 0.2s ${EASE.out}`,
+                transition: `background 0.2s ${EASE.out}, box-shadow 0.2s ${EASE.out}, opacity 0.2s ${EASE.out}`,
+                opacity: isDone ? 0.6 : 1,
               }}
             >
               {roundLabels[r - 1]}
@@ -306,7 +307,7 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
                 background: isDone ? C.green : isCurrent ? C.accent : C.panel,
                 border: `2px solid ${C.ink}`,
                 boxShadow: isCurrent ? "1px 2px 0 " + C.ink : "none",
-                transition: `background 0.2s ${EASE.out}, border-color 0.2s ${EASE.out}`,
+                transition: `background 0.2s ${EASE.out}, box-shadow 0.2s ${EASE.out}`,
               }}
             />
           );
