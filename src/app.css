@@ -202,16 +202,18 @@ input::placeholder {
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .toy-pressable:hover:not(:active) {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.02);
   box-shadow: inset -3px -3px 8px rgba(255,255,255,0.6), inset 3px 3px 8px rgba(0,0,0,0.05), 4px 8px 0px var(--color-wh-ink);
 }
 
 .toy-pressable:active {
-  transform: translate(2px, 4px) !important;
+  transform: translate(2px, 4px) scale(0.95) !important;
   box-shadow: var(--shadow-toy-pressed) !important;
+  transition-duration: 80ms !important;
 }
 
 /* ─── KEYFRAME ANIMATIONS ──────────────────────────────── */

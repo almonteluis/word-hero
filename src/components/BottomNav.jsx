@@ -1,4 +1,4 @@
-import { C, FONT } from "../constants";
+import { C, FONT, SHADOW } from "../constants";
 
 const TABS = [
   { key: "home", icon: "⚡", label: "Home" },
@@ -44,28 +44,16 @@ export default function BottomNav({ activeTab, onTabChange }) {
               border: "none",
               cursor: "pointer",
               padding: "4px 12px",
+              minHeight: 44,
               WebkitTapHighlightColor: "transparent",
               transition: "transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
               ...(isActive ? { transform: "translateY(-2px)" } : {}),
             }}
-            onMouseDown={(e) => {
-              e.currentTarget.style.transform = "scale(0.9)";
-            }}
-            onMouseUp={(e) => {
-              e.currentTarget.style.transform = isActive
-                ? "translateY(-2px)"
-                : "";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = isActive
-                ? "translateY(-2px)"
-                : "";
-            }}
           >
             <div
               style={{
-                width: 40,
-                height: 36,
+                width: 44,
+                height: 38,
                 borderRadius: 16,
                 display: "flex",
                 alignItems: "center",
@@ -77,7 +65,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
                   ? {
                       background: C.accent,
                       border: `3px solid ${C.ink}`,
-                      boxShadow: `2px 3px 0 ${C.ink}`,
+                      boxShadow: SHADOW.toyXs,
                     }
                   : {
                       background: "transparent",

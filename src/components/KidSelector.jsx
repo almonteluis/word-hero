@@ -169,8 +169,8 @@ function SwipeRow({ kid, onSelect, onDelete, idx }) {
           </div>
           <div
             style={{
-              width: 30,
-              height: 30,
+              width: 44,
+              height: 44,
               borderRadius: "50%",
               background: C.primary,
               border: `2px solid ${C.ink}`,
