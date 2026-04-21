@@ -54,6 +54,7 @@ function CountdownTimer({ seconds, onExpire }) {
           color,
           minWidth: 28,
           textAlign: "center",
+          fontVariantNumeric: "tabular-nums",
         }}
       >
         {remaining}s

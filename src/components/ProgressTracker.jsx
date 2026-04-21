@@ -84,8 +84,7 @@ function ProgressTracker({ progress, kidName }) {
   const achievements = getAchievements(progress, masteredCount);
 
   return (
-    <div style={{ padding: "16px 16px 32px" }}>
-      {/* Hero profile card */}
+    <div style={{ padding: "16px 16px 32px", WebkitFontSmoothing: "antialiased" }}>
       <div
         style={{
           background: "white",
@@ -144,7 +143,6 @@ function ProgressTracker({ progress, kidName }) {
         </div>
       </div>
 
-      {/* Daily Streak Card */}
       <div
         style={{
           background: "white",
@@ -225,7 +223,6 @@ function ProgressTracker({ progress, kidName }) {
         </div>
       </div>
 
-      {/* Needs Review Alert */}
       {needsReview.length > 0 && (
         <div
           style={{
@@ -288,7 +285,6 @@ function ProgressTracker({ progress, kidName }) {
         </div>
       )}
 
-      {/* Struggling Words Alert */}
       {strugglingWords.length > 0 && (
         <div
           style={{
@@ -350,7 +346,6 @@ function ProgressTracker({ progress, kidName }) {
         </div>
       )}
 
-      {/* Stats row */}
       <div
         style={{
           display: "flex",
@@ -385,6 +380,7 @@ function ProgressTracker({ progress, kidName }) {
                 fontFamily: FONT,
                 color: s.color,
                 fontWeight: 700,
+                fontVariantNumeric: "tabular-nums",
               }}
             >
               {s.value}
@@ -403,7 +399,6 @@ function ProgressTracker({ progress, kidName }) {
         ))}
       </div>
 
-      {/* Power bar */}
       <div style={{ maxWidth: 380, margin: "0 auto 20px" }}>
         <div
           style={{
@@ -430,7 +425,7 @@ function ProgressTracker({ progress, kidName }) {
               fontWeight: 600,
             }}
           >
-            {masteredCount}/{ALL_WORDS.length}
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>{masteredCount}/{ALL_WORDS.length}</span>
           </span>
         </div>
         <div
@@ -454,7 +449,6 @@ function ProgressTracker({ progress, kidName }) {
         </div>
       </div>
 
-      {/* Achievements card */}
       <div
         style={{
           background: "white",
@@ -534,7 +528,6 @@ function ProgressTracker({ progress, kidName }) {
                   >
                     {a.desc}
                   </div>
-                  {/* Mini progress bar */}
                   <div
                     style={{
                       height: 5,
@@ -572,7 +565,6 @@ function ProgressTracker({ progress, kidName }) {
         </div>
       </div>
 
-      {/* Word groups */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {GROUP_NAMES.map((gn) => {
           const words = WORD_GROUPS[gn];
@@ -616,7 +608,7 @@ function ProgressTracker({ progress, kidName }) {
                     fontWeight: 600,
                   }}
                 >
-                  {isComplete ? "✓ Complete" : `${gm}/${words.length}`}
+                  <span style={{ fontVariantNumeric: "tabular-nums" }}>{isComplete ? "✓ Complete" : `${gm}/${words.length}`}</span>
                 </span>
               </div>
               {/* Group progress bar */}
