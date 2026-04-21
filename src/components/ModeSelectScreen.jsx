@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
-import { C, FONT, ALL_WORDS } from "../constants";
+import { C, FONT, RADIUS, ALL_WORDS } from "../constants";
 import { getHeroStats, getWeekActivity } from "../utils/progress";
+import { speak } from "../utils/speech";
 
 const DAILY_CHALLENGES = [
   { icon: "⚡", title: "Speed Hero", desc: "Complete Round 3 without a miss", reward: 20, color: C.accent },
@@ -25,8 +26,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FFF9F0", paddingBottom: 90 }}>
-      {/* Full-bleed header zone */}
+    <div style={{ minHeight: "100vh", background: "#FFF9F0", paddingBottom: 90, WebkitFontSmoothing: "antialiased" }}>
       <div
         style={{
           background: "linear-gradient(180deg, #FFF5E4 0%, #FFF9F0 100%)",
@@ -44,10 +44,8 @@ function ModeSelectScreen({ kid, progress, onSelectMode }) {
         {/* Hero + inline stats as one wide card */}
         <HeroStatsCard kid={kid} stats={stats} />
 
-        {/* Word of the Day — full width */}
         <WordOfDay word={wordOfDay} />
 
-        {/* Mode cards — side by side */}
         <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: C.text, animation: "fadeRise 0.4s ease-out 0.28s both" }}>
           🎮 Start Training
         </div>
@@ -124,7 +122,6 @@ function HeroStatsCard({ kid, stats }) {
       }}
     >
       <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-        {/* Avatar */}
         <div style={{ position: "relative", flexShrink: 0 }}>
           <div
             style={{
@@ -161,7 +158,6 @@ function HeroStatsCard({ kid, stats }) {
           </div>
         </div>
 
-        {/* Name + rank */}
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 600, color: C.primary, letterSpacing: 0.4 }}>
             {stats.rankIcon} {stats.rank.toUpperCase()}
@@ -169,7 +165,6 @@ function HeroStatsCard({ kid, stats }) {
           <div style={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: C.text }}>{kid.name}</div>
         </div>
 
-        {/* Inline stats */}
         <div style={{ display: "flex", gap: 8 }}>
           {inlineStats.map((s) => (
             <div
@@ -182,11 +177,11 @@ function HeroStatsCard({ kid, stats }) {
                 border: s.bg ? `2px solid ${C.ink}` : "none",
               }}
             >
-              <div style={{ fontFamily: FONT, fontSize: s.emoji ? 18 : 14, fontWeight: 700, color: C.ink, lineHeight: 1 }}>
+              <div style={{ fontFamily: FONT, fontSize: s.emoji ? 18 : 14, fontWeight: 700, color: C.ink, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
                 {s.emoji || s.value}
               </div>
               {s.emoji && (
-                <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: C.ink, lineHeight: 1 }}>
+                <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: C.ink, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
                   {s.value}
                 </div>
               )}
@@ -202,6 +197,7 @@ function HeroStatsCard({ kid, stats }) {
 }
 
 function WordOfDay({ word }) {
+  const handleSpeak = () => speak(word);
   return (
     <div
       className="toy-block"
@@ -237,6 +233,8 @@ function WordOfDay({ word }) {
       </div>
       <button
         className="toy-pressable"
+        onClick={handleSpeak}
+        aria-label={`Hear ${word}`}
         style={{
           width: 44,
           height: 44,
@@ -290,7 +288,7 @@ function ModeCardPair({ onSelect, transitioning }) {
               style={{
                 width: 48,
                 height: 48,
-                borderRadius: 14,
+                borderRadius: 10,
                 background: C.surface,
                 border: `3px solid ${C.ink}`,
                 boxShadow: `2px 3px 0 ${C.ink}`,
@@ -336,7 +334,7 @@ function DailyChallenge({ challenge }) {
         style={{
           width: 46,
           height: 46,
-          borderRadius: 13,
+          borderRadius: 10,
           background: C.surface,
           border: `3px solid ${C.ink}`,
           boxShadow: `2px 3px 0 ${C.ink}`,
@@ -382,7 +380,7 @@ function DailyChallenge({ challenge }) {
         </div>
       </div>
       <div style={{ flexShrink: 0, textAlign: "center" }}>
-        <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: C.ink }}>+{challenge.reward}</div>
+        <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: C.ink, fontVariantNumeric: "tabular-nums" }}>+{challenge.reward}</div>
         <div style={{ fontFamily: FONT, fontSize: 8, fontWeight: 700, color: `${C.ink}70` }}>🪙</div>
       </div>
     </div>
