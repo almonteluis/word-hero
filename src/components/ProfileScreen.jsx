@@ -532,9 +532,9 @@ function ProgressRing({ pct, rank }) {
 
 function CardsCollected({ mastered, learning, sessions, onOpen }) {
   const items = [
+    { key: "activity", label: "SESSIONS", value: sessions },
     { key: "mastered", label: "MASTERED", value: mastered, bg: C.green },
     { key: "learning", label: "LEARNING", value: learning, bg: C.accent },
-    { key: "activity", label: "SESSIONS", value: sessions, bg: C.secondary },
   ];
   return (
     <>
@@ -549,36 +549,45 @@ function CardsCollected({ mastered, learning, sessions, onOpen }) {
       >
         Cards Collected
       </div>
-      <div
+      <button
+        onClick={(e) => {
+          const cell = e.target.closest("[data-key]");
+          if (cell) onOpen(cell.dataset.key);
+        }}
+        aria-label="Open cards collected details"
+        className="toy-block"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr 1fr",
-          gap: 10,
+          gap: 0,
+          borderWidth: 3,
+          boxShadow: `3px 4px 0 ${C.ink}`,
+          background: C.surface,
           marginBottom: 20,
+          overflow: "hidden",
+          cursor: "pointer",
+          padding: 0,
         }}
       >
         {items.map((s) => (
-          <button
+          <div
             key={s.key}
-            onClick={() => onOpen(s.key)}
-            aria-label={`Open ${s.label.toLowerCase()} details`}
-            className="toy-block toy-pressable"
+            data-key={s.key}
+            className="toy-pressable"
             style={{
-              padding: "14px 8px",
               textAlign: "center",
-              borderWidth: 3,
-              boxShadow: `3px 4px 0 ${C.ink}`,
-              background: s.bg,
-              cursor: "pointer",
-              fontFamily: FONT,
+              padding: "12px 6px",
+              background: s.bg || "transparent",
+              borderLeft: s.bg ? `2px solid ${C.ink}` : "none",
             }}
           >
             <div
               style={{
                 fontFamily: FONT,
-                fontSize: 30,
+                fontSize: 22,
                 fontWeight: 700,
                 color: C.ink,
+                fontVariantNumeric: "tabular-nums",
                 lineHeight: 1,
               }}
             >
@@ -587,18 +596,18 @@ function CardsCollected({ mastered, learning, sessions, onOpen }) {
             <div
               style={{
                 fontFamily: FONT,
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: 700,
                 color: C.ink,
-                marginTop: 6,
-                letterSpacing: 0.8,
+                marginTop: 4,
+                letterSpacing: 0.6,
               }}
             >
               {s.label}
             </div>
-          </button>
+          </div>
         ))}
-      </div>
+      </button>
     </>
   );
 }
