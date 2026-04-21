@@ -239,7 +239,7 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
             animation: `scoreSlideIn 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) 2.9s both`,
           }}
         >
-          {score}/{total}
+          <span style={{ fontVariantNumeric: "tabular-nums" }}>{score}/{total}</span>
         </div>
 
         <div

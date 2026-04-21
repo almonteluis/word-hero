@@ -16,7 +16,8 @@ function Btn({
       style={{
         background: color,
         color: isLightFill ? C.text : C.textLight,
-        padding: small ? "8px 20px" : "12px 28px",
+        padding: small ? "10px 20px" : "12px 28px",
+        minHeight: 44,
         fontSize: small ? 14 : 16,
         fontWeight: 700,
         fontFamily: FONT,

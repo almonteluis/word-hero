@@ -40,7 +40,6 @@ export const C = {
 };
 
 // ─── TYPOGRAPHY ────────────────────────────────────────────
-// Fredoka only — already loaded in index.html
 export const FONT = "'Fredoka', sans-serif";
 
 export const TEXT = {
@@ -71,12 +70,12 @@ export const RADIUS = {
   circle: "50%",
 };
 
-// ─── SHADOWS — "TOY BLOCK" NEOBRUTALIST SYSTEM ────────────
+// ─── SHADOWS — CLAY-BLOCK SYSTEM (NEOBRUTALIST + CLAYMORPHISM) ─
 export const SHADOW = {
-  toy: `4px 6px 0px ${C.ink}`,
-  toySm: `3px 4px 0px ${C.ink}`,
-  toyXs: `2px 3px 0px ${C.ink}`,
-  toyPressed: `2px 2px 0px ${C.ink}`,
+  toy: `inset -3px -3px 6px rgba(255,255,255,0.5), inset 3px 3px 6px rgba(0,0,0,0.06), 4px 6px 0px ${C.ink}`,
+  toySm: `inset -2px -2px 5px rgba(255,255,255,0.5), inset 2px 2px 5px rgba(0,0,0,0.06), 3px 4px 0px ${C.ink}`,
+  toyXs: `inset -2px -2px 4px rgba(255,255,255,0.4), inset 2px 2px 4px rgba(0,0,0,0.05), 2px 3px 0px ${C.ink}`,
+  toyPressed: `inset -1px -1px 3px rgba(255,255,255,0.3), inset 1px 1px 3px rgba(0,0,0,0.08), 2px 2px 0px ${C.ink}`,
   soft: "0 4px 16px rgba(51, 65, 85, 0.12)",
   softLg: "0 8px 32px rgba(51, 65, 85, 0.15)",
 };

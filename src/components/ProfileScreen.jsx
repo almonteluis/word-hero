@@ -76,7 +76,6 @@ export default function ProfileScreen({ kid, progress, dispatch, onSwitchProfile
         </div>
         <DailyReminderSettings />
 
-        {/* Language toggle */}
         {onLangChange && (
           <div
             className="toy-block"
