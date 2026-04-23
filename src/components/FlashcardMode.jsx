@@ -8,7 +8,7 @@ import { useSpeechRecognition, wordMatch } from "../utils/speechRecognition";
 import { getPronunciationFeedback } from "../utils/pronunciationFeedback";
 import { selectPracticeWords } from "../utils/roundWords";
 
-function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, onHome, focusedWord, lang = "en" }) {
+function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, onHome, focusedWord, lang = "en", kidName }) {
   const pickWords = () =>
     selectPracticeWords(progress, undefined, lang, focusedWord);
 
@@ -197,6 +197,8 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
       <VictoryScreen
         score={totalCorrect}
         total={totalAttempts}
+        shareMode="flash"
+        kidName={kidName}
         onRetry={() => {
           setRound(1);
           setRoundScores({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });

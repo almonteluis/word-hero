@@ -1,11 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
+  loadAnalytics,
+  loadEventCounts,
   loadProfiles,
   saveProfiles,
   loadKidProgress,
   saveKidProgress,
   loadLang,
   saveLang,
+  trackEvent,
 } from "../utils/storage";
 
 beforeEach(() => {
@@ -77,5 +80,30 @@ describe("loadLang / saveLang", () => {
     });
     expect(loadLang("kid-1")).toBe("en");
     vi.restoreAllMocks();
+  });
+});
+
+// ─── Lightweight analytics storage ─────────────────────────
+
+describe("loadAnalytics / trackEvent", () => {
+  it("tracks counts and keeps the newest events first", () => {
+    trackEvent("challenge_share_clicked", { mode: "flash" });
+    trackEvent("challenge_share_clicked", { mode: "find" });
+    trackEvent("challenge_link_opened", { mode: "find" });
+
+    expect(loadEventCounts()).toEqual({
+      challenge_share_clicked: 2,
+      challenge_link_opened: 1,
+    });
+    expect(loadAnalytics().events[0].name).toBe("challenge_link_opened");
+    expect(loadAnalytics().events[1].name).toBe("challenge_share_clicked");
+  });
+
+  it("recovers gracefully from malformed analytics data", () => {
+    localStorage.setItem("word-hero-analytics", "{broken");
+    expect(loadEventCounts()).toEqual({});
+
+    trackEvent("challenge_share_clicked");
+    expect(loadEventCounts()).toEqual({ challenge_share_clicked: 1 });
   });
 });

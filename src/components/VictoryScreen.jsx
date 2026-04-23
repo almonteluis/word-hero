@@ -1,8 +1,34 @@
+import { useEffect, useRef, useState } from "react";
 import { C, FONT, RADIUS } from "../constants";
+import { trackEvent } from "../utils/storage";
+import { buildChallengeShare } from "../utils/share";
 
-function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabel = "Continue →" }) {
+function copyFallback(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+}
+
+function VictoryScreen({
+  score,
+  total,
+  onRetry,
+  onContinue,
+  onHome,
+  continueLabel = "Continue →",
+  shareMode = "flash",
+  kidName,
+}) {
   const pct = total > 0 ? Math.round((score / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
+  const [shareStatus, setShareStatus] = useState(null);
+  const shareStatusTimer = useRef(null);
 
   // Rewards based on performance
   const trophies = stars * 2;
@@ -14,6 +40,51 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
     2: "Great Job!",
     1: "Good Try!",
     0: "Keep Going!",
+  };
+
+  useEffect(() => () => {
+    if (shareStatusTimer.current) clearTimeout(shareStatusTimer.current);
+  }, []);
+
+  const setTemporaryShareStatus = (message) => {
+    setShareStatus(message);
+    if (shareStatusTimer.current) clearTimeout(shareStatusTimer.current);
+    shareStatusTimer.current = setTimeout(() => setShareStatus(null), 2600);
+  };
+
+  const handleShare = async () => {
+    const share = buildChallengeShare({ score, total, mode: shareMode, kidName });
+
+    trackEvent("challenge_share_clicked", {
+      mode: share.mode,
+      score: share.score,
+      total: share.total,
+      pct: share.pct,
+    });
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: share.title,
+          text: share.text,
+          url: share.url,
+        });
+        setTemporaryShareStatus("Challenge shared!");
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(share.clipboardText);
+        setTemporaryShareStatus("Challenge link copied!");
+        return;
+      }
+
+      copyFallback(share.clipboardText);
+      setTemporaryShareStatus("Challenge link copied!");
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+      setTemporaryShareStatus("Couldn't share right now.");
+    }
   };
 
   return (
@@ -301,6 +372,71 @@ function VictoryScreen({ score, total, onRetry, onContinue, onHome, continueLabe
               </div>
             </div>
           ))}
+        </div>
+
+        <div
+          className="toy-block"
+          style={{
+            width: "100%",
+            background: "rgba(255,255,255,0.92)",
+            borderWidth: 3,
+            boxShadow: `0 4px 12px ${C.shadow}`,
+            padding: "14px 16px",
+            animation: `statCardIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 4.1s both`,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 11,
+              fontWeight: 700,
+              color: C.primary,
+              letterSpacing: 0.7,
+              marginBottom: 4,
+            }}
+          >
+            VIRAL MOMENT
+          </div>
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 16,
+              fontWeight: 700,
+              color: C.text,
+              lineHeight: 1.35,
+            }}
+          >
+            Challenge another family to beat {pct}% in {shareMode === "find" ? "Find It" : "Flash Training"}.
+          </div>
+          <button
+            className="toy-block toy-pressable"
+            onClick={handleShare}
+            style={{
+              marginTop: 12,
+              background: C.primary,
+              color: C.text,
+              padding: "10px 16px",
+              fontSize: 14,
+              fontWeight: 700,
+              fontFamily: FONT,
+              cursor: "pointer",
+            }}
+          >
+            📣 Challenge a Friend
+          </button>
+          {shareStatus && (
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 11,
+                fontWeight: 600,
+                color: C.muted,
+                marginTop: 8,
+              }}
+            >
+              {shareStatus}
+            </div>
+          )}
         </div>
 
         <div

@@ -1,4 +1,5 @@
 const NOTIF_PREFS_KEY = "word-hero-notif-prefs";
+const ANALYTICS_KEY = "word-hero-analytics";
 
 function loadProfiles() {
   try {
@@ -59,7 +60,40 @@ function saveLang(kidId, lang) {
   } catch {}
 }
 
+function loadAnalytics() {
+  try {
+    const raw = localStorage.getItem(ANALYTICS_KEY);
+    return raw ? JSON.parse(raw) : { counts: {}, events: [] };
+  } catch {
+    return { counts: {}, events: [] };
+  }
+}
+
+function loadEventCounts() {
+  return loadAnalytics().counts || {};
+}
+
+function trackEvent(name, payload = {}) {
+  const analytics = loadAnalytics();
+  const counts = analytics.counts || {};
+  const events = analytics.events || [];
+  const next = {
+    counts: {
+      ...counts,
+      [name]: (counts[name] || 0) + 1,
+    },
+    events: [{ name, payload, at: Date.now() }, ...events].slice(0, 25),
+  };
+
+  try {
+    localStorage.setItem(ANALYTICS_KEY, JSON.stringify(next));
+  } catch {}
+
+  return next;
+}
+
 export {
+  ANALYTICS_KEY,
   NOTIF_PREFS_KEY,
   loadProfiles,
   saveProfiles,
@@ -69,4 +103,7 @@ export {
   saveNotificationPrefs,
   loadLang,
   saveLang,
+  loadAnalytics,
+  loadEventCounts,
+  trackEvent,
 };

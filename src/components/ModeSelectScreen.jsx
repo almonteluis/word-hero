@@ -9,7 +9,7 @@ const DAILY_CHALLENGES = [
   { icon: "🎯", title: "Perfect Round", desc: "Flash Training with 100%", reward: 25, color: C.green },
 ];
 
-function ModeSelectScreen({ kid, progress, onSelectMode }) {
+function ModeSelectScreen({ kid, progress, onSelectMode, challenge, onStartChallenge }) {
   const [transitioning, setTransitioning] = useState(null);
 
   const stats = useMemo(() => getHeroStats(progress), [progress]);
@@ -17,7 +17,7 @@ function ModeSelectScreen({ kid, progress, onSelectMode }) {
 
   const dayIndex = new Date().getDate();
   const wordOfDay = ALL_WORDS[dayIndex % ALL_WORDS.length];
-  const challenge = DAILY_CHALLENGES[dayIndex % DAILY_CHALLENGES.length];
+  const dailyChallenge = DAILY_CHALLENGES[dayIndex % DAILY_CHALLENGES.length];
 
   const handleSelect = (key) => {
     if (transitioning) return;
@@ -46,12 +46,19 @@ function ModeSelectScreen({ kid, progress, onSelectMode }) {
 
         <WordOfDay word={wordOfDay} />
 
+        {challenge && (
+          <SharedChallengeCard
+            challenge={challenge}
+            onStart={() => onStartChallenge?.(challenge.mode)}
+          />
+        )}
+
         <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: C.text, animation: "fadeRise 0.4s ease-out 0.28s both" }}>
           🎮 Start Training
         </div>
         <ModeCardPair onSelect={handleSelect} transitioning={transitioning} />
 
-        <DailyChallenge challenge={challenge} />
+        <DailyChallenge challenge={dailyChallenge} />
       </div>
     </div>
   );
@@ -383,6 +390,72 @@ function DailyChallenge({ challenge }) {
         <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: C.ink, fontVariantNumeric: "tabular-nums" }}>+{challenge.reward}</div>
         <div style={{ fontFamily: FONT, fontSize: 8, fontWeight: 700, color: `${C.ink}70` }}>🪙</div>
       </div>
+    </div>
+  );
+}
+
+function SharedChallengeCard({ challenge, onStart }) {
+  return (
+    <div
+      className="toy-block"
+      style={{
+        background: `linear-gradient(135deg, ${C.primary} 0%, ${C.accent} 100%)`,
+        padding: "14px 16px",
+        borderWidth: 3,
+        animation: "fadeRise 0.4s ease-out 0.22s both",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: FONT,
+          fontSize: 9,
+          fontWeight: 700,
+          color: `${C.ink}bb`,
+          letterSpacing: 0.8,
+          marginBottom: 6,
+        }}
+      >
+        📣 FRIEND CHALLENGE
+      </div>
+      <div
+        style={{
+          fontFamily: FONT,
+          fontSize: 18,
+          fontWeight: 700,
+          color: C.ink,
+          marginBottom: 4,
+        }}
+      >
+        Beat {challenge.score}/{challenge.total} in {challenge.modeLabel}
+      </div>
+      <div
+        style={{
+          fontFamily: FONT,
+          fontSize: 11,
+          fontWeight: 500,
+          color: `${C.ink}cc`,
+          lineHeight: 1.5,
+        }}
+      >
+        A family shared their score with you. Jump in and see if your hero can top {challenge.pct}%.
+      </div>
+
+      <button
+        className="toy-block toy-pressable"
+        onClick={onStart}
+        style={{
+          marginTop: 12,
+          background: C.surface,
+          color: C.ink,
+          padding: "10px 14px",
+          fontFamily: FONT,
+          fontSize: 13,
+          fontWeight: 700,
+          cursor: "pointer",
+        }}
+      >
+        Take {challenge.modeLabel} Challenge →
+      </button>
     </div>
   );
 }

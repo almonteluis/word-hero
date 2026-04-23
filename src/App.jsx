@@ -9,8 +9,13 @@ import {
   saveNotificationPrefs,
   loadLang,
   saveLang,
+  trackEvent,
 } from "./utils/storage";
 import { initProgress, progressReducer } from "./utils/progress";
+import {
+  parseChallengeFromSearch,
+  stripChallengeParamsFromUrl,
+} from "./utils/share";
 import {
   loginWithEmail,
   loginWithGoogle,
@@ -47,6 +52,11 @@ export default function WordHeroApp() {
   const [progress, dispatch] = useReducer(progressReducer, null, initProgress);
   const [lang, setLang] = useState("en");
   const [loaded, setLoaded] = useState(false);
+  const [challenge, setChallenge] = useState(() =>
+    typeof window === "undefined"
+      ? null
+      : parseChallengeFromSearch(window.location.search),
+  );
   const saveTimer = useRef(null);
 
   // Listen for Firebase auth state changes
@@ -66,6 +76,22 @@ export default function WordHeroApp() {
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (!challenge || typeof window === "undefined") return;
+    const trackKey = `word-hero-challenge-opened:${window.location.search}`;
+    try {
+      if (sessionStorage.getItem(trackKey)) return;
+      sessionStorage.setItem(trackKey, "1");
+    } catch {}
+
+    trackEvent("challenge_link_opened", {
+      mode: challenge.mode,
+      score: challenge.score,
+      total: challenge.total,
+      pct: challenge.pct,
+    });
+  }, [challenge]);
 
   // Load profiles on mount
   useEffect(() => {
@@ -192,6 +218,19 @@ export default function WordHeroApp() {
     setModeKey((k) => k + 1);
   };
 
+  const clearChallenge = () => {
+    setChallenge(null);
+    if (typeof window === "undefined") return;
+    const nextUrl = stripChallengeParamsFromUrl(window.location.href);
+    window.history.replaceState({}, "", nextUrl);
+  };
+
+  const startMode = (nextMode) => {
+    setFocusedWord(null);
+    setMode(nextMode);
+    setModeKey((k) => k + 1);
+  };
+
   // ─── LOADING ──────────────────────────────────────────────
   if (!loaded) {
     return (
@@ -251,6 +290,7 @@ export default function WordHeroApp() {
           <WelcomeScreen
             onLogin={() => setAuthScreen("login")}
             onCreateAccount={() => setAuthScreen("create")}
+            challenge={challenge}
           />
         );
     }
@@ -290,7 +330,12 @@ export default function WordHeroApp() {
             <ModeSelectScreen
               kid={activeKid}
               progress={progress}
-              onSelectMode={(m) => { setFocusedWord(null); setMode(m); setModeKey((k) => k + 1); }}
+              challenge={challenge}
+              onSelectMode={startMode}
+              onStartChallenge={(m) => {
+                clearChallenge();
+                startMode(m);
+              }}
             />
           );
         }
@@ -376,6 +421,7 @@ export default function WordHeroApp() {
             >
               {mode === "flash" && (
                 <FlashcardMode
+                  kidName={activeKid.name}
                   progress={progress}
                   dispatch={dispatch}
                   focusedWord={focusedWord}
@@ -394,6 +440,7 @@ export default function WordHeroApp() {
               )}
               {mode === "find" && (
                 <FindItGame
+                  kidName={activeKid.name}
                   progress={progress}
                   dispatch={dispatch}
                   lang={lang}

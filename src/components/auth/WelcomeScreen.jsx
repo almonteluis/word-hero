@@ -1,6 +1,6 @@
 import { C, FONT, RADIUS } from "../../constants";
 
-export default function WelcomeScreen({ onLogin, onCreateAccount }) {
+export default function WelcomeScreen({ onLogin, onCreateAccount, challenge }) {
   return (
     <div
       style={{
@@ -62,6 +62,57 @@ export default function WelcomeScreen({ onLogin, onCreateAccount }) {
           zIndex: 1,
         }}
       >
+        {challenge && (
+          <div
+            className="toy-block"
+            style={{
+              width: "100%",
+              maxWidth: 320,
+              marginBottom: 16,
+              padding: "14px 16px",
+              background: C.surface,
+              borderWidth: 3,
+              boxShadow: `4px 5px 0px ${C.ink}`,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 10,
+                fontWeight: 700,
+                color: C.primary,
+                letterSpacing: 0.8,
+                marginBottom: 4,
+              }}
+            >
+              FRIEND CHALLENGE
+            </div>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 16,
+                fontWeight: 700,
+                color: C.text,
+                lineHeight: 1.35,
+              }}
+            >
+              Someone shared a {challenge.modeLabel} score of {challenge.score}/{challenge.total}.
+            </div>
+            <div
+              style={{
+                fontFamily: FONT,
+                fontSize: 12,
+                fontWeight: 500,
+                color: C.muted,
+                marginTop: 6,
+                lineHeight: 1.5,
+              }}
+            >
+              Sign in or create an account to see if your hero can beat {challenge.pct}%.
+            </div>
+          </div>
+        )}
+
         <button
           className="toy-block toy-pressable"
           onClick={onLogin}
