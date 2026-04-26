@@ -123,9 +123,45 @@ function selectPracticeWords(progress, count = WORDS_PER_ROUND, lang = "en", gua
   return shuffle(result).slice(0, count);
 }
 
+// Build a deck for a follow-up practice round, biased toward words the child
+// is having trouble with. Pulls in this order:
+//   1. session misses that are in baseDeck (immediate retry)
+//   2. persistent struggling words that overlap baseDeck
+//   3. persistent learning words that overlap baseDeck
+//   4. remaining baseDeck words (so the child still revisits everything)
+//   5. persistent struggling words not in baseDeck (only if we still need more)
+function selectStrugglingWords(
+  progress,
+  baseDeck,
+  sessionMisses = [],
+  lang = "en",
+  count = WORDS_PER_ROUND,
+) {
+  const buckets = bucketize(progress, lang);
+  const baseSet = new Set(baseDeck);
+  const sessionSet = new Set(sessionMisses);
+
+  const result = [];
+  const picked = new Set();
+  const push = (w) => {
+    if (!w || picked.has(w) || result.length >= count) return;
+    result.push(w);
+    picked.add(w);
+  };
+
+  for (const w of baseDeck) if (sessionSet.has(w)) push(w);
+  for (const w of buckets.struggling) if (baseSet.has(w)) push(w);
+  for (const w of buckets.learningWords) if (baseSet.has(w)) push(w);
+  for (const w of baseDeck) push(w);
+  for (const w of buckets.struggling) push(w);
+
+  return shuffle(result.slice(0, count));
+}
+
 export {
   selectPracticeWords,
   selectPracticeWords as selectRoundWords,
+  selectStrugglingWords,
   bucketize,
   interleaveByGroup,
 };

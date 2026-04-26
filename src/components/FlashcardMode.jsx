@@ -1,19 +1,63 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { C, FONT, RADIUS, SHADOW, EASE } from "../constants";
-import CountdownTimer from "./CountdownTimer";
 import Btn from "./Btn";
 import VictoryScreen from "./VictoryScreen";
 import { speak } from "../utils/speech";
-import { useSpeechRecognition, wordMatch } from "../utils/speechRecognition";
+import {
+  useSpeechRecognition,
+  wordMatchLevel,
+} from "../utils/speechRecognition";
 import { getPronunciationFeedback } from "../utils/pronunciationFeedback";
-import { selectPracticeWords } from "../utils/roundWords";
+import {
+  selectPracticeWords,
+  selectStrugglingWords,
+} from "../utils/roundWords";
 
-function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, onHome, focusedWord, lang = "en" }) {
-  const pickWords = () =>
+const CHECKING_MS = 450;
+
+function ListeningBars() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 4,
+        alignItems: "center",
+        height: 24,
+        padding: "0 4px",
+      }}
+      aria-hidden="true"
+    >
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          style={{
+            width: 5,
+            height: 24,
+            background: C.heart,
+            borderRadius: 3,
+            transformOrigin: "center",
+            animation: `barWave 0.9s ease-in-out ${i * 0.12}s infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function FlashcardMode({
+  progress,
+  dispatch,
+  onAdvanceToFindIt,
+  onExitFocused,
+  onHome,
+  focusedWord,
+  lang = "en",
+}) {
+  const initialDeck = () =>
     selectPracticeWords(progress, undefined, lang, focusedWord);
 
   const [idx, setIdx] = useState(0);
-  const [shuffled, setShuffled] = useState(pickWords);
+  const [shuffled, setShuffled] = useState(initialDeck);
   const [round, setRound] = useState(1);
   const [roundScores, setRoundScores] = useState({
     1: { correct: 0, total: 0 },
@@ -22,134 +66,149 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
   });
   const [showRoundSummary, setShowRoundSummary] = useState(false);
   const [showFinalSummary, setShowFinalSummary] = useState(false);
-  const [timerExpired, setTimerExpired] = useState(false);
-  const [micResult, setMicResult] = useState(null);
-  const [micFeedback, setMicFeedback] = useState(null);
-  const [waitingForMic, setWaitingForMic] = useState(false);
   const [showMicPrompt, setShowMicPrompt] = useState(false);
-  const [micReady, setMicReady] = useState(false);
+  const [sessionMisses, setSessionMisses] = useState(() => new Set());
+
+  // Speech state machine for the current card.
+  // phase: 'idle' | 'recording' | 'checking' | 'feedback'
+  const [phase, setPhase] = useState("idle");
+  const [feedback, setFeedback] = useState(null); // { level, heard, tip }
+  const checkingTimerRef = useRef(null);
+  const wasListeningRef = useRef(false);
 
   const { listening, result, startListening, stopListening, supported } =
     useSpeechRecognition(lang);
 
   const word = shuffled[idx];
-  const timerSeconds = round === 2 ? 10 : round === 3 ? 5 : 0;
 
-  const getWordsForRound = useCallback(
-    () => selectPracticeWords(progress, undefined, lang, focusedWord),
-    [progress, focusedWord, lang],
-  );
+  const addSessionMiss = useCallback((w) => {
+    setSessionMisses((prev) => {
+      if (!w || prev.has(w)) return prev;
+      const next = new Set(prev);
+      next.add(w);
+      return next;
+    });
+  }, []);
 
+  const resetCardState = useCallback(() => {
+    if (checkingTimerRef.current) {
+      clearTimeout(checkingTimerRef.current);
+      checkingTimerRef.current = null;
+    }
+    setPhase("idle");
+    setFeedback(null);
+  }, []);
+
+  // Play the model audio whenever a new card surfaces.
   useEffect(() => {
-    if (round !== 1) return;
-    const t = setTimeout(() => speak(word, lang), 50);
+    if (!word) return;
+    const t = setTimeout(() => speak(word, lang), 60);
     return () => clearTimeout(t);
-  }, [word]);
+  }, [word, lang]);
 
   useEffect(() => {
-    if (round >= 2 && micReady && !micResult && !timerExpired) {
-      setMicResult(null);
-      setWaitingForMic(true);
-      startListening();
-    }
-  }, [word, micReady]);
+    resetCardState();
+  }, [idx, round, resetCardState]);
 
+  useEffect(() => () => {
+    if (checkingTimerRef.current) clearTimeout(checkingTimerRef.current);
+  }, []);
+
+  // When the recognizer stops, decide where to go next:
+  //   • result present → brief 'checking' tease → 'feedback'
+  //   • result empty   → straight to a friendly 'miss' so the kid isn't stuck
   useEffect(() => {
-    if (!result || !waitingForMic) return;
-    const matched = wordMatch(result, word);
-    setMicResult(matched ? "correct" : "wrong");
-    setWaitingForMic(false);
-    if (matched) {
-      setMicFeedback(null);
-      dispatch({ type: "MARK_CORRECT", word });
-      setRoundScores((s) => ({
-        ...s,
-        [round]: { correct: s[round].correct + 1, total: s[round].total + 1 },
-      }));
+    const wasListening = wasListeningRef.current;
+    wasListeningRef.current = listening;
+    if (!wasListening || listening || phase !== "recording") return;
+    if (result) {
+      setPhase("checking");
     } else {
-      setMicFeedback(getPronunciationFeedback(result, word, lang));
+      setFeedback({
+        level: "miss",
+        heard: null,
+        tip: "I didn't catch that — try again?",
+      });
+      setPhase("feedback");
+      addSessionMiss(word);
     }
-  }, [result]);
+  }, [listening, result, phase, word, addSessionMiss]);
 
-  const handleTimerExpire = () => {
-    setTimerExpired(true);
-    dispatch({ type: "MARK_WRONG", word });
-    setRoundScores((s) => ({
-      ...s,
-      [round]: { ...s[round], total: s[round].total + 1 },
-    }));
+  // Brief "Checking…" beat between recognition result and feedback.
+  useEffect(() => {
+    if (phase !== "checking" || !result) return;
+    const level = wordMatchLevel(result, word);
+    const heardObj =
+      level === "correct" ? null : getPronunciationFeedback(result, word, lang);
+    checkingTimerRef.current = setTimeout(() => {
+      setFeedback({
+        level,
+        heard: heardObj?.heard ?? null,
+        tip: heardObj?.tip ?? null,
+      });
+      setPhase("feedback");
+      if (level !== "correct") addSessionMiss(word);
+    }, CHECKING_MS);
+    return () => {
+      if (checkingTimerRef.current) clearTimeout(checkingTimerRef.current);
+    };
+  }, [phase, result, word, lang, addSessionMiss]);
+
+  const handleSayIt = () => {
+    setFeedback(null);
+    setPhase("recording");
+    startListening();
   };
 
+  const handleStopListening = () => {
+    stopListening();
+    setPhase("idle");
+  };
+
+  const handleReplay = () => speak(word, lang);
+
   const advanceCard = () => {
-    setTimerExpired(false);
-    setMicResult(null);
-    setMicFeedback(null);
-    setWaitingForMic(false);
+    if (listening) stopListening();
     if (idx + 1 >= shuffled.length) {
-      if (round < 3) {
-        setShowRoundSummary(true);
-      } else {
-        setShowFinalSummary(true);
-      }
+      if (round < 3) setShowRoundSummary(true);
+      else setShowFinalSummary(true);
     } else {
       setIdx((i) => i + 1);
     }
   };
 
-  const markRound1 = (correct) => {
-    dispatch({ type: correct ? "MARK_CORRECT" : "MARK_WRONG", word });
+  const markGotIt = () => {
+    dispatch({ type: "MARK_CORRECT", word });
     setRoundScores((s) => ({
       ...s,
-      1: { correct: s[1].correct + (correct ? 1 : 0), total: s[1].total + 1 },
+      [round]: { correct: s[round].correct + 1, total: s[round].total + 1 },
     }));
-    setMicResult(correct ? "correct" : "wrong");
-    setTimeout(() => {
-      setMicResult(null);
-      if (idx + 1 >= shuffled.length) {
-        setShowRoundSummary(true);
-      } else {
-        setIdx((i) => i + 1);
-      }
-    }, 700);
+    advanceCard();
   };
 
-  const handleSayIt = () => {
-    setMicResult(null);
-    setMicFeedback(null);
-    setWaitingForMic(true);
-    startListening();
-  };
-
-  const handleSkipWord = () => {
+  const markTricky = () => {
     dispatch({ type: "MARK_WRONG", word });
     setRoundScores((s) => ({
       ...s,
       [round]: { ...s[round], total: s[round].total + 1 },
     }));
+    addSessionMiss(word);
     advanceCard();
-  };
-
-  const handleMicWrong_TryAgain = () => {
-    dispatch({ type: "RECORD_RETRY", word });
-    setRoundScores((s) => ({
-      ...s,
-      [round]: { ...s[round], total: s[round].total + 1 },
-    }));
-    setMicResult(null);
-    setMicFeedback(null);
-    setWaitingForMic(false);
   };
 
   const startNextRound = () => {
     const nextRound = round + 1;
+    const nextDeck = selectStrugglingWords(
+      progress,
+      shuffled,
+      [...sessionMisses],
+      lang,
+    );
     setRound(nextRound);
-    setShuffled(getWordsForRound());
+    setShuffled(nextDeck);
     setIdx(0);
     setShowRoundSummary(false);
-    setTimerExpired(false);
-    setMicResult(null);
     setShowMicPrompt(true);
-    setMicReady(false);
   };
 
   const totalCorrect =
@@ -160,10 +219,8 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
     totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
   const passed = overallPct >= 80;
 
-  // Round colors matching the design
   const roundColors = [C.secondary, C.accent, C.primary];
-  const roundColor = roundColors[(round - 1) % 3];
-  const roundLabels = ["Listen", "Say It", "Speed"];
+  const roundLabels = ["Listen", "Say It", "Quick"];
 
   if (showRoundSummary) {
     const rs = roundScores[round];
@@ -185,7 +242,9 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
           <div style={{ fontFamily: FONT, fontSize: 36, color: C.ink, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{rs.correct}/{rs.total} ({pct}%)</div>
         </div>
         <div style={{ color: C.muted, fontFamily: FONT, fontSize: 14, fontWeight: 500, textAlign: "center", maxWidth: 280 }}>
-          {round === 1 ? "Next: Read the word aloud (10s timer)" : "Next: Speed round (5s timer)"}
+          {round === 1
+            ? "Next: Say each word out loud — practice the tricky ones!"
+            : "Next: Quick round — focus on the words you missed."}
         </div>
         <Btn onClick={startNextRound} color={roundColors[round]} style={{ color: C.ink }}>Start Round {round + 1}</Btn>
       </div>
@@ -200,7 +259,8 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
         onRetry={() => {
           setRound(1);
           setRoundScores({ 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } });
-          setShuffled(getWordsForRound());
+          setShuffled(initialDeck());
+          setSessionMisses(new Set());
           setIdx(0);
           setShowFinalSummary(false);
         }}
@@ -218,49 +278,59 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
   }
 
   if (showMicPrompt) {
-    const isSpeedRound = round + 1 === 3;
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, padding: "40px 24px", animation: "fadeRise 0.4s ease-out" }}>
         <div style={{ fontSize: 64 }}>🎤</div>
         <div style={{ fontFamily: FONT, fontSize: 22, color: roundColors[round], fontWeight: 700, textAlign: "center" }}>
-          {isSpeedRound ? "Speed Round!" : "Time to Speak!"}
+          Practice Out Loud
         </div>
         <div
           className="toy-block"
           style={{
             background: C.surface,
             padding: "16px 20px",
-            maxWidth: 300,
+            maxWidth: 320,
             borderWidth: 3,
             boxShadow: SHADOW.toySm,
             textAlign: "center",
           }}
         >
           <div style={{ color: C.text, fontFamily: FONT, fontSize: 14, fontWeight: 500, lineHeight: 1.7 }}>
-            This round will listen to you! Say each word out loud when the card flips.
-            {isSpeedRound ? " You only have 5 seconds!" : " You have 10 seconds!"}
+            Tap <strong>🎤 Say It</strong> when you're ready to read the word out loud.
+            You can also tap <strong>🔊 Hear it again</strong> any time.
+            <div style={{ marginTop: 6, color: C.muted, fontWeight: 600 }}>
+              No timer — skipping is totally fine!
+            </div>
           </div>
         </div>
-        <Btn onClick={() => { setShowMicPrompt(false); setMicReady(true); }} color={C.primary}>I'm Ready!</Btn>
+        <Btn onClick={() => setShowMicPrompt(false)} color={C.primary}>I'm Ready!</Btn>
       </div>
     );
   }
 
-  const cardBg = micResult === "correct"
+  const isListening = listening || phase === "checking";
+  const correctFlash = feedback?.level === "correct";
+  const closeFlash = feedback?.level === "close";
+  const missFlash = feedback?.level === "miss";
+
+  const cardBg = correctFlash
     ? C.green
-    : micResult === "wrong" || timerExpired
-      ? "#FFE4E6"
-      : C.surface;
-  const cardAnim = micResult === "correct"
+    : closeFlash
+      ? "#FFF6CC"
+      : missFlash
+        ? "#F1F5F9"
+        : C.surface;
+  const cardAnim = correctFlash
     ? "boing 0.45s ease-out"
-    : micResult === "wrong"
-      ? "wobble 0.4s ease-out"
+    : closeFlash || missFlash
+      ? "fadeRise 0.3s ease-out"
       : "fadeRise 0.3s ease-out";
-  const subLabel = round === 1
-    ? "Listen and learn"
-    : round === 2
-      ? "Say it out loud!"
-      : "Speed round — quick!";
+  const subLabel =
+    round === 1
+      ? "Listen and learn"
+      : round === 2
+        ? "Say it out loud!"
+        : "Quick round — focus on tricky words";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "8px 16px 24px", WebkitFontSmoothing: "antialiased" }}>
@@ -314,14 +384,6 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
         })}
       </div>
 
-      {round >= 2 && !timerExpired && !micResult && (
-        <CountdownTimer
-          key={`${round}-${idx}`}
-          seconds={timerSeconds}
-          onExpire={handleTimerExpire}
-        />
-      )}
-
       <div style={{ display: "flex", justifyContent: "center", padding: "8px 0" }}>
         <div
           key={`${round}-${idx}`}
@@ -341,100 +403,158 @@ function FlashcardMode({ progress, dispatch, onAdvanceToFindIt, onExitFocused, o
             {word}
           </div>
           <div style={{ fontFamily: FONT, fontSize: 12, color: C.muted, fontWeight: 600, marginTop: 8 }}>
-            {micResult === "correct" ? "✓ Correct!" : timerExpired ? "Time's up" : subLabel}
+            {correctFlash ? "✓ Nice!" : subLabel}
           </div>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 12, justifyContent: "center", padding: "0 4px", width: "100%", maxWidth: 400 }}>
-        {round === 1 && !micResult && (
-          <>
-            <Btn onClick={() => markRound1(false)} color="#FFE4E6" style={{ flex: 1, fontSize: 16, padding: "14px", color: C.heart }}>
-              ✗ Miss
+      {/* ─── Listening / checking state ───────────────── */}
+      {isListening && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 8,
+            padding: "8px 16px",
+            animation: "fadeRise 0.25s ease-out",
+          }}
+        >
+          {listening && <ListeningBars />}
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 15,
+              fontWeight: 700,
+              color: phase === "checking" ? C.muted : C.heart,
+            }}
+          >
+            {phase === "checking" ? "Checking…" : "I'm listening…"}
+          </div>
+          {listening && (
+            <Btn onClick={handleStopListening} color={C.panel} small>
+              Stop
             </Btn>
-            <Btn onClick={() => markRound1(true)} color={C.green} style={{ flex: 1, fontSize: 16, padding: "14px", color: C.ink }}>
-              ✓ Got It
-            </Btn>
-          </>
-        )}
-
-        {round >= 2 && !micResult && !timerExpired && supported && !waitingForMic && (
-          <>
-            <Btn onClick={handleSayIt} color={C.secondary} style={{ flex: 1, fontSize: 16, padding: "14px", color: C.ink }}>
-              🎤 Say It
-            </Btn>
-            <Btn onClick={handleSkipWord} color="#FFE4E6" style={{ fontSize: 16, padding: "14px", color: C.heart }}>
-              ✗
-            </Btn>
-          </>
-        )}
-
-        {round >= 2 && !supported && !timerExpired && !micResult && (
-          <>
-            <Btn
-              onClick={() => {
-                dispatch({ type: "MARK_WRONG", word });
-                setRoundScores((s) => ({ ...s, [round]: { ...s[round], total: s[round].total + 1 } }));
-                advanceCard();
-              }}
-              color="#FFE4E6"
-              style={{ flex: 1, fontSize: 16, padding: "14px", color: C.heart }}
-            >
-              ✗ Miss
-            </Btn>
-            <Btn
-              onClick={() => {
-                dispatch({ type: "MARK_CORRECT", word });
-                setRoundScores((s) => ({
-                  ...s,
-                  [round]: { correct: s[round].correct + 1, total: s[round].total + 1 },
-                }));
-                advanceCard();
-              }}
-              color={C.green}
-              style={{ flex: 1, fontSize: 16, padding: "14px", color: C.ink }}
-            >
-              ✓ Got It
-            </Btn>
-          </>
-        )}
-      </div>
-
-      {listening && (
-        <div style={{ display: "flex", alignItems: "center", gap: 10, color: C.secondary, fontFamily: FONT, fontSize: 15, fontWeight: 600 }}>
-          <div style={{ width: 16, height: 16, borderRadius: "50%", background: C.heart, animation: "starPulse 0.8s ease-in-out infinite" }} />
-          Listening...
+          )}
         </div>
       )}
 
-      {micResult === "correct" && (
-        <Btn onClick={advanceCard} color={C.green} style={{ fontSize: 16, padding: "14px 28px" }}>Next →</Btn>
-      )}
-
-      {micResult === "wrong" && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-          <div style={{ fontFamily: FONT, fontSize: 16, color: C.heart, fontWeight: 600 }}>Not quite — try again!</div>
-          {micFeedback && (
-            <div style={{ fontFamily: FONT, fontSize: 14, color: C.muted, textAlign: "center", maxWidth: 280, lineHeight: 1.4 }}>
-              <div>I heard <strong>"{micFeedback.heard}"</strong></div>
-              <div style={{ marginTop: 4, color: C.accent, fontWeight: 500 }}>{micFeedback.tip}</div>
+      {/* ─── Feedback banner (after speech result) ───── */}
+      {phase === "feedback" && feedback && (
+        <div
+          className="toy-block"
+          style={{
+            background:
+              feedback.level === "correct"
+                ? C.green
+                : feedback.level === "close"
+                  ? C.accent
+                  : C.surface,
+            padding: "12px 18px",
+            maxWidth: 320,
+            borderWidth: 3,
+            boxShadow: SHADOW.toyXs,
+            textAlign: "center",
+            animation: "fadeRise 0.3s ease-out",
+          }}
+        >
+          <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: C.ink }}>
+            {feedback.level === "correct"
+              ? `Nice! "${word}"`
+              : feedback.level === "close"
+                ? "So close — want to try again?"
+                : "Hmm, let's try once more"}
+          </div>
+          {feedback.level !== "correct" && feedback.heard && (
+            <div style={{ fontFamily: FONT, fontSize: 13, color: C.muted, marginTop: 4 }}>
+              I heard <strong>"{feedback.heard}"</strong>
             </div>
           )}
-          <div style={{ display: "flex", gap: 10 }}>
-            <Btn onClick={() => { handleMicWrong_TryAgain(); setTimeout(handleSayIt, 100); }} color={C.secondary} small>Retry</Btn>
-            <Btn onClick={handleSkipWord} color={C.heart} small>Skip →</Btn>
+          {feedback.tip && feedback.level !== "correct" && (
+            <div style={{ fontFamily: FONT, fontSize: 13, color: C.text, marginTop: 4, lineHeight: 1.4 }}>
+              {feedback.tip}
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 10 }}>
+            {feedback.level === "correct" ? (
+              <Btn onClick={markGotIt} color={C.green} small>
+                Next →
+              </Btn>
+            ) : (
+              <>
+                <Btn onClick={handleSayIt} color={C.secondary} small>
+                  🎤 Try Again
+                </Btn>
+                <Btn onClick={handleReplay} color={C.panel} small>
+                  🔊 Hear it
+                </Btn>
+              </>
+            )}
           </div>
         </div>
       )}
 
-      {timerExpired && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-          <div style={{ fontFamily: FONT, fontSize: 16, color: C.heart, fontWeight: 600 }}>Time's up!</div>
-          <Btn onClick={advanceCard} color={C.accent} small>Next →</Btn>
+      {/* ─── Practice row: replay + mic (idle only) ───── */}
+      {phase === "idle" && (
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            justifyContent: "center",
+            padding: "0 4px",
+            width: "100%",
+            maxWidth: 400,
+          }}
+        >
+          <Btn
+            onClick={handleReplay}
+            color={C.panel}
+            style={{ flex: 1, fontSize: 15, padding: "12px", color: C.text }}
+          >
+            🔊 Hear it again
+          </Btn>
+          {supported && (
+            <Btn
+              onClick={handleSayIt}
+              color={C.secondary}
+              style={{ flex: 1, fontSize: 15, padding: "12px", color: C.ink }}
+            >
+              🎤 Say It
+            </Btn>
+          )}
         </div>
       )}
 
-      {/* ─── Word count footer ─── */}
+      {/* ─── Self-eval (source of truth for progress) ─── */}
+      {(phase === "idle" ||
+        (phase === "feedback" && feedback?.level !== "correct")) && (
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            justifyContent: "center",
+            padding: "0 4px",
+            width: "100%",
+            maxWidth: 400,
+          }}
+        >
+          <Btn
+            onClick={markTricky}
+            color="#FFE4E6"
+            style={{ flex: 1, fontSize: 16, padding: "14px", color: C.heart }}
+          >
+            ✗ Tricky one
+          </Btn>
+          <Btn
+            onClick={markGotIt}
+            color={C.green}
+            style={{ flex: 1, fontSize: 16, padding: "14px", color: C.ink }}
+          >
+            ✓ Got it
+          </Btn>
+        </div>
+      )}
+
       <div style={{ textAlign: "center", marginTop: 4, fontFamily: FONT, fontSize: 13, color: C.muted, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
         Word {idx + 1} of {shuffled.length} · Round {round}/3
       </div>
