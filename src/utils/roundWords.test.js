@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getWordBank } from "../data/words/index";
 import {
   selectPracticeWords,
+  selectStrugglingWords,
   bucketize,
   interleaveByGroup,
 } from "../utils/roundWords";
@@ -141,6 +142,61 @@ describe("selectPracticeWords", () => {
 });
 
 // ─── interleaveByGroup ──────────────────────────────────────
+
+// ─── selectStrugglingWords ─────────────────────────────────
+
+describe("selectStrugglingWords", () => {
+  const emptyProgress = { wordStats: {}, mastered: {}, learning: {} };
+
+  it("returns at most `count` words from the base deck", () => {
+    const { ALL_WORDS } = getWordBank("en");
+    const baseDeck = ALL_WORDS.slice(0, 10);
+    const result = selectStrugglingWords(emptyProgress, baseDeck, [], "en", 10);
+    expect(result).toHaveLength(10);
+    for (const w of result) expect(baseDeck).toContain(w);
+  });
+
+  it("places session misses ahead of fresh words", () => {
+    const { ALL_WORDS } = getWordBank("en");
+    const baseDeck = ALL_WORDS.slice(0, 10);
+    const misses = [baseDeck[7], baseDeck[9]];
+    // Run many times to defeat the final shuffle and confirm both misses
+    // are reliably included in the trimmed result.
+    for (let i = 0; i < 5; i++) {
+      const result = selectStrugglingWords(emptyProgress, baseDeck, misses, "en", 5);
+      expect(result).toContain(misses[0]);
+      expect(result).toContain(misses[1]);
+    }
+  });
+
+  it("prioritizes persistent struggling words inside the base deck", () => {
+    const { ALL_WORDS } = getWordBank("en");
+    const baseDeck = ALL_WORDS.slice(0, 10);
+    const struggleWord = baseDeck[6];
+    const progress = {
+      wordStats: { [struggleWord]: { attempts: 5, correct: 1, lastSeen: Date.now() } },
+      mastered: {},
+      learning: {},
+    };
+    for (let i = 0; i < 5; i++) {
+      const result = selectStrugglingWords(progress, baseDeck, [], "en", 4);
+      expect(result).toContain(struggleWord);
+    }
+  });
+
+  it("returns no duplicates even with overlapping inputs", () => {
+    const { ALL_WORDS } = getWordBank("en");
+    const baseDeck = ALL_WORDS.slice(0, 10);
+    const misses = [baseDeck[0], baseDeck[0], baseDeck[1]];
+    const result = selectStrugglingWords(emptyProgress, baseDeck, misses, "en", 10);
+    expect(new Set(result).size).toBe(result.length);
+  });
+
+  it("handles an empty base deck without throwing", () => {
+    const result = selectStrugglingWords(emptyProgress, [], [], "en", 5);
+    expect(result).toEqual([]);
+  });
+});
 
 describe("interleaveByGroup", () => {
   it("round-robins words across groups", () => {

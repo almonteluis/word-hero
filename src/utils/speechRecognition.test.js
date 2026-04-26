@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { wordMatch } from "../utils/speechRecognition";
+import { wordMatch, wordMatchLevel } from "../utils/speechRecognition";
 
 // ─── English word matching ──────────────────────────────────
 
@@ -97,5 +97,38 @@ describe("wordMatch edge cases", () => {
 
   it("handles all non-alpha input", () => {
     expect(wordMatch("123!@#", "hello")).toBe(false);
+  });
+});
+
+// ─── Three-band level classification ────────────────────────
+
+describe("wordMatchLevel", () => {
+  it("returns correct on exact match", () => {
+    expect(wordMatchLevel("the", "the")).toBe("correct");
+  });
+
+  it("returns correct on alternative match", () => {
+    expect(wordMatchLevel("duh|the|da", "the")).toBe("correct");
+  });
+
+  it("returns close for one-letter swap on longer words", () => {
+    expect(wordMatchLevel("frend", "friend")).toBe("close");
+    expect(wordMatchLevel("becuse", "because")).toBe("close");
+  });
+
+  it("returns miss when far from target", () => {
+    expect(wordMatchLevel("elephant", "the")).toBe("miss");
+    expect(wordMatchLevel("dog", "umbrella")).toBe("miss");
+  });
+
+  it("returns miss for empty input", () => {
+    expect(wordMatchLevel("", "the")).toBe("miss");
+    expect(wordMatchLevel("the", "")).toBe("miss");
+  });
+
+  it("uses tolerance 1 for short words and 2 for longer ones", () => {
+    expect(wordMatchLevel("at", "it")).toBe("close");
+    expect(wordMatchLevel("dog", "the")).toBe("miss");
+    expect(wordMatchLevel("becuse", "because")).toBe("close");
   });
 });

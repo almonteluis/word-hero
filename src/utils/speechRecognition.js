@@ -71,4 +71,49 @@ function wordMatch(spokenResult, target) {
   });
 }
 
-export { useSpeechRecognition, wordMatch };
+function editDistance(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const dp = Array.from({ length: a.length + 1 }, () =>
+    new Array(b.length + 1).fill(0),
+  );
+  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+  return dp[a.length][b.length];
+}
+
+// Three-band classification used by the practice rounds. "close" gives kids
+// a forgiving mid-tier so a near-miss feels like encouragement, not failure.
+function wordMatchLevel(spokenResult, target) {
+  if (!spokenResult || !target) return "miss";
+  if (wordMatch(spokenResult, target)) return "correct";
+
+  const normalize = (s) =>
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z]/g, "");
+
+  const t = normalize(target);
+  if (!t) return "miss";
+
+  const tolerance = t.length <= 3 ? 1 : 2;
+  const closeHit = spokenResult.split("|").some((raw) => {
+    const a = normalize(raw);
+    if (!a) return false;
+    return editDistance(a, t) <= tolerance;
+  });
+  return closeHit ? "close" : "miss";
+}
+
+export { useSpeechRecognition, wordMatch, wordMatchLevel };
