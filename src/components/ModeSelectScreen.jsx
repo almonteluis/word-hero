@@ -4,9 +4,27 @@ import { getHeroStats, getWeekActivity } from "../utils/progress";
 import { speak } from "../utils/speech";
 
 const DAILY_CHALLENGES = [
-  { icon: "⚡", title: "Speed Hero", desc: "Complete Round 3 without a miss", reward: 20, color: C.accent },
-  { icon: "🔍", title: "Word Detective", desc: "Find 5 words correctly in a row", reward: 15, color: C.purple },
-  { icon: "🎯", title: "Perfect Round", desc: "Flash Training with 100%", reward: 25, color: C.green },
+  {
+    icon: "⚡",
+    title: "Speed Hero",
+    desc: "Complete Round 3 without a miss",
+    reward: 20,
+    color: C.accent,
+  },
+  {
+    icon: "🔍",
+    title: "Word Detective",
+    desc: "Find 5 words correctly in a row",
+    reward: 15,
+    color: C.purple,
+  },
+  {
+    icon: "🎯",
+    title: "Perfect Round",
+    desc: "Flash Training with 100%",
+    reward: 25,
+    color: C.green,
+  },
 ];
 
 function ModeSelectScreen({ kid, progress, onSelectMode }) {
@@ -26,7 +44,14 @@ function ModeSelectScreen({ kid, progress, onSelectMode }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FFF9F0", paddingBottom: 90, WebkitFontSmoothing: "antialiased" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#FFF9F0",
+        paddingBottom: 90,
+        WebkitFontSmoothing: "antialiased",
+      }}
+    >
       <div
         style={{
           background: "linear-gradient(180deg, #FFF5E4 0%, #FFF9F0 100%)",
@@ -46,7 +71,15 @@ function ModeSelectScreen({ kid, progress, onSelectMode }) {
 
         <WordOfDay word={wordOfDay} />
 
-        <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 700, color: C.text, animation: "fadeRise 0.4s ease-out 0.28s both" }}>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 11,
+            fontWeight: 700,
+            color: C.text,
+            animation: "fadeRise 0.4s ease-out 0.28s both",
+          }}
+        >
           🎮 Start Training
         </div>
         <ModeCardPair onSelect={handleSelect} transitioning={transitioning} />
@@ -73,14 +106,36 @@ function WeekStrip({ week }) {
       }}
     >
       {week.map((d, i) => (
-        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-          <div style={{ fontFamily: FONT, fontSize: 8, color: C.muted, fontWeight: 600 }}>{d.label}</div>
+        <div
+          key={i}
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 8,
+              color: C.muted,
+              fontWeight: 600,
+            }}
+          >
+            {d.label}
+          </div>
           <div
             style={{
               width: 28,
               height: 28,
               borderRadius: "50%",
-              background: d.isToday ? C.accent : d.done ? C.green : "transparent",
+              background: d.isToday
+                ? C.accent
+                : d.done
+                  ? C.green
+                  : "transparent",
               border: d.isToday
                 ? `3px solid ${C.ink}`
                 : d.done
@@ -121,7 +176,14 @@ function HeroStatsCard({ kid, stats }) {
         animation: "fadeRise 0.4s ease-out 0.06s both",
       }}
     >
-      <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+      <div
+        style={{
+          padding: "12px 14px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
         <div style={{ position: "relative", flexShrink: 0 }}>
           <div
             style={{
@@ -159,10 +221,27 @@ function HeroStatsCard({ kid, stats }) {
         </div>
 
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: FONT, fontSize: 10, fontWeight: 600, color: C.primary, letterSpacing: 0.4 }}>
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 10,
+              fontWeight: 600,
+              color: C.primary,
+              letterSpacing: 0.4,
+            }}
+          >
             {stats.rankIcon} {stats.rank.toUpperCase()}
           </div>
-          <div style={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: C.text }}>{kid.name}</div>
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 17,
+              fontWeight: 700,
+              color: C.text,
+            }}
+          >
+            {kid.name}
+          </div>
         </div>
 
         <div style={{ display: "flex", gap: 8 }}>
@@ -177,15 +256,41 @@ function HeroStatsCard({ kid, stats }) {
                 border: s.bg ? `2px solid ${C.ink}` : "none",
               }}
             >
-              <div style={{ fontFamily: FONT, fontSize: s.emoji ? 18 : 14, fontWeight: 700, color: C.ink, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+              <div
+                style={{
+                  fontFamily: FONT,
+                  fontSize: s.emoji ? 18 : 14,
+                  fontWeight: 700,
+                  color: C.ink,
+                  lineHeight: 1,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
                 {s.emoji || s.value}
               </div>
               {s.emoji && (
-                <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: C.ink, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+                <div
+                  style={{
+                    fontFamily: FONT,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: C.ink,
+                    lineHeight: 1,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
                   {s.value}
                 </div>
               )}
-              <div style={{ fontFamily: FONT, fontSize: 8, color: C.muted, fontWeight: 600, marginTop: 2 }}>
+              <div
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 8,
+                  color: C.muted,
+                  fontWeight: 600,
+                  marginTop: 2,
+                }}
+              >
                 {s.label}
               </div>
             </div>
@@ -212,7 +317,16 @@ function WordOfDay({ word }) {
       }}
     >
       <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: FONT, fontSize: 9, fontWeight: 700, color: C.ink, opacity: 0.6, letterSpacing: 0.5 }}>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 9,
+            fontWeight: 700,
+            color: C.ink,
+            opacity: 0.6,
+            letterSpacing: 0.5,
+          }}
+        >
           ✨ WORD OF THE DAY
         </div>
         <div
@@ -227,7 +341,14 @@ function WordOfDay({ word }) {
         >
           {word}
         </div>
-        <div style={{ fontFamily: FONT, fontSize: 11, color: `${C.ink}80`, fontWeight: 500 }}>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 11,
+            color: `${C.ink}80`,
+            fontWeight: 500,
+          }}
+        >
           Tap the 🔊 to hear it!
         </div>
       </div>
@@ -258,8 +379,27 @@ function WordOfDay({ word }) {
 
 function ModeCardPair({ onSelect, transitioning }) {
   const modes = [
-    { key: "flash", icon: "⚡", label: "Flash Training", desc: "Learn your words", bg: C.accent },
-    { key: "find", icon: "🔍", label: "Find It", desc: "Word recognition", bg: C.purple },
+    {
+      key: "flash",
+      icon: "⚡",
+      label: "Flash Training",
+      desc: "Learn your words",
+      bg: C.accent,
+    },
+    {
+      key: "find",
+      icon: "🔍",
+      label: "Find It",
+      desc: "Word recognition",
+      bg: C.purple,
+    },
+    {
+      key: "mania",
+      icon: "🎯",
+      label: "Word Mania",
+      desc: "Build words fast!",
+      bg: C.green,
+    },
   ];
 
   return (
@@ -302,12 +442,38 @@ function ModeCardPair({ onSelect, transitioning }) {
               {m.icon}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 700, color: C.ink }}>{m.label}</div>
-              <div style={{ fontFamily: FONT, fontSize: 11, color: `${C.ink}80`, fontWeight: 500, marginTop: 2 }}>
+              <div
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: C.ink,
+                }}
+              >
+                {m.label}
+              </div>
+              <div
+                style={{
+                  fontFamily: FONT,
+                  fontSize: 11,
+                  color: `${C.ink}80`,
+                  fontWeight: 500,
+                  marginTop: 2,
+                }}
+              >
                 {m.desc}
               </div>
             </div>
-            <div style={{ color: C.ink, fontSize: 22, fontWeight: 700, flexShrink: 0 }}>→</div>
+            <div
+              style={{
+                color: C.ink,
+                fontSize: 22,
+                fontWeight: 700,
+                flexShrink: 0,
+              }}
+            >
+              →
+            </div>
           </button>
         );
       })}
@@ -348,8 +514,24 @@ function DailyChallenge({ challenge }) {
         {challenge.icon}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-          <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: C.ink }}>{challenge.title}</div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            marginBottom: 2,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: FONT,
+              fontSize: 14,
+              fontWeight: 700,
+              color: C.ink,
+            }}
+          >
+            {challenge.title}
+          </div>
           <div
             style={{
               background: C.heart,
@@ -380,8 +562,27 @@ function DailyChallenge({ challenge }) {
         </div>
       </div>
       <div style={{ flexShrink: 0, textAlign: "center" }}>
-        <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: C.ink, fontVariantNumeric: "tabular-nums" }}>+{challenge.reward}</div>
-        <div style={{ fontFamily: FONT, fontSize: 8, fontWeight: 700, color: `${C.ink}70` }}>🪙</div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 16,
+            fontWeight: 700,
+            color: C.ink,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          +{challenge.reward}
+        </div>
+        <div
+          style={{
+            fontFamily: FONT,
+            fontSize: 8,
+            fontWeight: 700,
+            color: `${C.ink}70`,
+          }}
+        >
+          🪙
+        </div>
       </div>
     </div>
   );

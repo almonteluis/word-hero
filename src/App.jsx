@@ -23,6 +23,7 @@ import KidSelector from "./components/KidSelector";
 import ModeSelectScreen from "./components/ModeSelectScreen";
 import FindItGame from "./components/FindItGame";
 import FlashcardMode from "./components/FlashcardMode";
+import WordMania from "./components/WordMania";
 import BottomNav from "./components/BottomNav";
 import DictionaryScreen from "./components/DictionaryScreen";
 import ModulesScreen from "./components/ModulesScreen";
@@ -290,7 +291,11 @@ export default function WordHeroApp() {
             <ModeSelectScreen
               kid={activeKid}
               progress={progress}
-              onSelectMode={(m) => { setFocusedWord(null); setMode(m); setModeKey((k) => k + 1); }}
+              onSelectMode={(m) => {
+                setFocusedWord(null);
+                setMode(m);
+                setModeKey((k) => k + 1);
+              }}
             />
           );
         }
@@ -305,9 +310,48 @@ export default function WordHeroApp() {
             }}
           >
             {/* Floating Background Shapes */}
-            <div style={{ position: "absolute", top: "5%", left: "10%", width: 120, height: 120, background: C.primary, borderRadius: "40% 60% 70% 30%", opacity: 0.15, animation: "floatBlob 8s ease-in-out infinite", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", top: "25%", right: "-5%", width: 200, height: 200, background: C.secondary, borderRadius: "60% 40% 30% 70%", opacity: 0.15, animation: "floatBlobRev 12s ease-in-out infinite", pointerEvents: "none" }} />
-            <div style={{ position: "absolute", bottom: "10%", left: "-10%", width: 180, height: 160, background: C.accent, borderRadius: "50% 50% 50% 50%", opacity: 0.15, animation: "floatBlob 10s ease-in-out infinite", pointerEvents: "none" }} />
+            <div
+              style={{
+                position: "absolute",
+                top: "5%",
+                left: "10%",
+                width: 120,
+                height: 120,
+                background: C.primary,
+                borderRadius: "40% 60% 70% 30%",
+                opacity: 0.15,
+                animation: "floatBlob 8s ease-in-out infinite",
+                pointerEvents: "none",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                top: "25%",
+                right: "-5%",
+                width: 200,
+                height: 200,
+                background: C.secondary,
+                borderRadius: "60% 40% 30% 70%",
+                opacity: 0.15,
+                animation: "floatBlobRev 12s ease-in-out infinite",
+                pointerEvents: "none",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                bottom: "10%",
+                left: "-10%",
+                width: 180,
+                height: 160,
+                background: C.accent,
+                borderRadius: "50% 50% 50% 50%",
+                opacity: 0.15,
+                animation: "floatBlob 10s ease-in-out infinite",
+                pointerEvents: "none",
+              }}
+            />
 
             {/* Header */}
             <div
@@ -339,7 +383,15 @@ export default function WordHeroApp() {
                 ← Back
               </button>
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 20, fontFamily: FONT, color: C.text, fontWeight: 700, letterSpacing: 1 }}>
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontFamily: FONT,
+                    color: C.text,
+                    fontWeight: 700,
+                    letterSpacing: 1,
+                  }}
+                >
                   Word Hero
                 </div>
               </div>
@@ -356,8 +408,17 @@ export default function WordHeroApp() {
                   borderRadius: "100px",
                 }}
               >
-                <span style={{ fontSize: 24, transform: "translateY(1px)" }}>{activeKid.avatar}</span>
-                <span style={{ fontFamily: FONT, color: C.text, fontSize: 14, fontWeight: 700 }}>
+                <span style={{ fontSize: 24, transform: "translateY(1px)" }}>
+                  {activeKid.avatar}
+                </span>
+                <span
+                  style={{
+                    fontFamily: FONT,
+                    color: C.text,
+                    fontSize: 14,
+                    fontWeight: 700,
+                  }}
+                >
                   {activeKid.name}
                 </span>
               </div>
@@ -389,7 +450,10 @@ export default function WordHeroApp() {
                     setMode("menu");
                     setTab("profile");
                   }}
-                  onHome={() => { setMode("menu"); setTab("home"); }}
+                  onHome={() => {
+                    setMode("menu");
+                    setTab("home");
+                  }}
                 />
               )}
               {mode === "find" && (
@@ -397,7 +461,21 @@ export default function WordHeroApp() {
                   progress={progress}
                   dispatch={dispatch}
                   lang={lang}
-                  onHome={() => { setMode("menu"); setTab("home"); }}
+                  onHome={() => {
+                    setMode("menu");
+                    setTab("home");
+                  }}
+                />
+              )}
+              {mode === "mania" && (
+                <WordMania
+                  progress={progress}
+                  dispatch={dispatch}
+                  lang={lang}
+                  onHome={() => {
+                    setMode("menu");
+                    setTab("home");
+                  }}
                 />
               )}
             </div>
@@ -433,7 +511,10 @@ export default function WordHeroApp() {
 
   return (
     <>
-      <div key={`${tab}-${mode}`} style={{ animation: "screenEnter 0.25s ease-out" }}>
+      <div
+        key={`${tab}-${mode}`}
+        style={{ animation: "screenEnter 0.25s ease-out" }}
+      >
         {renderTabContent()}
       </div>
       <BottomNav activeTab={tab} onTabChange={handleTabChange} />
